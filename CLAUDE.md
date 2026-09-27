@@ -48,6 +48,7 @@ npx prisma db push   # Push schema without migration (dev only)
 - `src/server/lib/env.ts` — `parseBooleanValue`: the boolean env vocabulary (true/1/yes/on, false/0/no/off) shared by `auth-config.ts` and `guest-uploads.ts`
 - `src/server/lib/guest-uploads.ts` — Guest receipt upload kill switch: admin toggle (`guestUploadsEnabled` SystemSetting, default on, cached 10s, save via `saveGuestUploadsSetting`) overridden by `DISABLE_GUEST_UPLOADS=true` (the admin save is refused while it is set; an unrecognized value logs a warning and is ignored). When off, `canUseGuestUploads` refuses anonymous callers at `/api/upload?guest=true` (403) and `guest.processReceipt` (FORBIDDEN); signed-in users with an active (not suspended) account share the Quick Split path and keep access
 - `src/server/lib/guest-join-limit.ts` — `checkJoinRateLimit` for `guest.joinSession`: 10 joins/min per person (share token + the caller's person token when it sends one, else + normalized name) and 200/min per share token (twice the 100-person session cap). The session budget is peeked before the person budget is spent, so a refused call consumes nothing. A client rotating names can use up the per-token budget (accepted, like the other per-token guest limits)
+- `src/server/lib/guest-people.ts` — Claim-session people and their stable public `id`: a person's array index shifts when someone listed before them is removed, so the claim page targets people by id (`claimItems` `personId`, `removePerson`/`editPersonName` `targetId`, `finalizeSession` `personId`; an unknown id is CONFLICT, and the index inputs still work for older clients and the e2e suite). `createClaimSession`/`joinSession` mint ids; people saved without one get theirs the first time `getSession`, `resumeSession` or `joinSession` loads them
 - `src/server/lib/receipt-processor.ts` — `processReceiptImage`: the receipt-scan pipeline shared by signed-in and guest scans (reads the image, runs `getAIProvidersWithFallback`, normalizes the date, creates the receipt items)
 - `src/server/lib/auth-health-poller.ts` — Background poller (started from `src/instrumentation.ts`) that checks Meridian and ChatGPT OAuth health when those providers are configured and emails `ADMIN_EMAIL` when auth expires (needs `EMAIL_SERVER_HOST`)
 - `src/server/lib/meridian-login.ts` / `openai-codex-login.ts` — OAuth PKCE login flows behind the admin dashboard's Meridian and ChatGPT sections; credentials persist in `CLAUDE_DIR` / `OPENAI_CODEX_DIR` (`/app/claude`, `/app/chatgpt` in Docker)
@@ -63,7 +64,7 @@ npx prisma db push   # Push schema without migration (dev only)
 - `src/server/lib/signed-cookie.ts` — HMAC-SHA256 `signPayload` / `verifyAndParse` (keyed by `AUTH_SECRET`, falling back to `NEXTAUTH_SECRET`), used for the admin impersonation cookie
 - `src/server/lib/strip-undefined.ts` — `stripUndefined`: drops `undefined`-valued keys so optional zod output fits Prisma input types under `exactOptionalPropertyTypes`
 - `src/lib/venmo.ts` — Venmo handle normalization and pay deep links. Venmo pay links and the split page's handle input show only when the `venmoEnabled` SystemSetting is `'true'` (admin toggle, default off) and the currency is USD; the handle field in Settings always shows
-- `src/lib/guest-session.ts` — Claim-session identity helpers shared by client and server: `normalizeGuestName`, `isGuestSessionToken`, `storedClaimIdentitySchema` (the identity kept in localStorage), join idempotency keys (`newJoinKey` / `joinKeyFor`), `resumeOutcome` (what a device does with a stored token or a personal link), and the personal-link hash helpers (`personalLinkHash` / `readPersonalLinkToken`, `…/claim#me=<token>`)
+- `src/lib/guest-session.ts` — Claim-session identity helpers shared by client and server: `normalizeGuestName`, `isGuestSessionToken`, `storedClaimIdentitySchema` (the identity kept in localStorage), join idempotency keys (`newJoinKey` / `joinKeyFor`), `resumeOutcome` (what a device does with a stored token or a personal link), the personal-link hash helpers (`personalLinkHash` / `readPersonalLinkToken`, `…/claim#me=<token>`), and `needsMembershipCheck` (when the claim page asks the server whether its person was removed)
 - `src/lib/avatar.ts` — Shared avatar color and initials helpers
 - `src/lib/currencies.ts` — Currency list for the currency selector
 - `src/server/ai/providers/mock.ts` — Deterministic `mock` AI provider: accepted by `AI_PROVIDER_PRIORITY` but not listed as a selectable provider or in the admin test UI; CI runs the build and e2e suite with `AI_PROVIDER_PRIORITY=mock`
@@ -76,6 +77,7 @@ npx prisma db push   # Push schema without migration (dev only)
 - `src/components/providers.tsx` — Client-side tRPC + React Query + SessionProvider + ThemeProvider wrapper
 - `src/lib/trpc.ts` — Client-side tRPC React hooks
 - `src/lib/utils.ts` — `cn()` utility for Tailwind class merging
+- `src/lib/claim-drafts.ts` — The claim page keeps unsaved claim edits by person id; `draftsByIndex` places them at each person's index in the session as last loaded (dropping removed people), `sameClaims` compares claim sets
 - `src/generated/prisma/` — Auto-generated Prisma client (do not edit, gitignored)
 - `prisma/schema.prisma` — Database schema (money stored as Int cents)
 - `prisma.config.ts` — Prisma v7 config (datasource URL lives here, not in schema.prisma)
@@ -122,9 +124,9 @@ npx prisma db push   # Push schema without migration (dev only)
 
 ### Unit Tests (Vitest)
 
-- `npm test` — run all unit tests (~540 tests, about 2 seconds)
+- `npm test` — run all unit tests (~590 tests, about 2 seconds)
 - Tests live co-located with source: `src/**/*.test.ts`, plus `docker/**/*.test.mjs` for the Docker build scripts
-- Covers most of `src/server/lib/`, `src/lib/` money, split-calculator, sign-in-errors, avatar, and guest-session, `ai/registry.ts`, `ai/providers/openai-codex.ts`, `ai/providers/meridian.ts`, the admin, auth, and guest routers, `app/api/upload/route.ts`, and `docker/stage-runtime-deps.mjs`. `git ls-files '*.test.ts' '*.test.mjs'` lists them
+- Covers most of `src/server/lib/`, `src/lib/` money, split-calculator, sign-in-errors, avatar, guest-session, and claim-drafts, `ai/registry.ts`, `ai/providers/openai-codex.ts`, `ai/providers/meridian.ts`, the admin, auth, and guest routers, `app/api/upload/route.ts`, and `docker/stage-runtime-deps.mjs`. `git ls-files '*.test.ts' '*.test.mjs'` lists them
 
 ### E2E Tests (Playwright)
 

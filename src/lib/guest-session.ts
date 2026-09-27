@@ -7,8 +7,11 @@ export const storedClaimIdentitySchema = z.object({
   personToken: guestSessionTokenSchema,
 });
 export type StoredClaimIdentity = z.infer<typeof storedClaimIdentitySchema>;
-/** Who this device is in a claim session: the stored identity plus that person's current index. */
-export type ClaimIdentity = StoredClaimIdentity & { personIndex: number };
+/**
+ * Who this device is in a claim session: the stored identity plus that person's id, which
+ * (unlike their index) doesn't change when someone listed before them is removed.
+ */
+export type ClaimIdentity = StoredClaimIdentity & { personId: string };
 
 /** The localStorage key under which the claim page keeps this device's identity for a session. */
 export function claimStorageKey(shareToken: string): string {
@@ -86,6 +89,26 @@ export function resumeOutcome(answer: {
  */
 export function shouldRetryResume(failureCount: number, httpStatus: number | undefined): boolean {
   return failureCount < 2 && (httpStatus ?? 500) >= 500;
+}
+
+/**
+ * Whether the claim page should ask the server (guest.resumeSession) if this device's person
+ * is still in the session: someone on another device may have removed them. Only when the
+ * session as loaded doesn't list them; at most once per load (loadedAt is the load's time,
+ * checkedThrough the last checked load's); never for a load from before this device became
+ * that person (checkedThrough is set to that moment), since a join's answer arrives before a
+ * load lists the new person; and not while a join, resume or earlier check is in flight.
+ */
+export function needsMembershipCheck(check: {
+  personId: string | null;
+  isListed: (personId: string) => boolean;
+  loadedAt: number;
+  checkedThrough: number;
+  busy: boolean;
+}): boolean {
+  return (
+    check.personId !== null && !check.busy && check.loadedAt > check.checkedThrough && !check.isListed(check.personId)
+  );
 }
 
 // A personal link is the claim page URL with this device's person token in the #fragment,
