@@ -176,9 +176,9 @@ describe('stackEdits', () => {
     expect(stackEdits(new Map([[1, true]]), undefined)).toEqual(new Map([[1, true]]));
   });
 
-  test('a tap made during a save that stored but did not reload survives the next poll', () => {
-    // Saved item 2 (stored); tapped it off meanwhile; the reload failed, so the page still has
-    // the claims from before the save
+  test('a tap made during a save whose outcome the page never learned survives the next poll', () => {
+    // Saved item 2 (stored, but the page gave up before learning it); tapped it off meanwhile;
+    // the page still has the claims from before the save
     const sent = new Map([[2, true]]);
     const since = toggleEdit(withEdits(new Set(), sent), undefined, 2);
     const kept = stackEdits(sent, since);
@@ -209,12 +209,47 @@ describe('editsAfterSave', () => {
     expect(kept).toEqual(new Map([[1, true]]));
   });
 
-  test('no answer (it may still be stored): every change is kept, whatever the reload shows (#226 review)', () => {
+  test('refused and reloaded: sent changes the reload already shows (another device did the same) are dropped', () => {
+    const kept = editsAfterSave({
+      outcome: 'refused',
+      reloaded: true,
+      savedNow: new Set([1]),
+      sent: new Map([
+        [1, true],
+        [3, true],
+      ]),
+      since: undefined,
+    });
+    expect(kept).toEqual(new Map([[3, true]]));
+  });
+
+  test('gave up with no answer: the changes made since are kept, whatever the reload shows (#226 review)', () => {
     // The reload came back before the save committed, showing item 2 unclaimed
     const kept = editsAfterSave({ outcome: 'unknown', reloaded: true, savedNow: new Set(), sent, since });
     // Once the commit shows up, the tap-off still wins and is waiting to be saved
     expect(withEdits(new Set([2]), kept)).toEqual(new Set());
     expect(hasEdits(new Set([2]), kept)).toBe(true);
+  });
+
+  test('gave up with no answer: sent changes the reload already shows are dropped, the rest kept (#238)', () => {
+    // Claimed items 1 and 3; the reload shows 1 stored (the save landed, or another device did
+    // the same), 3 not. Item 1 isn't kept, so another device unclaiming it later wins.
+    const kept = editsAfterSave({
+      outcome: 'unknown',
+      reloaded: true,
+      savedNow: new Set([1]),
+      sent: new Map([
+        [1, true],
+        [3, true],
+      ]),
+      since: undefined,
+    });
+    expect(kept).toEqual(new Map([[3, true]]));
+  });
+
+  test('gave up with no answer and no reload: every change is kept', () => {
+    const kept = editsAfterSave({ outcome: 'unknown', reloaded: false, savedNow: new Set([2]), sent, since });
+    expect(kept).toEqual(new Map([[2, false]]));
   });
 
   test('refused but not reloaded: every change is kept, since the claims the page has may be stale', () => {
@@ -224,8 +259,17 @@ describe('editsAfterSave', () => {
     expect(withEdits(new Set([2]), kept)).toEqual(new Set());
   });
 
-  test('saved but not reloaded: every change is kept', () => {
-    const kept = editsAfterSave({ outcome: 'saved', reloaded: false, savedNow: new Set(), sent, since });
-    expect(kept).toEqual(new Map([[2, false]]));
+  test('saved but no reload landed: only the changes made since remain, the sent ones are stored (#238)', () => {
+    const kept = editsAfterSave({
+      outcome: 'saved',
+      reloaded: false,
+      savedNow: new Set(),
+      sent: new Map([
+        [1, true],
+        [2, true],
+      ]),
+      since,
+    });
+    expect(kept).toEqual(since);
   });
 });

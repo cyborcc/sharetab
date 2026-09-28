@@ -24,6 +24,22 @@ export const guestItemSchema = z.object({
 
 export type GuestItem = z.infer<typeof guestItemSchema>;
 
+/** A claim save's key and a digest of its changes, kept on the person who sent it (guest.claimItems, #238). */
+const guestSaveRecordSchema = z.object({ key: z.string(), hash: z.string() });
+
+/**
+ * The well-formed records in a person's stored `saves`; anything else is ignored rather than
+ * failing the request. (guestPersonSchema leaves `saves` out: parsing strips it, and the one
+ * caller, finalizeSession, doesn't use it.)
+ */
+export function validSaveRecords(value: unknown): z.infer<typeof guestSaveRecordSchema>[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((record) => {
+    const parsed = guestSaveRecordSchema.safeParse(record);
+    return parsed.success ? [parsed.data] : [];
+  });
+}
+
 export const guestPersonSchema = z.object({
   id: z.string().optional(),
   name: z.string(),

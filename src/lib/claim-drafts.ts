@@ -88,29 +88,38 @@ export function restoreEdits(
 
 /**
  * Newer changes stacked over older ones, keeping every change (none is compared with the saved
- * claims). For a save that stored its changes but whose reload failed: the claims the page has
- * are from before it, so comparing with them would drop changes that undo what it stored.
+ * claims). editsAfterSave uses it wherever the claims the page has may not show what's stored,
+ * since comparing with them could drop changes that undo what a save stored.
  */
 export function stackEdits(older: ClaimEdits, newer: ClaimEdits | undefined): Map<number, boolean> {
   return new Map([...older, ...(newer ?? [])]);
 }
 
 /**
- * How a save ended: stored ('saved'), refused by the server (an error answer: nothing was
- * stored), or unknown (no answer, e.g. a dropped connection or a proxy's error page: the server
- * may have stored it, even after the page reloaded).
+ * How a save ended: stored ('saved'), refused by the server (an error answer that settles it:
+ * nothing was stored, or for a retry, what an earlier attempt stored no longer matters), or
+ * unknown (no answer, e.g. a dropped connection or a proxy's error page, or a server error: the
+ * server may have stored it). The claim page sends an unknown save again with the same save key
+ * until it learns which, and gives up after SAVE_ATTEMPTS (see claim-save.ts).
  */
 export type SaveOutcome = 'saved' | 'refused' | 'unknown';
 
 /**
  * A person's unsaved changes once a save of `sent` has ended and the page has reloaded (or
  * tried to), given the changes made meanwhile (`since`, judged against the claims with the save
- * applied). Only when the answer settles what's stored are changes compared with the claims:
- * - saved and reloaded: the claims shown include it, so only the changes made since remain;
- * - refused and reloaded: nothing was stored, so the sent changes come back under the newer
- *   ones (restoreEdits, compared with the claims as reloaded);
- * - otherwise (no answer, or not reloaded): the claims the page has may not show what is stored,
- *   now or later, so every change is kept as it is (stackEdits).
+ * applied, so they are kept as they are except after a refusal, see below):
+ * - saved: the sent changes are stored, so only the changes made since remain. If no reload
+ *   landed, the claims shown catch up at the next poll;
+ * - refused and reloaded: nothing was stored (or it no longer matters), so the sent changes come
+ *   back under the newer ones, and any of either that the reload already shows are dropped
+ *   (restoreEdits);
+ * - unknown (the page gave up) and reloaded: the sent changes the reload already shows are
+ *   dropped (stored, or matched by another device), so they can't come back later to undo
+ *   another device's change (#238); the rest stay, under the changes made since (stackEdits).
+ *   The reload can't tell a change never stored from one stored and then changed back by another
+ *   device before the reload (or one stored by an attempt that commits after it), so those can
+ *   still leave a stale edit;
+ * - refused or unknown without a reload: every change is kept as it is (stackEdits).
  */
 export function editsAfterSave(save: {
   outcome: SaveOutcome;
@@ -119,7 +128,9 @@ export function editsAfterSave(save: {
   sent: ClaimEdits;
   since: ClaimEdits | undefined;
 }): Map<number, boolean> {
-  if (save.outcome === 'saved' && save.reloaded) return new Map(save.since);
-  if (save.outcome === 'refused' && save.reloaded) return restoreEdits(save.savedNow, save.sent, save.since);
-  return stackEdits(save.sent, save.since);
+  if (save.outcome === 'saved') return new Map(save.since);
+  if (!save.reloaded) return stackEdits(save.sent, save.since);
+  if (save.outcome === 'refused') return restoreEdits(save.savedNow, save.sent, save.since);
+  const notShown = [...save.sent].filter(([item, claimed]) => claimed !== save.savedNow.has(item));
+  return stackEdits(new Map(notShown), save.since);
 }
