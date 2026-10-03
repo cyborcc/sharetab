@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { LocateFixed, MapPin, X } from 'lucide-react';
+import { Compass, LocateFixed, MapPin, X } from 'lucide-react';
+import { nearbyFilters } from '@/lib/categories';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -20,22 +21,116 @@ function shortName(displayName: string): string {
   return displayName.split(', ').slice(0, 3).join(', ');
 }
 
-/** Place search via OpenStreetMap (Nominatim) plus "use my location" through the browser's GPS. */
-export function LocationField({ value, onChange }: { value: PlaceValue; onChange: (value: PlaceValue) => void }) {
+const OVERPASS_URLS = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
+const NEARBY_RADIUS_M = 1000;
+
+type Nearby = { name: string; lat: number; lon: number; distance: number };
+
+function distanceMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const rad = Math.PI / 180;
+  const a =
+    Math.sin(((lat2 - lat1) * rad) / 2) ** 2 +
+    Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin(((lon2 - lon1) * rad) / 2) ** 2;
+  return 6_371_000 * 2 * Math.asin(Math.sqrt(a));
+}
+
+async function fetchNearby(lat: number, lon: number, filters: string[]): Promise<Nearby[]> {
+  const parts = filters.map((f) => `nwr(around:${NEARBY_RADIUS_M},${lat},${lon})[${f}][name];`).join('');
+  const body = `data=${encodeURIComponent(`[out:json][timeout:20];(${parts});out center tags 60;`)}`;
+  for (const url of OVERPASS_URLS) {
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body,
+      });
+      if (!res.ok) continue;
+      const data = (await res.json()) as {
+        elements: { lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: { name?: string } }[];
+      };
+      const seen = new Set<string>();
+      const places: Nearby[] = [];
+      for (const el of data.elements) {
+        const elLat = el.lat ?? el.center?.lat;
+        const elLon = el.lon ?? el.center?.lon;
+        const name = el.tags?.name;
+        if (elLat === undefined || elLon === undefined || !name || seen.has(name)) continue;
+        seen.add(name);
+        places.push({ name, lat: elLat, lon: elLon, distance: distanceMeters(lat, lon, elLat, elLon) });
+      }
+      return places.sort((a, b) => a.distance - b.distance).slice(0, 8);
+    } catch {
+      // try the next mirror
+    }
+  }
+  throw new Error('overpass');
+}
+
+function currentPosition(): Promise<{ latitude: number; longitude: number }> {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) return reject(new Error('unsupported'));
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+      reject,
+      { enableHighAccuracy: true, timeout: 15000 },
+    );
+  });
+}
+
+/**
+ * Place search via OpenStreetMap (Nominatim), "use my location" through the browser's GPS, and
+ * nearby places that fit the chosen category (OpenStreetMap via Overpass).
+ */
+export function LocationField({
+  value,
+  onChange,
+  category,
+}: {
+  value: PlaceValue;
+  onChange: (value: PlaceValue) => void;
+  category?: string;
+}) {
   const t = useTranslations('expenses');
   const locale = useLocale();
   const [query, setQuery] = useState(value.placeName);
   const [hits, setHits] = useState<Hit[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [nearby, setNearby] = useState<Nearby[] | null>(null);
+  const filters = nearbyFilters(category);
+  const searching = query.trim().length >= 3 && !(value.latitude !== null && query.trim() === value.placeName);
+
+  async function findNearby() {
+    if (!filters) return;
+    setError(null);
+    setBusy(true);
+    try {
+      // Anchor: the chosen place if it has coordinates, otherwise the device position
+      const anchor =
+        value.latitude !== null && value.longitude !== null
+          ? { latitude: value.latitude, longitude: value.longitude }
+          : await currentPosition();
+      const places = await fetchNearby(anchor.latitude, anchor.longitude, filters);
+      setNearby(places);
+      if (places.length === 0) setError(t('new.nearbyNone'));
+    } catch {
+      setError(t('new.nearbyFailed'));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function pickNearby(p: Nearby) {
+    setQuery(p.name);
+    setNearby(null);
+    setHits([]);
+    onChange({ placeName: p.name, latitude: p.lat, longitude: p.lon });
+  }
 
   // Debounced search while typing; skipped once a place with coordinates is chosen
   useEffect(() => {
     const q = query.trim();
-    if (q.length < 3 || (value.latitude !== null && q === value.placeName)) {
-      setHits([]);
-      return;
-    }
+    if (q.length < 3 || (value.latitude !== null && q === value.placeName)) return;
     const controller = new AbortController();
     const timer = setTimeout(async () => {
       try {
@@ -128,7 +223,31 @@ export function LocationField({ value, onChange }: { value: PlaceValue; onChange
           </Button>
         )}
       </div>
-      {hits.length > 0 && (
+      {filters && (
+        <Button type="button" variant="outline" size="sm" disabled={busy} onClick={findNearby}>
+          <Compass className="mr-2 h-4 w-4" />
+          {busy ? t('new.nearbyLoading') : t('new.nearbyFind')}
+        </Button>
+      )}
+      {nearby && nearby.length > 0 && (
+        <ul className="divide-y rounded-md border bg-background text-sm shadow-sm">
+          {nearby.map((p) => (
+            <li key={`${p.name}-${p.lat}`}>
+              <button
+                type="button"
+                className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left hover:bg-muted"
+                onClick={() => pickNearby(p)}
+              >
+                <span className="truncate">{p.name}</span>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {p.distance < 1000 ? `${Math.round(p.distance / 10) * 10} m` : `${(p.distance / 1000).toFixed(1)} km`}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {searching && hits.length > 0 && (
         <ul className="divide-y rounded-md border bg-background text-sm shadow-sm">
           {hits.map((h, i) => (
             <li key={i}>

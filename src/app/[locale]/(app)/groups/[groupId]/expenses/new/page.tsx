@@ -12,6 +12,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { useSession } from 'next-auth/react';
+import { PrivateToggle } from '@/components/expenses/private-toggle';
 import { CategorySelect } from '@/components/expenses/category-select';
 import { LocationField, type PlaceValue } from '@/components/expenses/location-field';
 import { EqualSplit } from '@/components/expenses/equal-split';
@@ -42,6 +44,8 @@ export default function NewExpensePage({ params }: { params: Promise<{ groupId: 
 
   const [title, setTitle] = useState('');
   const [amountStr, setAmountStr] = useState('');
+  const { data: authSession } = useSession();
+  const [isPrivate, setIsPrivate] = useState(false);
   const [category, setCategory] = useState('');
   const [place, setPlace] = useState<PlaceValue>({ placeName: '', latitude: null, longitude: null });
   const [expenseDate, setExpenseDate] = useState(() => new Date().toLocaleDateString('sv-SE'));
@@ -90,6 +94,11 @@ export default function NewExpensePage({ params }: { params: Promise<{ groupId: 
   const parsedManualRate = parseFloat(manualRate);
   const manualRateValid = useManualRate && !isNaN(parsedManualRate) && parsedManualRate > 0;
 
+  // Private only when the signed-in payer is the sole sharer of the expense
+  const privateEligible =
+    !!authSession?.user?.id && paidById === authSession.user.id && shares.length === 1 && shares[0]?.userId === paidById;
+  const isPrivateEffective = isPrivate && privateEligible;
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!paidById || amountCents <= 0 || shares.length === 0) return;
@@ -103,6 +112,7 @@ export default function NewExpensePage({ params }: { params: Promise<{ groupId: 
       category: category.trim() || undefined,
       ...(place.placeName.trim() ? { placeName: place.placeName.trim() } : {}),
       ...(place.latitude !== null && place.longitude !== null ? { latitude: place.latitude, longitude: place.longitude } : {}),
+      ...(isPrivateEffective ? { isPrivate: true } : {}),
       ...(expenseDate ? { expenseDate: new Date(`${expenseDate}T12:00:00`).toISOString() } : {}),
       paidById,
       splitMode,
@@ -234,8 +244,14 @@ export default function NewExpensePage({ params }: { params: Promise<{ groupId: 
 
             <div className="space-y-2">
               <Label htmlFor="location">{t('new.location')}</Label>
-              <LocationField value={place} onChange={setPlace} />
+              <LocationField value={place} onChange={setPlace} category={category} />
             </div>
+
+            <PrivateToggle
+              checked={isPrivateEffective}
+              eligible={privateEligible}
+              onChange={setIsPrivate}
+            />
 
             <div className="space-y-2">
               <Label htmlFor="paidBy">{t('new.paidBy')}</Label>

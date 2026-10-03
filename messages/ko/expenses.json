@@ -48,7 +48,13 @@
     "locationClear": "Remove place",
     "locationOnMap": "Open on map",
     "locationDenied": "Location unavailable. Please allow access.",
-    "locationUnavailable": "This device does not support location."
+    "locationUnavailable": "This device does not support location.",
+    "nearbyFind": "Find places nearby",
+    "nearbyLoading": "Searching …",
+    "nearbyNone": "Nothing found nearby.",
+    "nearbyFailed": "Nearby search failed. Allow location or try again later.",
+    "privateLabel": "Private",
+    "privateHint": "Only you see title and amount. Only possible when the expense is not shared with anyone."
   },
   "edit": {
     "title": "비용 편집",
@@ -73,7 +79,9 @@
     "notFound": "비용을 찾을 수 없습니다",
     "notFoundDescription": "이 비용은 존재하지 않거나 삭제되었습니다.",
     "backToGroup": "그룹으로 돌아가기",
-    "location": "Place"
+    "location": "Place",
+    "privateExpense": "Private expense",
+    "privateExpenseHint": "Title and amount are only visible to the person who paid."
   },
   "scan": {
     "title": "영수증 스캔",

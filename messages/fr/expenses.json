@@ -48,7 +48,13 @@
     "locationClear": "Remove place",
     "locationOnMap": "Open on map",
     "locationDenied": "Location unavailable. Please allow access.",
-    "locationUnavailable": "This device does not support location."
+    "locationUnavailable": "This device does not support location.",
+    "nearbyFind": "Find places nearby",
+    "nearbyLoading": "Searching …",
+    "nearbyNone": "Nothing found nearby.",
+    "nearbyFailed": "Nearby search failed. Allow location or try again later.",
+    "privateLabel": "Private",
+    "privateHint": "Only you see title and amount. Only possible when the expense is not shared with anyone."
   },
   "edit": {
     "title": "Modifier la dépense",
@@ -73,7 +79,9 @@
     "notFound": "Dépense introuvable",
     "notFoundDescription": "Cette dépense n'existe pas ou a été supprimée.",
     "backToGroup": "Retour au groupe",
-    "location": "Place"
+    "location": "Place",
+    "privateExpense": "Private expense",
+    "privateExpenseHint": "Title and amount are only visible to the person who paid."
   },
   "scan": {
     "title": "Scanner un reçu",

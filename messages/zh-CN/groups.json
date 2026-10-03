@@ -49,7 +49,8 @@
     "myShare": "Your share",
     "myTotalAll": "Total (everyone)",
     "yourShare": "Your share: {amount}",
-    "stats": "Statistics"
+    "stats": "Statistics",
+    "privateExpense": "Private"
   },
   "settings": {
     "title": "群组设置",

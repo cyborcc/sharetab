@@ -14,6 +14,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { useSession } from 'next-auth/react';
+import { PrivateToggle } from '@/components/expenses/private-toggle';
 import { CategorySelect } from '@/components/expenses/category-select';
 import { LocationField, type PlaceValue } from '@/components/expenses/location-field';
 import { EqualSplit } from '@/components/expenses/equal-split';
@@ -100,6 +102,8 @@ function EditExpenseForm({
 
   const [title, setTitle] = useState(expense.title);
   const [amountStr, setAmountStr] = useState(() => centsToDecimal(expense.amount));
+  const { data: authSession } = useSession();
+  const [isPrivate, setIsPrivate] = useState(expense.isPrivate);
   const [category, setCategory] = useState(expense.category ?? '');
   const [place, setPlace] = useState<PlaceValue>({
     placeName: expense.placeName ?? '',
@@ -236,6 +240,11 @@ function EditExpenseForm({
   const manualRateValid = useManualRate && !isNaN(parsedManualRate) && parsedManualRate > 0;
   const currencyChanged = effectiveCurrency.toUpperCase() !== expense.currency.toUpperCase();
 
+  // Private only when the signed-in payer is the sole sharer of the expense
+  const privateEligible =
+    !!authSession?.user?.id && paidById === authSession.user.id && shares.length === 1 && shares[0]?.userId === paidById;
+  const isPrivateEffective = isPrivate && privateEligible;
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!paidById || amountCents <= 0 || shares.length === 0) return;
@@ -250,6 +259,7 @@ function EditExpenseForm({
       category: category.trim() || undefined,
       ...(place.placeName.trim() ? { placeName: place.placeName.trim() } : {}),
       ...(place.latitude !== null && place.longitude !== null ? { latitude: place.latitude, longitude: place.longitude } : {}),
+      isPrivate: isPrivateEffective,
       ...(expenseDate ? { expenseDate: new Date(`${expenseDate}T12:00:00`).toISOString() } : {}),
       paidById,
       splitMode,
@@ -395,8 +405,14 @@ function EditExpenseForm({
 
             <div className="space-y-2">
               <Label htmlFor="location">{t('new.location')}</Label>
-              <LocationField value={place} onChange={setPlace} />
+              <LocationField value={place} onChange={setPlace} category={category} />
             </div>
+
+            <PrivateToggle
+              checked={isPrivateEffective}
+              eligible={privateEligible}
+              onChange={setIsPrivate}
+            />
 
             <div className="space-y-2">
               <Label htmlFor="paidBy">{t('new.paidBy')}</Label>

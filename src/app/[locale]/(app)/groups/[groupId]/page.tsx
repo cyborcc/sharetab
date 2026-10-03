@@ -12,12 +12,13 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { BarChart3, Plus, Settings, UserPlus, ArrowRight, Receipt, Handshake, Camera, Tag, Archive, Trash2 } from 'lucide-react';
+import { BarChart3, Plus, Settings, UserPlus, ArrowRight, Receipt, Handshake, Camera, Archive, Trash2 } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { toast } from 'sonner';
 import { InviteDialog } from '@/components/groups/invite-dialog';
 import { SettleDialog } from '@/components/groups/settle-dialog';
 import { getInitials, avatarColor } from '@/lib/avatar';
+import { categoryIcon } from '@/lib/categories';
 
 export default function GroupDetailPage({ params }: { params: Promise<{ groupId: string }> }) {
   const { groupId } = use(params);
@@ -396,11 +397,18 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent">
-                      <Tag className="h-3.5 w-3.5 text-accent-foreground" />
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent text-base">
+                      {expense.isPrivate && expense.paidById !== authSession?.user?.id ? '🔒' : categoryIcon(expense.category)}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-medium truncate">{expense.title}</p>
+                      <p className="font-medium truncate">
+                        {expense.isPrivate && expense.paidById !== authSession?.user?.id
+                          ? t('detail.privateExpense')
+                          : expense.title}
+                        {expense.isPrivate && expense.paidById === authSession?.user?.id && (
+                          <span className="ml-2 text-xs text-muted-foreground">🔒 {t('detail.privateExpense')}</span>
+                        )}
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         {t('detail.paidBy', {
                           name: expense.paidBy.name ?? expense.paidBy.email ?? t('detail.unknown'),
@@ -417,13 +425,15 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
                     </div>
                   </div>
                   <div className="ml-4 shrink-0 text-right">
-                    <p className="text-lg font-semibold tabular-nums">
-                      {formatCents(
-                        expense.amount,
-                        expense.baseCurrencyAmount != null ? expense.currency : g.currency,
-                        locale,
-                      )}
-                    </p>
+                    {!(expense.isPrivate && expense.paidById !== authSession?.user?.id) && (
+                      <p className="text-lg font-semibold tabular-nums">
+                        {formatCents(
+                          expense.amount,
+                          expense.baseCurrencyAmount != null ? expense.currency : g.currency,
+                          locale,
+                        )}
+                      </p>
+                    )}
                     {(() => {
                       const mine = expense.shares.find((sh) => sh.userId === authSession?.user?.id);
                       return mine ? (

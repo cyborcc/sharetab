@@ -39,6 +39,18 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ groupI
   }
 
   const e = expense.data;
+  if (e.isPrivate && e.title === '') {
+    return (
+      <div className="mx-auto max-w-md py-16 text-center">
+        <p className="mb-2 text-4xl">🔒</p>
+        <h2 className="mb-2 text-lg font-semibold">{t('detail.privateExpense')}</h2>
+        <p className="mb-4 text-sm text-muted-foreground">{t('detail.privateExpenseHint')}</p>
+        <Button nativeButton={false} render={<Link href={`/groups/${groupId}`} />}>
+          {t('detail.backToGroup')}
+        </Button>
+      </div>
+    );
+  }
   const groupCurrency = group.data?.currency ?? 'USD';
   const isCurrencyConverted = e.baseCurrencyAmount != null && e.currency.toUpperCase() !== groupCurrency.toUpperCase();
 

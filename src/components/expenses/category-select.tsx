@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { categoryIcon } from '@/lib/categories';
 import { Input } from '@/components/ui/input';
 
 const SELECT_CLASS =
@@ -25,7 +26,7 @@ export function CategorySelect({ value, onChange }: { value: string; onChange: (
         <option value="">{t('new.categoryNone')}</option>
         {presets.map((p) => (
           <option key={p} value={p}>
-            {p}
+            {categoryIcon(p)} {p}
           </option>
         ))}
         <option value={CUSTOM}>{t('new.categoryCustom')}</option>

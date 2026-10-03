@@ -154,6 +154,7 @@ model Expense {
   baseCurrencyAmount  Int?    // amount converted to group currency (cents); null = same currency
   category    String?
   placeName   String?
+  isPrivate   Boolean   @default(false) // only payer sees title/amount; requires a single share by the payer
   latitude    Float?
   longitude   Float?
   expenseDate DateTime  @default(now())

@@ -44,7 +44,7 @@ export default function GroupStatsPage({ params }: { params: Promise<{ groupId: 
       byCategory.set(key, (byCategory.get(key) ?? 0) + e.value);
     }
     const categories: Slice[] = [...byCategory.entries()]
-      .map(([label, value]) => ({ label: label || t('stats.noCategory'), value }))
+      .map(([label, value]) => ({ label: label || t('stats.noCategory'), value, icon: label !== '' }))
       .sort((a, b) => b.value - a.value);
 
     const perPerson = new Map<string, { paid: number; share: number }>();

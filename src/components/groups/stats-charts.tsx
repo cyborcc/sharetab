@@ -1,6 +1,7 @@
 'use client';
 
 import { formatCents } from '@/lib/money';
+import { categoryIcon } from '@/lib/categories';
 
 export const CHART_COLORS = [
   '#0ea5e9',
@@ -14,7 +15,7 @@ export const CHART_COLORS = [
   '#64748b',
 ];
 
-export type Slice = { label: string; value: number };
+export type Slice = { label: string; value: number; icon?: boolean };
 
 export function DonutChart({
   slices,
@@ -64,7 +65,10 @@ export function DonutChart({
         {segments.map((s) => (
           <li key={s.label} className="flex items-center gap-2">
             <span className="h-3 w-3 shrink-0 rounded-sm" style={{ backgroundColor: s.color }} />
-            <span className="min-w-0 flex-1 truncate">{s.label}</span>
+            <span className="min-w-0 flex-1 truncate">
+              {s.icon && <span className="mr-1">{categoryIcon(s.label)}</span>}
+              {s.label}
+            </span>
             <span className="tabular-nums text-muted-foreground">{s.pct.toFixed(0)} %</span>
             <span className="w-24 text-right font-medium tabular-nums">{formatCents(s.value, currency, locale)}</span>
           </li>

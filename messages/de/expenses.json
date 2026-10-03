@@ -48,7 +48,13 @@
     "locationClear": "Ort entfernen",
     "locationOnMap": "Auf Karte öffnen",
     "locationDenied": "Standort nicht verfügbar. Bitte Zugriff erlauben.",
-    "locationUnavailable": "Dieses Gerät unterstützt keine Standortabfrage."
+    "locationUnavailable": "Dieses Gerät unterstützt keine Standortabfrage.",
+    "nearbyFind": "Orte in der Nähe finden",
+    "nearbyLoading": "Suche …",
+    "nearbyNone": "Nichts in der Nähe gefunden.",
+    "nearbyFailed": "Suche in der Nähe fehlgeschlagen. Standort erlauben oder später erneut versuchen.",
+    "privateLabel": "Privat",
+    "privateHint": "Nur du siehst Titel und Betrag. Gilt nur, wenn die Ausgabe mit niemandem geteilt wird."
   },
   "edit": {
     "title": "Ausgabe bearbeiten",
@@ -73,7 +79,9 @@
     "notFound": "Ausgabe nicht gefunden",
     "notFoundDescription": "Diese Ausgabe existiert nicht oder wurde gelöscht.",
     "backToGroup": "Zurück zur Gruppe",
-    "location": "Ort"
+    "location": "Ort",
+    "privateExpense": "Private Ausgabe",
+    "privateExpenseHint": "Titel und Betrag sind nur für die Person sichtbar, die bezahlt hat."
   },
   "scan": {
     "title": "Beleg scannen",

@@ -22,11 +22,53 @@ const expenseSharesArraySchema = z
 
 const exchangeRateSchema = z.number().positive().finite().max(1_000_000);
 
+type PrivacyFields = {
+  isPrivate: boolean;
+  paidById: string;
+  title: string;
+  description: string | null;
+  amount: number;
+  baseCurrencyAmount: number | null;
+  category: string | null;
+  placeName: string | null;
+  latitude: number | null;
+  longitude: number | null;
+};
+
+/** Hide title, amount and details of a private expense from everyone but its payer. */
+function maskPrivate<T extends PrivacyFields>(expense: T, viewerId: string): T {
+  if (!expense.isPrivate || expense.paidById === viewerId) return expense;
+  return {
+    ...expense,
+    title: '',
+    description: null,
+    amount: 0,
+    baseCurrencyAmount: expense.baseCurrencyAmount === null ? null : 0,
+    category: null,
+    placeName: null,
+    latitude: null,
+    longitude: null,
+    shares: [],
+    receipt: null,
+    receiptId: null,
+  };
+}
+
+/** A private expense is only allowed when nobody else shares it: one share, owned by the payer. */
+function assertPrivateAllowed(paidById: string, shareUserIds: string[], viewerId: string) {
+  if (paidById !== viewerId || shareUserIds.length !== 1 || shareUserIds[0] !== paidById) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'A private expense must be paid by you and not shared with anyone else',
+    });
+  }
+}
+
 export const expensesRouter = createTRPCRouter({
   // Alle Ausgaben in Gruppenwaehrung fuer die Statistik-Seite (Diagramme werden im Client berechnet)
   stats: groupMemberProcedure.input(z.object({ groupId: z.string() })).query(async ({ ctx, input }) => {
     const expenses = await ctx.db.expense.findMany({
-      where: { groupId: input.groupId },
+      where: { groupId: input.groupId, OR: [{ isPrivate: false }, { paidById: ctx.user.id }] },
       orderBy: { expenseDate: 'asc' },
       select: {
         id: true,
@@ -56,7 +98,7 @@ export const expensesRouter = createTRPCRouter({
   // Eigene Summen in Gruppenwaehrung: was ich bezahlt habe und mein Anteil an allen Ausgaben
   myTotals: groupMemberProcedure.input(z.object({ groupId: z.string() })).query(async ({ ctx, input }) => {
     const expenses = await ctx.db.expense.findMany({
-      where: { groupId: input.groupId },
+      where: { groupId: input.groupId, OR: [{ isPrivate: false }, { paidById: ctx.user.id }] },
       select: {
         amount: true,
         baseCurrencyAmount: true,
@@ -104,7 +146,7 @@ export const expensesRouter = createTRPCRouter({
         nextCursor = next?.id;
       }
 
-      return { expenses, nextCursor };
+      return { expenses: expenses.map((e) => maskPrivate(e, ctx.user.id)), nextCursor };
     }),
 
   get: groupMemberProcedure
@@ -124,7 +166,7 @@ export const expensesRouter = createTRPCRouter({
       if (!expense || expense.groupId !== input.groupId) {
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
-      return expense;
+      return maskPrivate(expense, ctx.user.id);
     }),
 
   create: groupMemberProcedure
@@ -143,6 +185,7 @@ export const expensesRouter = createTRPCRouter({
         exchangeRate: exchangeRateSchema.optional(), // manual override
         category: z.string().max(50).optional(),
         placeName: z.string().max(200).optional(),
+        isPrivate: z.boolean().optional(),
         latitude: z.number().min(-90).max(90).optional(),
         longitude: z.number().min(-180).max(180).optional(),
         expenseDate: z.string().datetime().optional(),
@@ -194,6 +237,8 @@ export const expensesRouter = createTRPCRouter({
         });
       }
 
+      if (input.isPrivate) assertPrivateAllowed(input.paidById, shareUserIds, ctx.user.id);
+
       // Currency conversion: compute base currency amount if currencies differ
       let exchangeRate: number | null = null;
       let baseCurrencyAmount: number | null = null;
@@ -233,6 +278,7 @@ export const expensesRouter = createTRPCRouter({
             baseCurrencyAmount,
             ...(input.category !== undefined ? { category: input.category } : {}),
             ...(input.placeName ? { placeName: input.placeName } : {}),
+            ...(input.isPrivate ? { isPrivate: true } : {}),
             ...(input.latitude !== undefined && input.longitude !== undefined
               ? { latitude: input.latitude, longitude: input.longitude }
               : {}),
@@ -261,7 +307,7 @@ export const expensesRouter = createTRPCRouter({
             userId: ctx.user.id,
             type: 'EXPENSE_CREATED',
             entityId: created.id,
-            metadata: { title: input.title, amount: input.amount },
+            ...(input.isPrivate ? {} : { metadata: { title: input.title, amount: input.amount } }),
           },
         });
 
@@ -289,6 +335,7 @@ export const expensesRouter = createTRPCRouter({
           exchangeRate: exchangeRateSchema.optional(), // manual override
           category: z.string().max(50).optional(),
           placeName: z.string().max(200).optional(),
+          isPrivate: z.boolean().optional(),
           latitude: z.number().min(-90).max(90).optional(),
           longitude: z.number().min(-180).max(180).optional(),
           expenseDate: z.string().datetime().optional(),
@@ -363,6 +410,15 @@ export const expensesRouter = createTRPCRouter({
             message: `Shares sum (${sharesSum}) does not equal expense amount (${expectedAmount})`,
           });
         }
+      }
+
+      const effectivePrivate = data.isPrivate ?? existing.isPrivate;
+      if (effectivePrivate) {
+        const effectivePayer = data.paidById ?? existing.paidById;
+        const effectiveShareIds =
+          shares?.map((s) => s.userId) ??
+          (await ctx.db.expenseShare.findMany({ where: { expenseId }, select: { userId: true } })).map((s) => s.userId);
+        assertPrivateAllowed(effectivePayer, effectiveShareIds, ctx.user.id);
       }
 
       // Recompute currency conversion if currency or amount changed
@@ -474,7 +530,7 @@ export const expensesRouter = createTRPCRouter({
             userId: ctx.user.id,
             type: 'EXPENSE_DELETED',
             entityId: input.expenseId,
-            metadata: { title: expense.title, amount: expense.amount },
+            ...(expense.isPrivate ? {} : { metadata: { title: expense.title, amount: expense.amount } }),
           },
         });
       });
