@@ -10,6 +10,7 @@ import { Link } from '@/i18n/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { ForecastCard } from '@/components/groups/forecast-card';
 import { DonutChart, PairBars, TimeBars, type Slice } from '@/components/groups/stats-charts';
 
 type Scope = 'group' | 'me';
@@ -153,6 +154,22 @@ export default function GroupStatsPage({ params }: { params: Promise<{ groupId: 
               </Card>
             ))}
           </div>
+
+          <ForecastCard
+            groupId={groupId}
+            config={{
+              tripStart: g.tripStart,
+              tripEnd: g.tripEnd,
+              foodPerDay: g.forecastFoodPerDay,
+              transport: g.forecastTransport,
+              other: g.forecastOther,
+            }}
+            spent={view.total}
+            people={g.members.length}
+            scope={scope}
+            currency={g.currency}
+            locale={locale}
+          />
 
           <Card>
             <CardHeader className="pb-3">

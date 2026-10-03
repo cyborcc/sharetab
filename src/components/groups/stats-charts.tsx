@@ -29,12 +29,10 @@ export function DonutChart({
   centerLabel: string;
 }) {
   const total = slices.reduce((sum, s) => sum + s.value, 0);
-  let offset = 25;
   const segments = slices.map((s, i) => {
     const pct = total > 0 ? (s.value / total) * 100 : 0;
-    const segment = { ...s, pct, dash: `${pct} ${100 - pct}`, offset, color: CHART_COLORS[i % CHART_COLORS.length] };
-    offset -= pct;
-    return segment;
+    const before = slices.slice(0, i).reduce((sum, x) => sum + (total > 0 ? (x.value / total) * 100 : 0), 0);
+    return { ...s, pct, dash: `${pct} ${100 - pct}`, offset: 25 - before, color: CHART_COLORS[i % CHART_COLORS.length] };
   });
 
   return (

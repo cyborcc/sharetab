@@ -415,10 +415,9 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
                         })}
                         {' · '}
                         {new Date(expense.expenseDate).toLocaleDateString()}
-                        {expense.category && (
+                        {expense.placeName && (
                           <span className="ml-1 text-muted-foreground/70">
-                            {' · '}
-                            {expense.category}
+                            {' · '}📍 {expense.placeName}
                           </span>
                         )}
                       </p>

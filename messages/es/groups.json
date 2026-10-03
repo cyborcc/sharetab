@@ -89,7 +89,14 @@
     "archiving": "Archivando...",
     "archiveGroup": "Archivar grupo",
     "deleteDescription": "Eliminar un grupo borra todos los gastos, liquidaciones y datos de miembros permanentemente.",
-    "deleting": "Eliminando..."
+    "deleting": "Eliminando...",
+    "tripTitle": "Trip & forecast",
+    "tripHint": "Trip period and costs still expected. Flights and accommodation are already in as expenses. The statistics page turns this into a forecast.",
+    "tripStart": "Trip start",
+    "tripEnd": "Trip end",
+    "foodPerDay": "Food per person per day ({currency})",
+    "transportTotal": "Local transport still expected, total ({currency})",
+    "otherTotal": "Other still expected, total ({currency})"
   },
   "settle": {
     "title": "Registrar un pago",
@@ -147,6 +154,16 @@
     "paid": "Paid",
     "share": "Share",
     "biggest": "Biggest expenses",
-    "empty": "No expenses to chart yet."
+    "empty": "No expenses to chart yet.",
+    "forecast": "Forecast",
+    "forecastNone": "Set the trip period and expected costs in the group settings to get a forecast.",
+    "forecastSettings": "Open settings",
+    "forecastSoFar": "Spent so far",
+    "forecastFood": "Food ({perDay} × {people} people × {days} days)",
+    "forecastTransport": "Transport still expected",
+    "forecastOther": "Other still expected",
+    "forecastTotal": "Forecast total",
+    "forecastPerPerson": "Per person",
+    "forecastDaysLeft": "{days} of {total} trip days left"
   }
 }

@@ -89,7 +89,14 @@
     "archiving": "Archivierung...",
     "archiveGroup": "Gruppe archivieren",
     "deleteDescription": "Das Löschen einer Gruppe entfernt alle Ausgaben, Zahlungen und Mitgliederdaten dauerhaft.",
-    "deleting": "Löschen..."
+    "deleting": "Löschen...",
+    "tripTitle": "Reise & Prognose",
+    "tripHint": "Zeitraum und noch erwartete Kosten. Flug und Unterkunft stehen schon als Ausgaben drin. Die Statistik rechnet daraus eine Prognose.",
+    "tripStart": "Reisebeginn",
+    "tripEnd": "Reiseende",
+    "foodPerDay": "Essen pro Person und Tag ({currency})",
+    "transportTotal": "Fahrtkosten vor Ort, noch erwartet, gesamt ({currency})",
+    "otherTotal": "Sonstiges, noch erwartet, gesamt ({currency})"
   },
   "settle": {
     "title": "Zahlung erfassen",
@@ -147,6 +154,16 @@
     "paid": "Bezahlt",
     "share": "Anteil",
     "biggest": "Größte Ausgaben",
-    "empty": "Noch keine Ausgaben für Statistiken."
+    "empty": "Noch keine Ausgaben für Statistiken.",
+    "forecast": "Prognose",
+    "forecastNone": "Für eine Prognose Reisezeitraum und erwartete Kosten in den Gruppeneinstellungen eintragen.",
+    "forecastSettings": "Zu den Einstellungen",
+    "forecastSoFar": "Bisher ausgegeben",
+    "forecastFood": "Essen ({perDay} × {people} Pers. × {days} Tage)",
+    "forecastTransport": "Fahrtkosten noch erwartet",
+    "forecastOther": "Sonstiges noch erwartet",
+    "forecastTotal": "Prognose gesamt",
+    "forecastPerPerson": "Pro Person",
+    "forecastDaysLeft": "{days} von {total} Reisetagen noch offen"
   }
 }

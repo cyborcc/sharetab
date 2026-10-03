@@ -119,13 +119,20 @@ export const groupsRouter = createTRPCRouter({
           .optional(),
         emoji: z.string().max(4).optional(),
         simplifyDebts: z.boolean().optional(),
+        tripStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+        tripEnd: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+        forecastFoodPerDay: z.number().int().min(0).max(100_000_000).nullable().optional(),
+        forecastTransport: z.number().int().min(0).max(1_000_000_000).nullable().optional(),
+        forecastOther: z.number().int().min(0).max(1_000_000_000).nullable().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       if (ctx.membership.role === 'MEMBER') {
         throw new TRPCError({ code: 'FORBIDDEN', message: 'Only admins and owners can update groups' });
       }
-      const { groupId, ...data } = input;
+      const { groupId, tripStart, tripEnd, ...rest } = input;
+      const toDate = (d: string | null | undefined) => (d === undefined ? undefined : d === null ? null : new Date(`${d}T12:00:00Z`));
+      const data = { ...rest, tripStart: toDate(tripStart), tripEnd: toDate(tripEnd) };
 
       if (data.currency) {
         const existing = await ctx.db.group.findUnique({

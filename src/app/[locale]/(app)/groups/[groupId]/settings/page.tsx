@@ -6,6 +6,7 @@ import { Link, useRouter } from '@/i18n/navigation';
 import { trpc } from '@/lib/trpc';
 import { COMMON_CURRENCIES } from '@/lib/currencies';
 import { Button } from '@/components/ui/button';
+import { parseToCents, centsToDecimal } from '@/lib/money';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -82,6 +83,95 @@ function GroupDetailsForm({
                 </option>
               ))}
             </select>
+            {updateGroup.error && <p className="text-xs text-destructive">{updateGroup.error.message}</p>}
+          </div>
+          <Button type="submit" disabled={updateGroup.isPending}>
+            {updateGroup.isPending ? t('settings.saving') : t('settings.saveChanges')}
+          </Button>
+          {updateGroup.isSuccess && <p className="text-sm text-green-600">{t('settings.saved')}</p>}
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Trip period and expected costs; the statistics page uses them for its forecast.
+function TripForecastForm({
+  groupId,
+  currency,
+  initial,
+}: {
+  groupId: string;
+  currency: string;
+  initial: {
+    tripStart: string;
+    tripEnd: string;
+    food: number | null;
+    transport: number | null;
+    other: number | null;
+  };
+}) {
+  const t = useTranslations('groups');
+  const utils = trpc.useUtils();
+  const [tripStart, setTripStart] = useState(initial.tripStart);
+  const [tripEnd, setTripEnd] = useState(initial.tripEnd);
+  const [food, setFood] = useState(initial.food === null ? '' : centsToDecimal(initial.food));
+  const [transport, setTransport] = useState(initial.transport === null ? '' : centsToDecimal(initial.transport));
+  const [other, setOther] = useState(initial.other === null ? '' : centsToDecimal(initial.other));
+
+  const updateGroup = trpc.groups.update.useMutation({
+    onSuccess: () => utils.groups.get.invalidate({ groupId }),
+  });
+
+  const cents = (v: string) => (v.trim() === '' ? null : parseToCents(v));
+
+  function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    updateGroup.mutate({
+      groupId,
+      tripStart: tripStart || null,
+      tripEnd: tripEnd || null,
+      forecastFoodPerDay: cents(food),
+      forecastTransport: cents(transport),
+      forecastOther: cents(other),
+    });
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{t('settings.tripTitle')}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSave} className="space-y-4">
+          <p className="text-sm text-muted-foreground">{t('settings.tripHint')}</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="tripStart">{t('settings.tripStart')}</Label>
+              <Input id="tripStart" type="date" value={tripStart} onChange={(e) => setTripStart(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tripEnd">{t('settings.tripEnd')}</Label>
+              <Input id="tripEnd" type="date" value={tripEnd} onChange={(e) => setTripEnd(e.target.value)} />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="food">{t('settings.foodPerDay', { currency })}</Label>
+            <Input id="food" inputMode="decimal" placeholder="0.00" value={food} onChange={(e) => setFood(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="transport">{t('settings.transportTotal', { currency })}</Label>
+            <Input
+              id="transport"
+              inputMode="decimal"
+              placeholder="0.00"
+              value={transport}
+              onChange={(e) => setTransport(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="other">{t('settings.otherTotal', { currency })}</Label>
+            <Input id="other" inputMode="decimal" placeholder="0.00" value={other} onChange={(e) => setOther(e.target.value)} />
             {updateGroup.error && <p className="text-xs text-destructive">{updateGroup.error.message}</p>}
           </div>
           <Button type="submit" disabled={updateGroup.isPending}>
@@ -202,6 +292,18 @@ export default function GroupSettingsPage({ params }: { params: Promise<{ groupI
         initialName={group.data.name}
         initialDescription={group.data.description ?? ''}
         initialCurrency={group.data.currency}
+      />
+
+      <TripForecastForm
+        groupId={groupId}
+        currency={group.data.currency}
+        initial={{
+          tripStart: group.data.tripStart ? new Date(group.data.tripStart).toISOString().slice(0, 10) : '',
+          tripEnd: group.data.tripEnd ? new Date(group.data.tripEnd).toISOString().slice(0, 10) : '',
+          food: group.data.forecastFoodPerDay,
+          transport: group.data.forecastTransport,
+          other: group.data.forecastOther,
+        }}
       />
 
       <Card>

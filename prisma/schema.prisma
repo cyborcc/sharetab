@@ -90,6 +90,11 @@ model Group {
   emoji         String? @default("💰")
   simplifyDebts Boolean @default(true)
   archivedAt    DateTime?
+  tripStart     DateTime? // trip period and expected costs for the statistics forecast
+  tripEnd       DateTime?
+  forecastFoodPerDay Int? // cents per person per day
+  forecastTransport  Int? // cents, whole group, still expected
+  forecastOther      Int? // cents, whole group, still expected
 
   members      GroupMember[]
   expenses     Expense[]
