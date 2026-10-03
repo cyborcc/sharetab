@@ -14,6 +14,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { CategorySelect } from '@/components/expenses/category-select';
+import { LocationField, type PlaceValue } from '@/components/expenses/location-field';
 import { EqualSplit } from '@/components/expenses/equal-split';
 import { ExactSplit } from '@/components/expenses/exact-split';
 import { PercentageSplit } from '@/components/expenses/percentage-split';
@@ -99,6 +101,12 @@ function EditExpenseForm({
   const [title, setTitle] = useState(expense.title);
   const [amountStr, setAmountStr] = useState(() => centsToDecimal(expense.amount));
   const [category, setCategory] = useState(expense.category ?? '');
+  const [place, setPlace] = useState<PlaceValue>({
+    placeName: expense.placeName ?? '',
+    latitude: expense.latitude ?? null,
+    longitude: expense.longitude ?? null,
+  });
+  const [expenseDate, setExpenseDate] = useState(() => new Date(expense.expenseDate).toLocaleDateString('sv-SE'));
   // The saved payer may have left the group (member removal preserves
   // financial history). Server-side membership validation would reject the
   // stale id, so start empty and force the user to pick a current member.
@@ -239,7 +247,10 @@ function EditExpenseForm({
       amount: amountCents,
       ...(currencyChanged ? { currency: effectiveCurrency } : {}),
       ...(isDifferentCurrency && manualRateValid ? { exchangeRate: parsedManualRate } : {}),
-      category: category || undefined,
+      category: category.trim() || undefined,
+      ...(place.placeName.trim() ? { placeName: place.placeName.trim() } : {}),
+      ...(place.latitude !== null && place.longitude !== null ? { latitude: place.latitude, longitude: place.longitude } : {}),
+      ...(expenseDate ? { expenseDate: new Date(`${expenseDate}T12:00:00`).toISOString() } : {}),
       paidById,
       splitMode,
       shares,
@@ -374,12 +385,17 @@ function EditExpenseForm({
 
             <div className="space-y-2">
               <Label htmlFor="category">{t('new.category')}</Label>
-              <Input
-                id="category"
-                placeholder={t('new.categoryPlaceholder')}
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-              />
+              <CategorySelect value={category} onChange={setCategory} />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="expenseDate">{t('new.date')}</Label>
+              <Input id="expenseDate" type="date" value={expenseDate} onChange={(e) => setExpenseDate(e.target.value)} />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="location">{t('new.location')}</Label>
+              <LocationField value={place} onChange={setPlace} />
             </div>
 
             <div className="space-y-2">

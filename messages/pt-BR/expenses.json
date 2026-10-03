@@ -6,7 +6,7 @@
     "amount": "Valor",
     "amountPlaceholder": "0,00",
     "paidBy": "Pago por",
-    "date": "Data",
+    "date": "Date",
     "splitType": "Modo de divisão",
     "splitEqual": "Igual",
     "splitExact": "Valores exatos",
@@ -30,7 +30,25 @@
     "exchangeRatePlaceholder": "1 {from} = ? {to}",
     "convertedAmount": "Convertido: {amount}",
     "autoRateNote": "A taxa de câmbio será obtida automaticamente ao salvar.",
-    "unnamed": "Sem nome"
+    "unnamed": "Sem nome",
+    "categoryPresets": [
+      "Food",
+      "Drinks",
+      "Accommodation",
+      "Transport",
+      "Activities",
+      "Shopping",
+      "Other"
+    ],
+    "categoryNone": "No category",
+    "categoryCustom": "Other …",
+    "location": "Place (optional)",
+    "locationPlaceholder": "Search a place, e.g. restaurant or hotel",
+    "locationUse": "Use my location",
+    "locationClear": "Remove place",
+    "locationOnMap": "Open on map",
+    "locationDenied": "Location unavailable. Please allow access.",
+    "locationUnavailable": "This device does not support location."
   },
   "edit": {
     "title": "Editar despesa",
@@ -54,7 +72,8 @@
     "exchangeRate": "Taxa: 1 {from} = {rate} {to}",
     "notFound": "Despesa não encontrada",
     "notFoundDescription": "Esta despesa não existe ou foi excluída.",
-    "backToGroup": "Voltar ao grupo"
+    "backToGroup": "Voltar ao grupo",
+    "location": "Place"
   },
   "scan": {
     "title": "Escanear recibo",

@@ -30,7 +30,25 @@
     "exchangeRatePlaceholder": "1 {from} = ? {to}",
     "convertedAmount": "Converti : {amount}",
     "autoRateNote": "Le taux de change sera récupéré automatiquement lors de l'enregistrement.",
-    "unnamed": "Sans nom"
+    "unnamed": "Sans nom",
+    "categoryPresets": [
+      "Food",
+      "Drinks",
+      "Accommodation",
+      "Transport",
+      "Activities",
+      "Shopping",
+      "Other"
+    ],
+    "categoryNone": "No category",
+    "categoryCustom": "Other …",
+    "location": "Place (optional)",
+    "locationPlaceholder": "Search a place, e.g. restaurant or hotel",
+    "locationUse": "Use my location",
+    "locationClear": "Remove place",
+    "locationOnMap": "Open on map",
+    "locationDenied": "Location unavailable. Please allow access.",
+    "locationUnavailable": "This device does not support location."
   },
   "edit": {
     "title": "Modifier la dépense",
@@ -54,7 +72,8 @@
     "exchangeRate": "Taux : 1 {from} = {rate} {to}",
     "notFound": "Dépense introuvable",
     "notFoundDescription": "Cette dépense n'existe pas ou a été supprimée.",
-    "backToGroup": "Retour au groupe"
+    "backToGroup": "Retour au groupe",
+    "location": "Place"
   },
   "scan": {
     "title": "Scanner un reçu",

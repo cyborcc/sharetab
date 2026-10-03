@@ -153,6 +153,9 @@ model Expense {
   exchangeRate        Float   @default(1.0) // rate: 1 unit of expense currency = X units of group currency
   baseCurrencyAmount  Int?    // amount converted to group currency (cents); null = same currency
   category    String?
+  placeName   String?
+  latitude    Float?
+  longitude   Float?
   expenseDate DateTime  @default(now())
   splitMode   SplitMode @default(EQUAL)
   paidById    String

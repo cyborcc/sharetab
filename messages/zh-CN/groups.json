@@ -48,7 +48,8 @@
     "myPaid": "Paid by you",
     "myShare": "Your share",
     "myTotalAll": "Total (everyone)",
-    "yourShare": "Your share: {amount}"
+    "yourShare": "Your share: {amount}",
+    "stats": "Statistics"
   },
   "settings": {
     "title": "群组设置",
@@ -128,5 +129,23 @@
     "expenseCount": "{count}笔费用",
     "unarchive": "取消归档",
     "showAll": "显示全部{count}个群组"
+  },
+  "stats": {
+    "title": "Statistics",
+    "back": "Back",
+    "scopeGroup": "Group",
+    "scopeMe": "Only me",
+    "total": "Total",
+    "count": "Expenses",
+    "avgPerExpense": "Avg per expense",
+    "perDay": "Avg per day",
+    "byCategory": "By category",
+    "noCategory": "No category",
+    "overTime": "Over time",
+    "byPerson": "Per person",
+    "paid": "Paid",
+    "share": "Share",
+    "biggest": "Biggest expenses",
+    "empty": "No expenses to chart yet."
   }
 }

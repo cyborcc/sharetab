@@ -48,7 +48,8 @@
     "myPaid": "Von dir bezahlt",
     "myShare": "Dein Anteil",
     "myTotalAll": "Gesamt (alle)",
-    "yourShare": "Dein Anteil: {amount}"
+    "yourShare": "Dein Anteil: {amount}",
+    "stats": "Statistik"
   },
   "settings": {
     "title": "Gruppeneinstellungen",
@@ -128,5 +129,23 @@
     "expenseCount": "{count, plural, one {# Ausgabe} other {# Ausgaben}}",
     "unarchive": "Dearchivieren",
     "showAll": "Alle {count} Gruppen anzeigen"
+  },
+  "stats": {
+    "title": "Statistik",
+    "back": "Zurück",
+    "scopeGroup": "Gruppe",
+    "scopeMe": "Nur ich",
+    "total": "Gesamt",
+    "count": "Ausgaben",
+    "avgPerExpense": "Ø pro Ausgabe",
+    "perDay": "Ø pro Tag",
+    "byCategory": "Nach Kategorie",
+    "noCategory": "Ohne Kategorie",
+    "overTime": "Verlauf",
+    "byPerson": "Pro Person",
+    "paid": "Bezahlt",
+    "share": "Anteil",
+    "biggest": "Größte Ausgaben",
+    "empty": "Noch keine Ausgaben für Statistiken."
   }
 }

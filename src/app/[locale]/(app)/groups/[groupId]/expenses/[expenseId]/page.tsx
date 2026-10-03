@@ -96,6 +96,23 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ groupI
                 <p className="font-medium">{e.category}</p>
               </div>
             )}
+            {e.placeName && (
+              <div className="col-span-2">
+                <p className="text-muted-foreground">{t('detail.location')}</p>
+                {e.latitude != null && e.longitude != null ? (
+                  <a
+                    href={`https://www.openstreetmap.org/?mlat=${e.latitude}&mlon=${e.longitude}#map=16/${e.latitude}/${e.longitude}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-primary hover:underline"
+                  >
+                    {e.placeName}
+                  </a>
+                ) : (
+                  <p className="font-medium">{e.placeName}</p>
+                )}
+              </div>
+            )}
             <div>
               <p className="text-muted-foreground">{t('detail.addedBy')}</p>
               <p className="font-medium">{e.addedBy.name ?? t('detail.unknown')}</p>

@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { Plus, Settings, UserPlus, ArrowRight, Receipt, Handshake, Camera, Tag, Archive, Trash2 } from 'lucide-react';
+import { BarChart3, Plus, Settings, UserPlus, ArrowRight, Receipt, Handshake, Camera, Tag, Archive, Trash2 } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { toast } from 'sonner';
 import { InviteDialog } from '@/components/groups/invite-dialog';
@@ -99,6 +99,15 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
           <Button variant="outline" size="sm" onClick={() => setShowInvite(true)}>
             <UserPlus className="mr-2 h-4 w-4" />
             {t('detail.invite')}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            nativeButton={false}
+            render={<Link href={`/groups/${groupId}/stats`} />}
+          >
+            <BarChart3 className="mr-2 h-4 w-4" />
+            {t('detail.stats')}
           </Button>
           <Button
             variant="outline"

@@ -6,7 +6,7 @@
     "amount": "金额",
     "amountPlaceholder": "0.00",
     "paidBy": "付款人",
-    "date": "日期",
+    "date": "Date",
     "splitType": "分账模式",
     "splitEqual": "平均分摊",
     "splitExact": "按金额",
@@ -30,7 +30,25 @@
     "exchangeRatePlaceholder": "1 {from} = ? {to}",
     "convertedAmount": "换算金额：{amount}",
     "autoRateNote": "保存时将自动获取汇率。",
-    "unnamed": "未命名"
+    "unnamed": "未命名",
+    "categoryPresets": [
+      "Food",
+      "Drinks",
+      "Accommodation",
+      "Transport",
+      "Activities",
+      "Shopping",
+      "Other"
+    ],
+    "categoryNone": "No category",
+    "categoryCustom": "Other …",
+    "location": "Place (optional)",
+    "locationPlaceholder": "Search a place, e.g. restaurant or hotel",
+    "locationUse": "Use my location",
+    "locationClear": "Remove place",
+    "locationOnMap": "Open on map",
+    "locationDenied": "Location unavailable. Please allow access.",
+    "locationUnavailable": "This device does not support location."
   },
   "edit": {
     "title": "编辑费用",
@@ -54,7 +72,8 @@
     "exchangeRate": "汇率：1 {from} = {rate} {to}",
     "notFound": "未找到支出",
     "notFoundDescription": "该支出不存在或已被删除。",
-    "backToGroup": "返回群组"
+    "backToGroup": "返回群组",
+    "location": "Place"
   },
   "scan": {
     "title": "扫描小票",

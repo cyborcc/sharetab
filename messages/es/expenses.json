@@ -6,7 +6,7 @@
     "amount": "Monto",
     "amountPlaceholder": "0.00",
     "paidBy": "Pagado por",
-    "date": "Fecha",
+    "date": "Date",
     "splitType": "Modo de reparto",
     "splitEqual": "Por partes iguales",
     "splitEqualDescription": "Dividir equitativamente entre los miembros seleccionados",
@@ -30,7 +30,25 @@
     "autoRateNote": "El tipo de cambio se obtendrá automáticamente al guardar.",
     "submit": "Agregar gasto",
     "submitting": "Agregando...",
-    "unnamed": "Sin nombre"
+    "unnamed": "Sin nombre",
+    "categoryPresets": [
+      "Food",
+      "Drinks",
+      "Accommodation",
+      "Transport",
+      "Activities",
+      "Shopping",
+      "Other"
+    ],
+    "categoryNone": "No category",
+    "categoryCustom": "Other …",
+    "location": "Place (optional)",
+    "locationPlaceholder": "Search a place, e.g. restaurant or hotel",
+    "locationUse": "Use my location",
+    "locationClear": "Remove place",
+    "locationOnMap": "Open on map",
+    "locationDenied": "Location unavailable. Please allow access.",
+    "locationUnavailable": "This device does not support location."
   },
   "edit": {
     "title": "Editar gasto",
@@ -54,7 +72,8 @@
     "exchangeRate": "Tasa: 1 {from} = {rate} {to}",
     "notFound": "Gasto no encontrado",
     "notFoundDescription": "Este gasto no existe o ha sido eliminado.",
-    "backToGroup": "Volver al grupo"
+    "backToGroup": "Volver al grupo",
+    "location": "Place"
   },
   "scan": {
     "title": "Escanear recibo",

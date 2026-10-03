@@ -6,7 +6,7 @@
     "amount": "金額",
     "amountPlaceholder": "0.00",
     "paidBy": "支払った人",
-    "date": "日付",
+    "date": "Date",
     "splitType": "割り勘モード",
     "splitEqual": "均等",
     "splitExact": "金額指定",
@@ -30,7 +30,25 @@
     "exchangeRatePlaceholder": "1 {from} = ? {to}",
     "convertedAmount": "換算額: {amount}",
     "autoRateNote": "保存時に為替レートが自動的に取得されます。",
-    "unnamed": "名前なし"
+    "unnamed": "名前なし",
+    "categoryPresets": [
+      "Food",
+      "Drinks",
+      "Accommodation",
+      "Transport",
+      "Activities",
+      "Shopping",
+      "Other"
+    ],
+    "categoryNone": "No category",
+    "categoryCustom": "Other …",
+    "location": "Place (optional)",
+    "locationPlaceholder": "Search a place, e.g. restaurant or hotel",
+    "locationUse": "Use my location",
+    "locationClear": "Remove place",
+    "locationOnMap": "Open on map",
+    "locationDenied": "Location unavailable. Please allow access.",
+    "locationUnavailable": "This device does not support location."
   },
   "edit": {
     "title": "支出を編集",
@@ -54,7 +72,8 @@
     "exchangeRate": "レート: 1 {from} = {rate} {to}",
     "notFound": "経費が見つかりません",
     "notFoundDescription": "この経費は存在しないか、削除されました。",
-    "backToGroup": "グループに戻る"
+    "backToGroup": "グループに戻る",
+    "location": "Place"
   },
   "scan": {
     "title": "レシートをスキャン",

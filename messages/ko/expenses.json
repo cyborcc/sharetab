@@ -6,7 +6,7 @@
     "amount": "금액",
     "amountPlaceholder": "0.00",
     "paidBy": "결제자",
-    "date": "날짜",
+    "date": "Date",
     "splitType": "분할 모드",
     "splitEqual": "균등 분할",
     "splitExact": "금액 지정",
@@ -30,7 +30,25 @@
     "exchangeRatePlaceholder": "1 {from} = ? {to}",
     "convertedAmount": "환산 금액: {amount}",
     "autoRateNote": "저장 시 환율이 자동으로 가져옵니다.",
-    "unnamed": "이름 없음"
+    "unnamed": "이름 없음",
+    "categoryPresets": [
+      "Food",
+      "Drinks",
+      "Accommodation",
+      "Transport",
+      "Activities",
+      "Shopping",
+      "Other"
+    ],
+    "categoryNone": "No category",
+    "categoryCustom": "Other …",
+    "location": "Place (optional)",
+    "locationPlaceholder": "Search a place, e.g. restaurant or hotel",
+    "locationUse": "Use my location",
+    "locationClear": "Remove place",
+    "locationOnMap": "Open on map",
+    "locationDenied": "Location unavailable. Please allow access.",
+    "locationUnavailable": "This device does not support location."
   },
   "edit": {
     "title": "비용 편집",
@@ -54,7 +72,8 @@
     "exchangeRate": "환율: 1 {from} = {rate} {to}",
     "notFound": "비용을 찾을 수 없습니다",
     "notFoundDescription": "이 비용은 존재하지 않거나 삭제되었습니다.",
-    "backToGroup": "그룹으로 돌아가기"
+    "backToGroup": "그룹으로 돌아가기",
+    "location": "Place"
   },
   "scan": {
     "title": "영수증 스캔",

@@ -6,7 +6,7 @@
     "amount": "Belopp",
     "amountPlaceholder": "0.00",
     "paidBy": "Betalad av",
-    "date": "Datum",
+    "date": "Date",
     "splitType": "Uppdelningsläge",
     "splitEqual": "Lika",
     "splitExact": "Exakta belopp",
@@ -30,7 +30,25 @@
     "exchangeRatePlaceholder": "1 {from} = ? {to}",
     "convertedAmount": "Konverterat: {amount}",
     "autoRateNote": "Växelkursen hämtas automatiskt när du sparar.",
-    "unnamed": "Namnlös"
+    "unnamed": "Namnlös",
+    "categoryPresets": [
+      "Food",
+      "Drinks",
+      "Accommodation",
+      "Transport",
+      "Activities",
+      "Shopping",
+      "Other"
+    ],
+    "categoryNone": "No category",
+    "categoryCustom": "Other …",
+    "location": "Place (optional)",
+    "locationPlaceholder": "Search a place, e.g. restaurant or hotel",
+    "locationUse": "Use my location",
+    "locationClear": "Remove place",
+    "locationOnMap": "Open on map",
+    "locationDenied": "Location unavailable. Please allow access.",
+    "locationUnavailable": "This device does not support location."
   },
   "edit": {
     "title": "Redigera kostnad",
@@ -54,7 +72,8 @@
     "exchangeRate": "Kurs: 1 {from} = {rate} {to}",
     "notFound": "Utgift hittades inte",
     "notFoundDescription": "Denna utgift finns inte eller har tagits bort.",
-    "backToGroup": "Tillbaka till gruppen"
+    "backToGroup": "Tillbaka till gruppen",
+    "location": "Place"
   },
   "scan": {
     "title": "Skanna kvitto",

@@ -23,6 +23,36 @@ const expenseSharesArraySchema = z
 const exchangeRateSchema = z.number().positive().finite().max(1_000_000);
 
 export const expensesRouter = createTRPCRouter({
+  // Alle Ausgaben in Gruppenwaehrung fuer die Statistik-Seite (Diagramme werden im Client berechnet)
+  stats: groupMemberProcedure.input(z.object({ groupId: z.string() })).query(async ({ ctx, input }) => {
+    const expenses = await ctx.db.expense.findMany({
+      where: { groupId: input.groupId },
+      orderBy: { expenseDate: 'asc' },
+      select: {
+        id: true,
+        title: true,
+        amount: true,
+        baseCurrencyAmount: true,
+        category: true,
+        expenseDate: true,
+        paidById: true,
+        shares: { select: { userId: true, amount: true } },
+      },
+    });
+    return expenses.map((e) => {
+      const factor = e.baseCurrencyAmount != null && e.amount > 0 ? e.baseCurrencyAmount / e.amount : 1;
+      return {
+        id: e.id,
+        title: e.title,
+        amount: e.baseCurrencyAmount ?? e.amount,
+        category: e.category?.trim() || null,
+        date: e.expenseDate.toISOString(),
+        paidById: e.paidById,
+        shares: e.shares.map((sh) => ({ userId: sh.userId, amount: Math.round(sh.amount * factor) })),
+      };
+    });
+  }),
+
   // Eigene Summen in Gruppenwaehrung: was ich bezahlt habe und mein Anteil an allen Ausgaben
   myTotals: groupMemberProcedure.input(z.object({ groupId: z.string() })).query(async ({ ctx, input }) => {
     const expenses = await ctx.db.expense.findMany({
@@ -112,6 +142,9 @@ export const expensesRouter = createTRPCRouter({
           .default('USD'),
         exchangeRate: exchangeRateSchema.optional(), // manual override
         category: z.string().max(50).optional(),
+        placeName: z.string().max(200).optional(),
+        latitude: z.number().min(-90).max(90).optional(),
+        longitude: z.number().min(-180).max(180).optional(),
         expenseDate: z.string().datetime().optional(),
         paidById: z.string(),
         splitMode: z.nativeEnum(SplitMode),
@@ -199,6 +232,10 @@ export const expensesRouter = createTRPCRouter({
             exchangeRate: exchangeRate ?? 1.0,
             baseCurrencyAmount,
             ...(input.category !== undefined ? { category: input.category } : {}),
+            ...(input.placeName ? { placeName: input.placeName } : {}),
+            ...(input.latitude !== undefined && input.longitude !== undefined
+              ? { latitude: input.latitude, longitude: input.longitude }
+              : {}),
             expenseDate: input.expenseDate ? new Date(input.expenseDate) : new Date(),
             paidById: input.paidById,
             addedById: ctx.user.id,
@@ -251,6 +288,9 @@ export const expensesRouter = createTRPCRouter({
             .optional(),
           exchangeRate: exchangeRateSchema.optional(), // manual override
           category: z.string().max(50).optional(),
+          placeName: z.string().max(200).optional(),
+          latitude: z.number().min(-90).max(90).optional(),
+          longitude: z.number().min(-180).max(180).optional(),
           expenseDate: z.string().datetime().optional(),
           paidById: z.string().optional(),
           splitMode: z.nativeEnum(SplitMode).optional(),

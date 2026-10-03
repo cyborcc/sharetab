@@ -30,7 +30,25 @@
     "exchangeRatePlaceholder": "1 {from} = ? {to}",
     "convertedAmount": "Umgerechnet: {amount}",
     "autoRateNote": "Der Wechselkurs wird beim Speichern automatisch abgerufen.",
-    "unnamed": "Unbenannt"
+    "unnamed": "Unbenannt",
+    "categoryPresets": [
+      "Essen",
+      "Getränke",
+      "Unterkunft",
+      "Transport",
+      "Aktivitäten",
+      "Einkauf",
+      "Sonstiges"
+    ],
+    "categoryNone": "Keine Kategorie",
+    "categoryCustom": "Andere …",
+    "location": "Ort (optional)",
+    "locationPlaceholder": "Ort suchen, z. B. Restaurant oder Hotel",
+    "locationUse": "Meinen Standort verwenden",
+    "locationClear": "Ort entfernen",
+    "locationOnMap": "Auf Karte öffnen",
+    "locationDenied": "Standort nicht verfügbar. Bitte Zugriff erlauben.",
+    "locationUnavailable": "Dieses Gerät unterstützt keine Standortabfrage."
   },
   "edit": {
     "title": "Ausgabe bearbeiten",
@@ -54,7 +72,8 @@
     "exchangeRate": "Kurs: 1 {from} = {rate} {to}",
     "notFound": "Ausgabe nicht gefunden",
     "notFoundDescription": "Diese Ausgabe existiert nicht oder wurde gelöscht.",
-    "backToGroup": "Zurück zur Gruppe"
+    "backToGroup": "Zurück zur Gruppe",
+    "location": "Ort"
   },
   "scan": {
     "title": "Beleg scannen",
