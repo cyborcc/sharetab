@@ -43,7 +43,12 @@
     "deleteReceiptConfirm": "Supprimer ce reçu en attente ?",
     "addFirstExpense": "Ajoutez votre première dépense",
     "paidBy": "Payé par {name}",
-    "unknown": "Inconnu"
+    "unknown": "Inconnu",
+    "myTitle": "My spending",
+    "myPaid": "Paid by you",
+    "myShare": "Your share",
+    "myTotalAll": "Total (everyone)",
+    "yourShare": "Your share: {amount}"
   },
   "settings": {
     "title": "Paramètres du groupe",

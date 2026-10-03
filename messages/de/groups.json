@@ -43,7 +43,12 @@
     "deleteReceiptConfirm": "Diesen ausstehenden Beleg löschen?",
     "addFirstExpense": "Erste Ausgabe hinzufügen",
     "paidBy": "Bezahlt von {name}",
-    "unknown": "Unbekannt"
+    "unknown": "Unbekannt",
+    "myTitle": "Meine Ausgaben",
+    "myPaid": "Von dir bezahlt",
+    "myShare": "Dein Anteil",
+    "myTotalAll": "Gesamt (alle)",
+    "yourShare": "Dein Anteil: {amount}"
   },
   "settings": {
     "title": "Gruppeneinstellungen",

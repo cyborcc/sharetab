@@ -43,7 +43,12 @@
     "deleteReceiptConfirm": "この保留中のレシートを削除しますか？",
     "addFirstExpense": "最初の経費を追加",
     "paidBy": "{name}が支払い",
-    "unknown": "不明"
+    "unknown": "不明",
+    "myTitle": "My spending",
+    "myPaid": "Paid by you",
+    "myShare": "Your share",
+    "myTotalAll": "Total (everyone)",
+    "yourShare": "Your share: {amount}"
   },
   "settings": {
     "title": "グループ設定",

@@ -43,7 +43,12 @@
     "deleteReceiptConfirm": "Delete this pending receipt?",
     "addFirstExpense": "Add your first expense",
     "paidBy": "Paid by {name}",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "myTitle": "My spending",
+    "myPaid": "Paid by you",
+    "myShare": "Your share",
+    "myTotalAll": "Total (everyone)",
+    "yourShare": "Your share: {amount}"
   },
   "settings": {
     "title": "Group Settings",

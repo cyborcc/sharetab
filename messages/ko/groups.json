@@ -43,7 +43,12 @@
     "deleteReceiptConfirm": "이 대기 중인 영수증을 삭제하시겠습니까?",
     "addFirstExpense": "첫 번째 비용 추가",
     "paidBy": "{name} 결제",
-    "unknown": "알 수 없음"
+    "unknown": "알 수 없음",
+    "myTitle": "My spending",
+    "myPaid": "Paid by you",
+    "myShare": "Your share",
+    "myTotalAll": "Total (everyone)",
+    "yourShare": "Your share: {amount}"
   },
   "settings": {
     "title": "그룹 설정",

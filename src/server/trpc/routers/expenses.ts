@@ -23,6 +23,29 @@ const expenseSharesArraySchema = z
 const exchangeRateSchema = z.number().positive().finite().max(1_000_000);
 
 export const expensesRouter = createTRPCRouter({
+  // Eigene Summen in Gruppenwaehrung: was ich bezahlt habe und mein Anteil an allen Ausgaben
+  myTotals: groupMemberProcedure.input(z.object({ groupId: z.string() })).query(async ({ ctx, input }) => {
+    const expenses = await ctx.db.expense.findMany({
+      where: { groupId: input.groupId },
+      select: {
+        amount: true,
+        baseCurrencyAmount: true,
+        paidById: true,
+        shares: { where: { userId: ctx.user.id }, select: { amount: true } },
+      },
+    });
+    let paid = 0;
+    let share = 0;
+    let total = 0;
+    for (const e of expenses) {
+      const factor = e.baseCurrencyAmount != null && e.amount > 0 ? e.baseCurrencyAmount / e.amount : 1;
+      total += e.baseCurrencyAmount ?? e.amount;
+      if (e.paidById === ctx.user.id) paid += e.baseCurrencyAmount ?? e.amount;
+      for (const sh of e.shares) share += Math.round(sh.amount * factor);
+    }
+    return { paid, share, total, count: expenses.length };
+  }),
+
   list: groupMemberProcedure
     .input(
       z.object({

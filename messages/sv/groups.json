@@ -43,7 +43,12 @@
     "deleteReceiptConfirm": "Ta bort detta väntande kvitto?",
     "addFirstExpense": "Lägg till din första utgift",
     "paidBy": "Betalad av {name}",
-    "unknown": "Okänd"
+    "unknown": "Okänd",
+    "myTitle": "My spending",
+    "myPaid": "Paid by you",
+    "myShare": "Your share",
+    "myTotalAll": "Total (everyone)",
+    "yourShare": "Your share: {amount}"
   },
   "settings": {
     "title": "Gruppinställningar",

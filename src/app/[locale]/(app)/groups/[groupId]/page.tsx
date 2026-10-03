@@ -34,6 +34,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
   const { data: authSession } = useSession();
   const group = trpc.groups.get.useQuery({ groupId });
   const expenses = trpc.expenses.list.useQuery({ groupId, limit: 10 });
+  const myTotals = trpc.expenses.myTotals.useQuery({ groupId });
   const debts = trpc.balances.getSimplifiedDebts.useQuery({ groupId });
   const pendingReceipts = trpc.receipts.listPending.useQuery({ groupId });
   const venmoSetting = trpc.admin.getVenmoEnabled.useQuery();
@@ -165,6 +166,29 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
       )}
 
       <Separator />
+
+      {/* Meine Ausgaben */}
+      {myTotals.data && myTotals.data.count > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">{t('detail.myTitle')}</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-3 gap-3 text-sm">
+            <div>
+              <p className="text-muted-foreground">{t('detail.myPaid')}</p>
+              <p className="text-lg font-semibold tabular-nums">{formatCents(myTotals.data.paid, g.currency, locale)}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">{t('detail.myShare')}</p>
+              <p className="text-lg font-semibold tabular-nums">{formatCents(myTotals.data.share, g.currency, locale)}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">{t('detail.myTotalAll')}</p>
+              <p className="text-lg font-semibold tabular-nums">{formatCents(myTotals.data.total, g.currency, locale)}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Simplified Debts */}
       {debts.data && debts.data.debts.length > 0 && (
@@ -383,13 +407,29 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
                       </p>
                     </div>
                   </div>
-                  <p className="ml-4 shrink-0 text-lg font-semibold tabular-nums">
-                    {formatCents(
-                      expense.amount,
-                      expense.baseCurrencyAmount != null ? expense.currency : g.currency,
-                      locale,
-                    )}
-                  </p>
+                  <div className="ml-4 shrink-0 text-right">
+                    <p className="text-lg font-semibold tabular-nums">
+                      {formatCents(
+                        expense.amount,
+                        expense.baseCurrencyAmount != null ? expense.currency : g.currency,
+                        locale,
+                      )}
+                    </p>
+                    {(() => {
+                      const mine = expense.shares.find((sh) => sh.userId === authSession?.user?.id);
+                      return mine ? (
+                        <p className="text-xs text-muted-foreground tabular-nums">
+                          {t('detail.yourShare', {
+                            amount: formatCents(
+                              mine.amount,
+                              expense.baseCurrencyAmount != null ? expense.currency : g.currency,
+                              locale,
+                            ),
+                          })}
+                        </p>
+                      ) : null;
+                    })()}
+                  </div>
                 </div>
               </Link>
             ))}

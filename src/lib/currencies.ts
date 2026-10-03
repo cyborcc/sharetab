@@ -39,6 +39,7 @@ export const COMMON_CURRENCIES = [
   { code: 'HRK', name: 'Croatian Kuna', symbol: 'kn' },
   { code: 'IDR', name: 'Indonesian Rupiah', symbol: 'Rp' },
   { code: 'MYR', name: 'Malaysian Ringgit', symbol: 'RM' },
+  { code: 'EGP', name: 'Egyptian Pound', symbol: 'E£' },
 ] as const;
 
 export type CurrencyCode = (typeof COMMON_CURRENCIES)[number]['code'];

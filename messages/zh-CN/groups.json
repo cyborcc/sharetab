@@ -43,7 +43,12 @@
     "deleteReceiptConfirm": "删除此待处理收据？",
     "addFirstExpense": "添加第一笔支出",
     "paidBy": "{name}支付",
-    "unknown": "未知"
+    "unknown": "未知",
+    "myTitle": "My spending",
+    "myPaid": "Paid by you",
+    "myShare": "Your share",
+    "myTotalAll": "Total (everyone)",
+    "yourShare": "Your share: {amount}"
   },
   "settings": {
     "title": "群组设置",

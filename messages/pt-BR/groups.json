@@ -43,7 +43,12 @@
     "deleteReceiptConfirm": "Excluir este recibo pendente?",
     "addFirstExpense": "Adicione sua primeira despesa",
     "paidBy": "Pago por {name}",
-    "unknown": "Desconhecido"
+    "unknown": "Desconhecido",
+    "myTitle": "My spending",
+    "myPaid": "Paid by you",
+    "myShare": "Your share",
+    "myTotalAll": "Total (everyone)",
+    "yourShare": "Your share: {amount}"
   },
   "settings": {
     "title": "Configurações do grupo",
