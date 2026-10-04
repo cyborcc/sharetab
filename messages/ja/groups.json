@@ -50,7 +50,13 @@
     "myTotalAll": "Total (everyone)",
     "yourShare": "Your share: {amount}",
     "stats": "Statistics",
-    "privateExpense": "Private"
+    "privateExpense": "Private",
+    "myShareOfTotal": "{pct}% of all spending",
+    "myBalance": "Balance",
+    "myBalanceGet": "you get back",
+    "myBalanceOwe": "you owe",
+    "myBalanceEven": "settled",
+    "allExpenses": "Show all expenses"
   },
   "settings": {
     "title": "グループ設定",
@@ -96,7 +102,8 @@
     "tripEnd": "Trip end",
     "foodPerDay": "Food per person per day ({currency})",
     "transportPerDay": "Local transport per person per day, still expected ({currency})",
-    "otherPerDay": "Other per person per day, still expected ({currency})"
+    "otherPerDay": "Other per person per day, still expected ({currency})",
+    "budgetTotal": "Total budget for the group ({currency})"
   },
   "settle": {
     "title": "支払いを記録",
@@ -123,20 +130,18 @@
   "empty": "グループがありません",
   "emptyDescription": "最初のグループを作成して、友達との割り勘を始めましょう。",
   "list": {
-    "subtitle": "共有の支出を管理",
-    "newGroup": "新しいグループ",
-    "searchPlaceholder": "グループを検索...",
-    "archived": "アーカイブ済み",
-    "archivedBadge": "アーカイブ済み",
-    "noArchived": "アーカイブされたグループはありません。",
-    "noGroups": "グループがありません。",
-    "noGroupsDescription": "グループを作成して、友達との割り勘を始めましょう。",
-    "createFirst": "最初のグループを作成",
-    "noSearchResults": "検索に一致するグループがありません。",
-    "memberCount": "メンバー{count}人",
-    "expenseCount": "支出{count}件",
-    "unarchive": "アーカイブ解除",
-    "showAll": "{count}件のグループをすべて表示"
+    "title": "All expenses",
+    "search": "Search …",
+    "allPeople": "Everyone",
+    "allCategories": "All categories",
+    "from_": "From",
+    "to": "To",
+    "count": "{count} expenses",
+    "sum": "Total",
+    "none": "No expenses found.",
+    "reset": "Reset",
+    "back": "Back",
+    "paidBy": "Paid by"
   },
   "stats": {
     "title": "Statistics",
@@ -166,6 +171,28 @@
     "forecastPerPerson": "Per person",
     "forecastDaysLeft": "{days} of {total} trip days left",
     "today": "Today",
-    "forecastActual": "So far"
+    "forecastActual": "So far",
+    "other": "Other",
+    "budget": "Budget",
+    "budgetUnder": "{diff} left until the limit (by forecast)",
+    "budgetOver": "Forecast is {diff} over budget",
+    "dailyPlan": "Food per day",
+    "dailyReal": "Avg so far per person per day",
+    "dailyPlanned": "Plan",
+    "dailyUnder": "{diff} per person per day under plan",
+    "dailyOver": "{diff} per person per day over plan",
+    "dailyNotStarted": "Trip not started yet. Plan: {plan} per person per day.",
+    "balances": "Who gets, who owes",
+    "map": "Expense map",
+    "mapFailed": "Map could not be loaded.",
+    "allExpenses": "All expenses",
+    "recap": "Recap",
+    "recapPriciestDay": "Priciest day",
+    "recapTopCategory": "Biggest category",
+    "recapTopPayer": "Paid the most",
+    "recapBiggest": "Biggest expense",
+    "recapBusiestDay": "Most expenses in one day",
+    "recapCount": "{count} expenses",
+    "recapPerPerson": "Avg per person"
   }
 }

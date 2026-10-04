@@ -133,8 +133,28 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ groupI
 
           {e.description && (
             <>
+              {e.receipt?.imagePath && (
+            <>
               <Separator />
-              <p className="text-sm">{e.description}</p>
+              <div>
+                <p className="mb-2 text-xs text-muted-foreground">{t('detail.receiptImage')}</p>
+                <a href={`/api/uploads/${e.receipt.imagePath}`} target="_blank" rel="noopener noreferrer">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`/api/uploads/${e.receipt.imagePath}`}
+                    alt={t('detail.receiptImage')}
+                    className="max-h-64 w-auto rounded-md border object-contain"
+                  />
+                </a>
+              </div>
+            </>
+          )}
+
+          <Separator />
+              <div>
+                <p className="mb-1 text-xs text-muted-foreground">{t('detail.notes')}</p>
+                <p className="whitespace-pre-wrap text-sm">{e.description}</p>
+              </div>
             </>
           )}
 

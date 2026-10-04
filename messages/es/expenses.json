@@ -54,7 +54,9 @@
     "nearbyNone": "Nothing found nearby.",
     "nearbyFailed": "Nearby search failed. Allow location or try again later.",
     "privateLabel": "Private",
-    "privateHint": "Only you see title and amount. Only possible when the expense is not shared with anyone."
+    "privateHint": "Only you see title and amount. Only possible when the expense is not shared with anyone.",
+    "notes": "Note (optional)",
+    "notesPlaceholder": "e.g. Wi-Fi password, door code, check-in time"
   },
   "edit": {
     "title": "Editar gasto",
@@ -81,7 +83,9 @@
     "backToGroup": "Volver al grupo",
     "location": "Place",
     "privateExpense": "Private expense",
-    "privateExpenseHint": "Title and amount are only visible to the person who paid."
+    "privateExpenseHint": "Title and amount are only visible to the person who paid.",
+    "notes": "Note",
+    "receiptImage": "Receipt photo"
   },
   "scan": {
     "title": "Escanear recibo",

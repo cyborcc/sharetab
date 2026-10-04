@@ -19,6 +19,7 @@ import { InviteDialog } from '@/components/groups/invite-dialog';
 import { SettleDialog } from '@/components/groups/settle-dialog';
 import { getInitials, avatarColor } from '@/lib/avatar';
 import { categoryIcon } from '@/lib/categories';
+import { MySpendingCard } from '@/components/groups/my-spending-card';
 
 export default function GroupDetailPage({ params }: { params: Promise<{ groupId: string }> }) {
   const { groupId } = use(params);
@@ -179,25 +180,14 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
 
       {/* Meine Ausgaben */}
       {myTotals.data && myTotals.data.count > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">{t('detail.myTitle')}</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-3 gap-3 text-sm">
-            <div>
-              <p className="text-muted-foreground">{t('detail.myPaid')}</p>
-              <p className="text-lg font-semibold tabular-nums">{formatCents(myTotals.data.paid, g.currency, locale)}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">{t('detail.myShare')}</p>
-              <p className="text-lg font-semibold tabular-nums">{formatCents(myTotals.data.share, g.currency, locale)}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">{t('detail.myTotalAll')}</p>
-              <p className="text-lg font-semibold tabular-nums">{formatCents(myTotals.data.total, g.currency, locale)}</p>
-            </div>
-          </CardContent>
-        </Card>
+        <MySpendingCard
+          groupId={groupId}
+          totals={myTotals.data}
+          budget={g.budgetTotal}
+          people={g.members.length}
+          currency={g.currency}
+          locale={locale}
+        />
       )}
 
       {/* Simplified Debts */}
@@ -453,6 +443,12 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
             ))}
           </Card>
         )}
+      </div>
+
+      <div className="text-center">
+        <Link href={`/groups/${groupId}/expenses`} className="text-sm text-primary hover:underline">
+          {t('detail.allExpenses')}
+        </Link>
       </div>
 
       <InviteDialog groupId={groupId} open={showInvite} onOpenChange={setShowInvite} />

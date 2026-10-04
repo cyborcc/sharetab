@@ -54,7 +54,9 @@
     "nearbyNone": "Nichts in der Nähe gefunden.",
     "nearbyFailed": "Suche in der Nähe fehlgeschlagen. Standort erlauben oder später erneut versuchen.",
     "privateLabel": "Privat",
-    "privateHint": "Nur du siehst Titel und Betrag. Gilt nur, wenn die Ausgabe mit niemandem geteilt wird."
+    "privateHint": "Nur du siehst Titel und Betrag. Gilt nur, wenn die Ausgabe mit niemandem geteilt wird.",
+    "notes": "Notiz (optional)",
+    "notesPlaceholder": "z. B. WLAN-Passwort, Türcode, Check-in-Zeit"
   },
   "edit": {
     "title": "Ausgabe bearbeiten",
@@ -81,7 +83,9 @@
     "backToGroup": "Zurück zur Gruppe",
     "location": "Ort",
     "privateExpense": "Private Ausgabe",
-    "privateExpenseHint": "Titel und Betrag sind nur für die Person sichtbar, die bezahlt hat."
+    "privateExpenseHint": "Titel und Betrag sind nur für die Person sichtbar, die bezahlt hat.",
+    "notes": "Notiz",
+    "receiptImage": "Belegfoto"
   },
   "scan": {
     "title": "Beleg scannen",

@@ -45,6 +45,7 @@ export default function NewExpensePage({ params }: { params: Promise<{ groupId: 
   const [title, setTitle] = useState('');
   const [amountStr, setAmountStr] = useState('');
   const { data: authSession } = useSession();
+  const [notes, setNotes] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
   const [category, setCategory] = useState('');
   const [place, setPlace] = useState<PlaceValue>({ placeName: '', latitude: null, longitude: null });
@@ -106,6 +107,7 @@ export default function NewExpensePage({ params }: { params: Promise<{ groupId: 
     createExpense.mutate({
       groupId,
       title,
+      ...(notes.trim() ? { description: notes.trim() } : {}),
       amount: amountCents,
       currency: effectiveCurrency,
       ...(isDifferentCurrency && manualRateValid ? { exchangeRate: parsedManualRate } : {}),
@@ -245,6 +247,19 @@ export default function NewExpensePage({ params }: { params: Promise<{ groupId: 
             <div className="space-y-2">
               <Label htmlFor="location">{t('new.location')}</Label>
               <LocationField value={place} onChange={setPlace} category={category} />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="notes">{t('new.notes')}</Label>
+              <textarea
+                id="notes"
+                rows={3}
+                maxLength={1000}
+                placeholder={t('new.notesPlaceholder')}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
             </div>
 
             <PrivateToggle

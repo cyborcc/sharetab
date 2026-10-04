@@ -128,23 +128,77 @@ export function PairBars({
   );
 }
 
-export type Bucket = { label: string; value: number };
+export type Bucket = { label: string; parts: { key: string; value: number }[] };
 
-/** Simple vertical bar chart (spending over time). */
-export function TimeBars({ buckets, currency, locale }: { buckets: Bucket[]; currency: string; locale: string }) {
-  const max = Math.max(1, ...buckets.map((b) => b.value));
+/** Stacked vertical bars (spending over time, split by category). `colors` maps a part key to its color. */
+export function TimeBars({
+  buckets,
+  colors,
+  currency,
+  locale,
+}: {
+  buckets: Bucket[];
+  colors: Map<string, string>;
+  currency: string;
+  locale: string;
+}) {
+  const totals = buckets.map((b) => b.parts.reduce((sum, p) => sum + p.value, 0));
+  const max = Math.max(1, ...totals);
   return (
     <div className="flex h-48 items-end gap-1 overflow-x-auto pb-1">
-      {buckets.map((b) => (
-        <div key={b.label} className="flex h-full min-w-8 flex-1 flex-col items-center justify-end gap-1">
-          <div
-            className="w-full rounded-t-md"
-            style={{ height: `${Math.max(2, (b.value / max) * 85)}%`, backgroundColor: CHART_COLORS[0] }}
-            title={`${b.label}: ${formatCents(b.value, currency, locale)}`}
-          />
-          <span className="text-[10px] text-muted-foreground">{b.label}</span>
-        </div>
-      ))}
+      {buckets.map((b, i) => {
+        const total = totals[i] ?? 0;
+        return (
+          <div key={b.label} className="flex h-full min-w-8 flex-1 flex-col items-center justify-end gap-1">
+            <div
+              className="flex w-full flex-col-reverse overflow-hidden rounded-t-md"
+              style={{ height: `${Math.max(2, (total / max) * 85)}%` }}
+              title={`${b.label}: ${formatCents(total, currency, locale)}`}
+            >
+              {b.parts.map((p) => (
+                <div
+                  key={p.key}
+                  style={{ height: `${total > 0 ? (p.value / total) * 100 : 0}%`, backgroundColor: colors.get(p.key) ?? CHART_COLORS[8] }}
+                />
+              ))}
+            </div>
+            <span className="text-[10px] text-muted-foreground">{b.label}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export type BalanceRow = { label: string; net: number };
+
+/** Diverging bars: green = gets money back, red = owes money. */
+export function BalanceBars({ rows, currency, locale }: { rows: BalanceRow[]; currency: string; locale: string }) {
+  const max = Math.max(1, ...rows.map((r) => Math.abs(r.net)));
+  return (
+    <div className="space-y-3">
+      {rows.map((r) => {
+        const pct = (Math.abs(r.net) / max) * 50;
+        const positive = r.net >= 0;
+        return (
+          <div key={r.label} className="space-y-1">
+            <div className="flex items-center justify-between text-sm">
+              <span className="truncate font-medium">{r.label}</span>
+              <span className={`tabular-nums ${positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                {r.net > 0 ? '+' : ''}
+                {formatCents(r.net, currency, locale)}
+              </span>
+            </div>
+            <div className="relative h-3 rounded-full bg-muted">
+              <div className="absolute top-0 bottom-0 left-1/2 w-px bg-border" />
+              <div
+                className={`absolute top-0 bottom-0 ${positive ? 'rounded-r-full bg-emerald-500' : 'rounded-l-full bg-red-500'}`}
+                style={positive ? { left: '50%', width: `${pct}%` } : { right: '50%', width: `${pct}%` }}
+              />
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

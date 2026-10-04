@@ -50,7 +50,13 @@
     "myTotalAll": "Total (everyone)",
     "yourShare": "Your share: {amount}",
     "stats": "Statistics",
-    "privateExpense": "Private"
+    "privateExpense": "Private",
+    "myShareOfTotal": "{pct}% of all spending",
+    "myBalance": "Balance",
+    "myBalanceGet": "you get back",
+    "myBalanceOwe": "you owe",
+    "myBalanceEven": "settled",
+    "allExpenses": "Show all expenses"
   },
   "settings": {
     "title": "Configuración del grupo",
@@ -96,7 +102,8 @@
     "tripEnd": "Trip end",
     "foodPerDay": "Food per person per day ({currency})",
     "transportPerDay": "Local transport per person per day, still expected ({currency})",
-    "otherPerDay": "Other per person per day, still expected ({currency})"
+    "otherPerDay": "Other per person per day, still expected ({currency})",
+    "budgetTotal": "Total budget for the group ({currency})"
   },
   "settle": {
     "title": "Registrar un pago",
@@ -123,20 +130,18 @@
   "empty": "Sin grupos aún",
   "emptyDescription": "Crea tu primer grupo para empezar a dividir gastos con amigos.",
   "list": {
-    "subtitle": "Gestiona tus gastos compartidos",
-    "newGroup": "Nuevo grupo",
-    "searchPlaceholder": "Buscar grupos...",
-    "archived": "Archivados",
-    "archivedBadge": "Archivado",
-    "noArchived": "No hay grupos archivados.",
-    "noGroups": "Sin grupos aún.",
-    "noGroupsDescription": "Crea un grupo para empezar a dividir gastos con amigos.",
-    "createFirst": "Crea tu primer grupo",
-    "noSearchResults": "Ningún grupo coincide con tu búsqueda.",
-    "memberCount": "{count, plural, one {# miembro} other {# miembros}}",
-    "expenseCount": "{count, plural, one {# gasto} other {# gastos}}",
-    "unarchive": "Desarchivar",
-    "showAll": "Mostrar los {count} grupos"
+    "title": "All expenses",
+    "search": "Search …",
+    "allPeople": "Everyone",
+    "allCategories": "All categories",
+    "from_": "From",
+    "to": "To",
+    "count": "{count} expenses",
+    "sum": "Total",
+    "none": "No expenses found.",
+    "reset": "Reset",
+    "back": "Back",
+    "paidBy": "Paid by"
   },
   "stats": {
     "title": "Statistics",
@@ -166,6 +171,28 @@
     "forecastPerPerson": "Per person",
     "forecastDaysLeft": "{days} of {total} trip days left",
     "today": "Today",
-    "forecastActual": "So far"
+    "forecastActual": "So far",
+    "other": "Other",
+    "budget": "Budget",
+    "budgetUnder": "{diff} left until the limit (by forecast)",
+    "budgetOver": "Forecast is {diff} over budget",
+    "dailyPlan": "Food per day",
+    "dailyReal": "Avg so far per person per day",
+    "dailyPlanned": "Plan",
+    "dailyUnder": "{diff} per person per day under plan",
+    "dailyOver": "{diff} per person per day over plan",
+    "dailyNotStarted": "Trip not started yet. Plan: {plan} per person per day.",
+    "balances": "Who gets, who owes",
+    "map": "Expense map",
+    "mapFailed": "Map could not be loaded.",
+    "allExpenses": "All expenses",
+    "recap": "Recap",
+    "recapPriciestDay": "Priciest day",
+    "recapTopCategory": "Biggest category",
+    "recapTopPayer": "Paid the most",
+    "recapBiggest": "Biggest expense",
+    "recapBusiestDay": "Most expenses in one day",
+    "recapCount": "{count} expenses",
+    "recapPerPerson": "Avg per person"
   }
 }

@@ -5,6 +5,7 @@ import { Link } from '@/i18n/navigation';
 import { formatCents } from '@/lib/money';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CHART_COLORS } from '@/components/groups/stats-charts';
+import { BudgetBar } from '@/components/groups/stats-extras';
 
 export type ForecastConfig = {
   tripStart: string | Date | null;
@@ -34,18 +35,22 @@ function ForecastChart({
   endDay,
   today,
   dailyExpected,
+  budget,
   currency,
   locale,
   todayLabel,
+  budgetLabel,
 }: {
   actual: ActualPoint[];
   startDay: number;
   endDay: number;
   today: number;
   dailyExpected: number;
+  budget: number | null;
   currency: string;
   locale: string;
   todayLabel: string;
+  budgetLabel: string;
 }) {
   const W = 600;
   const H = 230;
@@ -81,7 +86,7 @@ function ForecastChart({
     forecastPts.push({ day: d, v: f });
   }
 
-  const maxV = Math.max(1, spentNow, ...forecastPts.map((p) => p.v));
+  const maxV = Math.max(1, spentNow, budget ?? 0, ...forecastPts.map((p) => p.v));
   const x = (day: number) => pad.l + ((day - from) / DAY_MS / span) * (W - pad.l - pad.r);
   const y = (v: number) => pad.t + (1 - v / maxV) * (H - pad.t - pad.b);
   const path = (pts: { day: number; v: number }[]) =>
@@ -121,6 +126,14 @@ function ForecastChart({
           />
           <text x={x(today)} y={pad.t - 6} textAnchor="middle" className="fill-foreground" fontSize="10" fontWeight="600">
             {todayLabel}
+          </text>
+        </g>
+      )}
+      {budget !== null && (
+        <g>
+          <line x1={pad.l} x2={W - pad.r} y1={y(budget)} y2={y(budget)} stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3 3" />
+          <text x={pad.l + 4} y={y(budget) - 4} fontSize="10" fill="#ef4444">
+            {budgetLabel} {money(budget)}
           </text>
         </g>
       )}
@@ -171,6 +184,7 @@ export function ForecastCard({
   spent,
   people,
   scope,
+  budget = null,
   currency,
   locale,
 }: {
@@ -180,6 +194,7 @@ export function ForecastCard({
   spent: number;
   people: number;
   scope: 'group' | 'me';
+  budget?: number | null;
   currency: string;
   locale: string;
 }) {
@@ -194,6 +209,7 @@ export function ForecastCard({
           <CardTitle className="text-base">{t('stats.forecast')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
+          {budget !== null && <BudgetBar budget={budget} spent={spent} forecast={spent} currency={currency} locale={locale} />}
           <p>{t('stats.forecastNone')}</p>
           <Link href={`/groups/${groupId}/settings`} className="text-primary hover:underline">
             {t('stats.forecastSettings')}
@@ -241,9 +257,11 @@ export function ForecastCard({
           endDay={endDay}
           today={today}
           dailyExpected={dailyExpected}
+          budget={budget}
           currency={currency}
           locale={locale}
           todayLabel={t('stats.today')}
+          budgetLabel={t('stats.budget')}
         />
         <div className="flex gap-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-1.5">
@@ -258,6 +276,9 @@ export function ForecastCard({
             {t('stats.forecast')}
           </span>
         </div>
+        {budget !== null && (
+          <BudgetBar budget={budget} spent={spent} forecast={total} currency={currency} locale={locale} />
+        )}
         <ul className="space-y-2 text-sm">
           {rows.map((r) => (
             <li key={r.label} className="flex items-center gap-2">

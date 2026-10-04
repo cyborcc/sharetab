@@ -124,6 +124,7 @@ export const groupsRouter = createTRPCRouter({
         forecastFoodPerDay: z.number().int().min(0).max(100_000_000).nullable().optional(),
         forecastTransport: z.number().int().min(0).max(1_000_000_000).nullable().optional(),
         forecastOther: z.number().int().min(0).max(1_000_000_000).nullable().optional(),
+        budgetTotal: z.number().int().min(0).max(1_000_000_000).nullable().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {

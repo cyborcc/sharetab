@@ -103,6 +103,7 @@ function EditExpenseForm({
   const [title, setTitle] = useState(expense.title);
   const [amountStr, setAmountStr] = useState(() => centsToDecimal(expense.amount));
   const { data: authSession } = useSession();
+  const [notes, setNotes] = useState(expense.description ?? '');
   const [isPrivate, setIsPrivate] = useState(expense.isPrivate);
   const [category, setCategory] = useState(expense.category ?? '');
   const [place, setPlace] = useState<PlaceValue>({
@@ -253,6 +254,7 @@ function EditExpenseForm({
       groupId,
       expenseId,
       title,
+      description: notes.trim(),
       amount: amountCents,
       ...(currencyChanged ? { currency: effectiveCurrency } : {}),
       ...(isDifferentCurrency && manualRateValid ? { exchangeRate: parsedManualRate } : {}),
@@ -406,6 +408,19 @@ function EditExpenseForm({
             <div className="space-y-2">
               <Label htmlFor="location">{t('new.location')}</Label>
               <LocationField value={place} onChange={setPlace} category={category} />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="notes">{t('new.notes')}</Label>
+              <textarea
+                id="notes"
+                rows={3}
+                maxLength={1000}
+                placeholder={t('new.notesPlaceholder')}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
             </div>
 
             <PrivateToggle

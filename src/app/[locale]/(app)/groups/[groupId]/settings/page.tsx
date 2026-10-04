@@ -109,6 +109,7 @@ function TripForecastForm({
     food: number | null;
     transport: number | null;
     other: number | null;
+    budget: number | null;
   };
 }) {
   const t = useTranslations('groups');
@@ -118,6 +119,7 @@ function TripForecastForm({
   const [food, setFood] = useState(initial.food === null ? '' : centsToDecimal(initial.food));
   const [transport, setTransport] = useState(initial.transport === null ? '' : centsToDecimal(initial.transport));
   const [other, setOther] = useState(initial.other === null ? '' : centsToDecimal(initial.other));
+  const [budget, setBudget] = useState(initial.budget === null ? '' : centsToDecimal(initial.budget));
 
   const updateGroup = trpc.groups.update.useMutation({
     onSuccess: () => utils.groups.get.invalidate({ groupId }),
@@ -134,6 +136,7 @@ function TripForecastForm({
       forecastFoodPerDay: cents(food),
       forecastTransport: cents(transport),
       forecastOther: cents(other),
+      budgetTotal: cents(budget),
     });
   }
 
@@ -145,6 +148,10 @@ function TripForecastForm({
       <CardContent>
         <form onSubmit={handleSave} className="space-y-4">
           <p className="text-sm text-muted-foreground">{t('settings.tripHint')}</p>
+          <div className="space-y-2">
+            <Label htmlFor="budget">{t('settings.budgetTotal', { currency })}</Label>
+            <Input id="budget" inputMode="decimal" placeholder="0.00" value={budget} onChange={(e) => setBudget(e.target.value)} />
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label htmlFor="tripStart">{t('settings.tripStart')}</Label>
@@ -303,6 +310,7 @@ export default function GroupSettingsPage({ params }: { params: Promise<{ groupI
           food: group.data.forecastFoodPerDay,
           transport: group.data.forecastTransport,
           other: group.data.forecastOther,
+          budget: group.data.budgetTotal,
         }}
       />
 

@@ -76,6 +76,9 @@ export const expensesRouter = createTRPCRouter({
         amount: true,
         baseCurrencyAmount: true,
         category: true,
+        placeName: true,
+        latitude: true,
+        longitude: true,
         expenseDate: true,
         paidById: true,
         shares: { select: { userId: true, amount: true } },
@@ -88,6 +91,9 @@ export const expensesRouter = createTRPCRouter({
         title: e.title,
         amount: e.baseCurrencyAmount ?? e.amount,
         category: e.category?.trim() || null,
+        placeName: e.placeName,
+        latitude: e.latitude,
+        longitude: e.longitude,
         date: e.expenseDate.toISOString(),
         paidById: e.paidById,
         shares: e.shares.map((sh) => ({ userId: sh.userId, amount: Math.round(sh.amount * factor) })),
@@ -102,6 +108,7 @@ export const expensesRouter = createTRPCRouter({
       select: {
         amount: true,
         baseCurrencyAmount: true,
+        category: true,
         paidById: true,
         shares: { where: { userId: ctx.user.id }, select: { amount: true } },
       },
@@ -109,13 +116,22 @@ export const expensesRouter = createTRPCRouter({
     let paid = 0;
     let share = 0;
     let total = 0;
+    const byCategory = new Map<string, number>();
     for (const e of expenses) {
       const factor = e.baseCurrencyAmount != null && e.amount > 0 ? e.baseCurrencyAmount / e.amount : 1;
       total += e.baseCurrencyAmount ?? e.amount;
       if (e.paidById === ctx.user.id) paid += e.baseCurrencyAmount ?? e.amount;
-      for (const sh of e.shares) share += Math.round(sh.amount * factor);
+      for (const sh of e.shares) {
+        const mine = Math.round(sh.amount * factor);
+        share += mine;
+        const key = e.category?.trim() ?? '';
+        byCategory.set(key, (byCategory.get(key) ?? 0) + mine);
+      }
     }
-    return { paid, share, total, count: expenses.length };
+    const categories = [...byCategory.entries()]
+      .map(([category, amount]) => ({ category: category || null, amount }))
+      .sort((a, b) => b.amount - a.amount);
+    return { paid, share, total, count: expenses.length, categories };
   }),
 
   list: groupMemberProcedure

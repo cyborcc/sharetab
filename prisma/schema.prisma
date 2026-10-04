@@ -92,6 +92,7 @@ model Group {
   archivedAt    DateTime?
   tripStart     DateTime? // trip period and expected costs for the statistics forecast
   tripEnd       DateTime?
+  budgetTotal        Int? // cents, whole group budget
   forecastFoodPerDay Int? // cents per person per day
   forecastTransport  Int? // cents per person per day (local transport)
   forecastOther      Int? // cents per person per day (other)
