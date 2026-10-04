@@ -93,8 +93,8 @@ model Group {
   tripStart     DateTime? // trip period and expected costs for the statistics forecast
   tripEnd       DateTime?
   forecastFoodPerDay Int? // cents per person per day
-  forecastTransport  Int? // cents, whole group, still expected
-  forecastOther      Int? // cents, whole group, still expected
+  forecastTransport  Int? // cents per person per day (local transport)
+  forecastOther      Int? // cents per person per day (other)
 
   members      GroupMember[]
   expenses     Expense[]

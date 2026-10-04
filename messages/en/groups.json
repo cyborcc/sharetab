@@ -91,12 +91,12 @@
     "deleteDescription": "Deleting a group removes all expenses, settlements, and member data permanently.",
     "deleting": "Deleting...",
     "tripTitle": "Trip & forecast",
-    "tripHint": "Trip period and costs still expected. Flights and accommodation are already in as expenses. The statistics page turns this into a forecast.",
+    "tripHint": "Trip period and costs still expected per person per day. Flights and accommodation are already in as expenses. The statistics page turns this into a forecast.",
     "tripStart": "Trip start",
     "tripEnd": "Trip end",
     "foodPerDay": "Food per person per day ({currency})",
-    "transportTotal": "Local transport still expected, total ({currency})",
-    "otherTotal": "Other still expected, total ({currency})"
+    "transportPerDay": "Local transport per person per day, still expected ({currency})",
+    "otherPerDay": "Other per person per day, still expected ({currency})"
   },
   "settle": {
     "title": "Record a payment",
@@ -160,10 +160,12 @@
     "forecastSettings": "Open settings",
     "forecastSoFar": "Spent so far",
     "forecastFood": "Food ({perDay} × {people} people × {days} days)",
-    "forecastTransport": "Transport still expected",
-    "forecastOther": "Other still expected",
+    "forecastTransport": "Transport ({perDay} × {people} people × {days} days)",
+    "forecastOther": "Other ({perDay} × {people} people × {days} days)",
     "forecastTotal": "Forecast total",
     "forecastPerPerson": "Per person",
-    "forecastDaysLeft": "{days} of {total} trip days left"
+    "forecastDaysLeft": "{days} of {total} trip days left",
+    "today": "Today",
+    "forecastActual": "So far"
   }
 }

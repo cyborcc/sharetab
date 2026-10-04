@@ -89,7 +89,9 @@ export default function GroupStatsPage({ params }: { params: Promise<{ groupId: 
 
     const biggest = [...scoped].sort((a, b) => b.value - a.value).slice(0, 5);
 
-    return { total, count: scoped.length, categories, perPerson, timeline, spanDays, biggest };
+    const actual = scoped.map((e) => ({ date: e.date, value: e.value }));
+
+    return { actual, total, count: scoped.length, categories, perPerson, timeline, spanDays, biggest };
   }, [stats.data, scope, myId, locale, t]);
 
   if ((group.isLoading || stats.isLoading) && !group.isError) return <LoadingSpinner />;
@@ -161,9 +163,10 @@ export default function GroupStatsPage({ params }: { params: Promise<{ groupId: 
               tripStart: g.tripStart,
               tripEnd: g.tripEnd,
               foodPerDay: g.forecastFoodPerDay,
-              transport: g.forecastTransport,
-              other: g.forecastOther,
+              transportPerDay: g.forecastTransport,
+              otherPerDay: g.forecastOther,
             }}
+            actual={view.actual}
             spent={view.total}
             people={g.members.length}
             scope={scope}

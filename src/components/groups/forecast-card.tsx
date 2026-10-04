@@ -10,24 +10,164 @@ export type ForecastConfig = {
   tripStart: string | Date | null;
   tripEnd: string | Date | null;
   foodPerDay: number | null;
-  transport: number | null;
-  other: number | null;
+  transportPerDay: number | null;
+  otherPerDay: number | null;
 };
+
+export type ActualPoint = { date: string; value: number };
 
 const DAY_MS = 86_400_000;
 
-function startOfDay(d: Date): number {
-  return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+function utcDay(d: Date): number {
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+}
+
+function localToday(): number {
+  const n = new Date();
+  return Date.UTC(n.getFullYear(), n.getMonth(), n.getDate());
+}
+
+/** Dashed forecast over the remaining days, solid line for what is already spent, vertical line for today. */
+function ForecastChart({
+  actual,
+  startDay,
+  endDay,
+  today,
+  dailyExpected,
+  currency,
+  locale,
+  todayLabel,
+}: {
+  actual: ActualPoint[];
+  startDay: number;
+  endDay: number;
+  today: number;
+  dailyExpected: number;
+  currency: string;
+  locale: string;
+  todayLabel: string;
+}) {
+  const W = 600;
+  const H = 230;
+  const pad = { l: 48, r: 12, t: 16, b: 28 };
+
+  // Cumulative spending per day
+  const perDay = new Map<number, number>();
+  for (const a of actual) {
+    const day = utcDay(new Date(a.date));
+    perDay.set(day, (perDay.get(day) ?? 0) + a.value);
+  }
+  const firstActual = perDay.size > 0 ? Math.min(...perDay.keys()) : startDay;
+  const from = Math.min(firstActual, startDay, today);
+  const to = Math.max(endDay, today);
+  const span = Math.max(1, Math.round((to - from) / DAY_MS));
+
+  const actualPts: { day: number; v: number }[] = [];
+  let cum = 0;
+  const lastActualDay = Math.min(today, to);
+  for (let d = from; d <= lastActualDay; d += DAY_MS) {
+    cum += perDay.get(d) ?? 0;
+    actualPts.push({ day: d, v: cum });
+  }
+  // Expenses dated after today (pre-booked) still count towards the line's end
+  for (const [d, v] of perDay) if (d > lastActualDay) cum += v;
+  const spentNow = cum;
+
+  // Starts where the solid line ends; every remaining trip day (today included) adds the expected daily costs
+  const forecastPts: { day: number; v: number }[] = [{ day: lastActualDay, v: spentNow }];
+  let f = spentNow;
+  for (let d = lastActualDay; d <= to; d += DAY_MS) {
+    if (d >= startDay && d <= endDay) f += dailyExpected;
+    forecastPts.push({ day: d, v: f });
+  }
+
+  const maxV = Math.max(1, spentNow, ...forecastPts.map((p) => p.v));
+  const x = (day: number) => pad.l + ((day - from) / DAY_MS / span) * (W - pad.l - pad.r);
+  const y = (v: number) => pad.t + (1 - v / maxV) * (H - pad.t - pad.b);
+  const path = (pts: { day: number; v: number }[]) =>
+    pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${x(p.day).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ');
+
+  const money = (c: number) => formatCents(c, currency, locale);
+  const dateLabel = (day: number) =>
+    new Date(day).toLocaleDateString(locale, { day: '2-digit', month: '2-digit', timeZone: 'UTC' });
+  const yTicks = [0, 0.5, 1].map((r) => r * maxV);
+  const xTicks = [from, ...(today > from && today < to ? [today] : []), to];
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="forecast chart">
+      {yTicks.map((v) => (
+        <g key={v}>
+          <line x1={pad.l} x2={W - pad.r} y1={y(v)} y2={y(v)} className="stroke-border" strokeWidth="1" />
+          <text x={pad.l - 6} y={y(v) + 3} textAnchor="end" className="fill-muted-foreground" fontSize="10">
+            {formatCents(Math.round(v), currency, locale).replace(/[,.]00(?=\D*$)/, '')}
+          </text>
+        </g>
+      ))}
+      {xTicks.map((d) => (
+        <text key={d} x={x(d)} y={H - 8} textAnchor="middle" className="fill-muted-foreground" fontSize="10">
+          {dateLabel(d)}
+        </text>
+      ))}
+      {today >= from && today <= to && (
+        <g>
+          <line
+            x1={x(today)}
+            x2={x(today)}
+            y1={pad.t - 6}
+            y2={H - pad.b}
+            className="stroke-muted-foreground"
+            strokeWidth="1"
+            strokeDasharray="2 3"
+          />
+          <text x={x(today)} y={pad.t - 6} textAnchor="middle" className="fill-foreground" fontSize="10" fontWeight="600">
+            {todayLabel}
+          </text>
+        </g>
+      )}
+      <path d={path(actualPts)} fill="none" stroke={CHART_COLORS[0]} strokeWidth="2.5" strokeLinejoin="round" />
+      <path
+        d={path(forecastPts)}
+        fill="none"
+        stroke={CHART_COLORS[1]}
+        strokeWidth="2.5"
+        strokeDasharray="6 5"
+        strokeLinejoin="round"
+      />
+      {forecastPts.length > 0 && (
+        <g>
+          {(() => {
+            const last = forecastPts[forecastPts.length - 1]!;
+            return (
+              <>
+                <circle cx={x(last.day)} cy={y(last.v)} r="3.5" fill={CHART_COLORS[1]} />
+                <text
+                  x={x(last.day) - 4}
+                  y={y(last.v) - 8}
+                  textAnchor="end"
+                  className="fill-foreground"
+                  fontSize="11"
+                  fontWeight="600"
+                >
+                  {money(last.v)}
+                </text>
+              </>
+            );
+          })()}
+        </g>
+      )}
+    </svg>
+  );
 }
 
 /**
  * Forecast = what is already booked/spent + what is still expected.
- * Expected food = food per person and day for every trip day that is still ahead (today included).
- * Transport and other are one-off amounts for the whole group that are still to come.
+ * Expected costs are per person and day (food, local transport, other) for every trip day still ahead
+ * (today included).
  */
 export function ForecastCard({
   groupId,
   config,
+  actual,
   spent,
   people,
   scope,
@@ -36,6 +176,7 @@ export function ForecastCard({
 }: {
   groupId: string;
   config: ForecastConfig;
+  actual: ActualPoint[];
   spent: number;
   people: number;
   scope: 'group' | 'me';
@@ -45,7 +186,7 @@ export function ForecastCard({
   const t = useTranslations('groups');
   const money = (c: number) => formatCents(c, currency, locale);
 
-  const hasCosts = !!(config.foodPerDay || config.transport || config.other);
+  const hasCosts = !!(config.foodPerDay || config.transportPerDay || config.otherPerDay);
   if (!config.tripStart || !config.tripEnd || !hasCosts) {
     return (
       <Card>
@@ -62,34 +203,25 @@ export function ForecastCard({
     );
   }
 
-  const start = new Date(config.tripStart);
-  const end = new Date(config.tripEnd);
-  const startDay = Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate());
-  const endDay = Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate());
-  const today = startOfDay(new Date());
+  const startDay = utcDay(new Date(config.tripStart));
+  const endDay = utcDay(new Date(config.tripEnd));
+  const today = localToday();
   const totalDays = Math.max(1, Math.round((endDay - startDay) / DAY_MS) + 1);
   const daysLeft = today > endDay ? 0 : today < startDay ? totalDays : Math.round((endDay - today) / DAY_MS) + 1;
 
   const headcount = scope === 'group' ? people : 1;
   const food = (config.foodPerDay ?? 0) * headcount * daysLeft;
-  const transport = scope === 'group' ? (config.transport ?? 0) : Math.round((config.transport ?? 0) / Math.max(1, people));
-  const other = scope === 'group' ? (config.other ?? 0) : Math.round((config.other ?? 0) / Math.max(1, people));
-  const expected = food + transport + other;
-  const total = spent + expected;
+  const transport = (config.transportPerDay ?? 0) * headcount * daysLeft;
+  const other = (config.otherPerDay ?? 0) * headcount * daysLeft;
+  const total = spent + food + transport + other;
+  const dailyExpected = ((config.foodPerDay ?? 0) + (config.transportPerDay ?? 0) + (config.otherPerDay ?? 0)) * headcount;
 
+  const detail = (perDay: number | null) => ({ perDay: money(perDay ?? 0), people: headcount, days: daysLeft });
   const rows = [
     { label: t('stats.forecastSoFar'), value: spent, color: CHART_COLORS[0] },
-    {
-      label: t('stats.forecastFood', {
-        perDay: money(config.foodPerDay ?? 0),
-        people: headcount,
-        days: daysLeft,
-      }),
-      value: food,
-      color: CHART_COLORS[1],
-    },
-    { label: t('stats.forecastTransport'), value: transport, color: CHART_COLORS[2] },
-    { label: t('stats.forecastOther'), value: other, color: CHART_COLORS[3] },
+    { label: t('stats.forecastFood', detail(config.foodPerDay)), value: food, color: CHART_COLORS[1] },
+    { label: t('stats.forecastTransport', detail(config.transportPerDay)), value: transport, color: CHART_COLORS[2] },
+    { label: t('stats.forecastOther', detail(config.otherPerDay)), value: other, color: CHART_COLORS[3] },
   ].filter((r) => r.value > 0 || r.color === CHART_COLORS[0]);
 
   return (
@@ -103,14 +235,28 @@ export function ForecastCard({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex h-4 overflow-hidden rounded-full bg-muted">
-          {rows.map((r) => (
-            <div
-              key={r.label}
-              title={`${r.label}: ${money(r.value)}`}
-              style={{ width: `${total > 0 ? (r.value / total) * 100 : 0}%`, backgroundColor: r.color }}
+        <ForecastChart
+          actual={actual}
+          startDay={startDay}
+          endDay={endDay}
+          today={today}
+          dailyExpected={dailyExpected}
+          currency={currency}
+          locale={locale}
+          todayLabel={t('stats.today')}
+        />
+        <div className="flex gap-4 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block h-0.5 w-5" style={{ backgroundColor: CHART_COLORS[0] }} />
+            {t('stats.forecastActual')}
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span
+              className="inline-block h-0.5 w-5"
+              style={{ backgroundImage: `repeating-linear-gradient(90deg, ${CHART_COLORS[1]} 0 5px, transparent 5px 9px)` }}
             />
-          ))}
+            {t('stats.forecast')}
+          </span>
         </div>
         <ul className="space-y-2 text-sm">
           {rows.map((r) => (

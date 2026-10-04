@@ -160,7 +160,7 @@ function TripForecastForm({
             <Input id="food" inputMode="decimal" placeholder="0.00" value={food} onChange={(e) => setFood(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="transport">{t('settings.transportTotal', { currency })}</Label>
+            <Label htmlFor="transport">{t('settings.transportPerDay', { currency })}</Label>
             <Input
               id="transport"
               inputMode="decimal"
@@ -170,7 +170,7 @@ function TripForecastForm({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="other">{t('settings.otherTotal', { currency })}</Label>
+            <Label htmlFor="other">{t('settings.otherPerDay', { currency })}</Label>
             <Input id="other" inputMode="decimal" placeholder="0.00" value={other} onChange={(e) => setOther(e.target.value)} />
             {updateGroup.error && <p className="text-xs text-destructive">{updateGroup.error.message}</p>}
           </div>
