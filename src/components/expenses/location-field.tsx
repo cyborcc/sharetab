@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Compass, LocateFixed, MapPin, X } from 'lucide-react';
 import { nearbyFilters } from '@/lib/categories';
@@ -85,14 +85,23 @@ export function LocationField({
   value,
   onChange,
   category,
+  suggestion,
+  autoPick = false,
 }: {
   value: PlaceValue;
   onChange: (value: PlaceValue) => void;
   category?: string;
+  /** Pre-filled search text, e.g. merchant name and address read from a receipt */
+  suggestion?: string;
+  /** Take the best match of the suggestion automatically (only sensible for precise addresses) */
+  autoPick?: boolean;
 }) {
   const t = useTranslations('expenses');
   const locale = useLocale();
-  const [query, setQuery] = useState(value.placeName);
+  const [query, setQuery] = useState(value.placeName || suggestion || '');
+  const autoPicked = useRef(false);
+  // Silent position hint (only if location access was already granted) so chain names resolve nearby
+  const [bias, setBias] = useState<{ lat: number; lon: number } | null>(null);
   const [hits, setHits] = useState<Hit[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -127,6 +136,17 @@ export function LocationField({
     onChange({ placeName: p.name, latitude: p.lat, longitude: p.lon });
   }
 
+  useEffect(() => {
+    if (!suggestion || !navigator.permissions) return;
+    navigator.permissions
+      .query({ name: 'geolocation' })
+      .then((status) => {
+        if (status.state !== 'granted') return;
+        navigator.geolocation.getCurrentPosition((pos) => setBias({ lat: pos.coords.latitude, lon: pos.coords.longitude }));
+      })
+      .catch(() => undefined);
+  }, [suggestion]);
+
   // Debounced search while typing; skipped once a place with coordinates is chosen
   useEffect(() => {
     const q = query.trim();
@@ -135,10 +155,20 @@ export function LocationField({
     const timer = setTimeout(async () => {
       try {
         const res = await fetch(
-          `${NOMINATIM}/search?format=jsonv2&limit=5&accept-language=${locale}&q=${encodeURIComponent(q)}`,
+          `${NOMINATIM}/search?format=jsonv2&limit=5&accept-language=${locale}&q=${encodeURIComponent(q)}${
+            bias ? `&viewbox=${bias.lon - 0.5},${bias.lat + 0.5},${bias.lon + 0.5},${bias.lat - 0.5}` : ''
+          }`,
           { signal: controller.signal },
         );
-        if (res.ok) setHits((await res.json()) as Hit[]);
+        if (res.ok) {
+          const found = (await res.json()) as Hit[];
+          setHits(found);
+          const best = found[0];
+          if (autoPick && !autoPicked.current && best && value.latitude === null) {
+            autoPicked.current = true;
+            pick(best);
+          }
+        }
       } catch {
         // aborted or offline: the typed text is still kept as the place name
       }
@@ -147,7 +177,8 @@ export function LocationField({
       clearTimeout(timer);
       controller.abort();
     };
-  }, [query, locale, value.latitude, value.placeName]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pick() only forwards to the stable onChange
+  }, [query, locale, value.latitude, value.placeName, bias, autoPick]);
 
   function pick(hit: Hit) {
     const name = shortName(hit.display_name);

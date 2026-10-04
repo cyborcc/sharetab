@@ -171,6 +171,7 @@ export const receiptsRouter = createTRPCRouter({
         paidById: receiptWithItems.paidById,
         extractedData: receiptWithItems.extractedData as {
           merchantName?: string;
+          merchantAddress?: string;
           date?: string;
           subtotal: number;
           tax: number;
@@ -409,6 +410,9 @@ export const receiptsRouter = createTRPCRouter({
         receiptId: z.string(),
         title: z.string().min(1).max(200),
         paidById: z.string(),
+        placeName: z.string().max(200).optional(),
+        latitude: z.number().min(-90).max(90).optional(),
+        longitude: z.number().min(-180).max(180).optional(),
         tipOverride: z.number().int().min(0).optional(),
         assignments: z.array(
           z.object({
@@ -565,6 +569,10 @@ export const receiptsRouter = createTRPCRouter({
             paidById: input.paidById,
             addedById: ctx.user.id,
             receiptId: input.receiptId,
+            ...(input.placeName ? { placeName: input.placeName } : {}),
+            ...(input.latitude !== undefined && input.longitude !== undefined
+              ? { latitude: input.latitude, longitude: input.longitude }
+              : {}),
             shares: {
               create: Array.from(userTotals.entries()).map(([userId, amount]) => ({
                 userId,
@@ -739,6 +747,7 @@ export const receiptsRouter = createTRPCRouter({
       createdAt: r.createdAt,
       extractedData: r.extractedData as {
         merchantName?: string;
+        merchantAddress?: string;
         date?: string;
         subtotal: number;
         tax: number;

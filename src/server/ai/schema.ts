@@ -16,6 +16,8 @@ export const receiptItemSchema = z.object({
 
 export const receiptExtractionSchema = z.object({
   merchantName: z.string().max(500).optional(),
+  // street, postal code and city as printed on the receipt; used to find the place on the map
+  merchantAddress: z.preprocess((v) => v ?? undefined, z.string().max(500).optional()),
   date: z.string().max(100).optional(),
   items: z.array(receiptItemSchema).min(1).max(500),
   subtotal: moneyCents,

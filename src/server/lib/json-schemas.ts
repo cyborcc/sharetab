@@ -4,6 +4,7 @@ import { TRPCError } from '@trpc/server';
 export const extractedDataSchema = z
   .object({
     merchantName: z.string().optional(),
+    merchantAddress: z.string().optional(),
     date: z.string().optional(),
     subtotal: z.number().int().min(0).default(0),
     tax: z.number().int().min(0).default(0),

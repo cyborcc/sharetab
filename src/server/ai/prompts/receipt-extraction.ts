@@ -3,6 +3,7 @@ export const RECEIPT_EXTRACTION_PROMPT = `You are a receipt parser. Extract stru
 Return a JSON object with exactly this structure:
 {
   "merchantName": "store name or null",
+  "merchantAddress": "street, postal code and city printed on the receipt, or null",
   "date": "YYYY-MM-DD or null",
   "items": [
     { "name": "item description", "quantity": 1, "unitPrice": 499, "totalPrice": 499 }

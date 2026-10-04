@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { LocationField, type PlaceValue } from '@/components/expenses/location-field';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Check, Users, Pencil, Trash2, Plus, Image as ImageIcon, Scissors, Bookmark } from 'lucide-react';
@@ -38,6 +39,8 @@ export function ItemAssignment({
 
   const [assignments, setAssignments] = useState<Assignments>({});
   const [title, setTitle] = useState('');
+  const [place, setPlace] = useState<PlaceValue>({ placeName: '', latitude: null, longitude: null });
+  const tExp = useTranslations('expenses');
   const [paidById, setPaidById] = useState('');
   const [tipOverride, setTipOverride] = useState<string>('');
   const [showImage, setShowImage] = useState(false);
@@ -309,6 +312,8 @@ export function ItemAssignment({
       receiptId,
       title,
       paidById,
+      ...(place.placeName.trim() ? { placeName: place.placeName.trim() } : {}),
+      ...(place.latitude !== null && place.longitude !== null ? { latitude: place.latitude, longitude: place.longitude } : {}),
       tipOverride:
         tipOverride !== '' && isFinite(parseFloat(tipOverride)) ? Math.round(parseFloat(tipOverride) * 100) : undefined,
       assignments: Object.entries(assignments)
@@ -499,6 +504,15 @@ export function ItemAssignment({
               onChange={(e) => setTitle(e.target.value)}
               placeholder={t('expenseTitlePlaceholder')}
               required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="location">{tExp('new.location')}</Label>
+            <LocationField
+              value={place}
+              onChange={setPlace}
+              suggestion={[safeExtracted.merchantName, safeExtracted.merchantAddress].filter(Boolean).join(', ')}
+              autoPick={!!safeExtracted.merchantAddress}
             />
           </div>
           <div className="space-y-2">
