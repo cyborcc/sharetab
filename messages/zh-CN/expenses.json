@@ -6,7 +6,7 @@
     "amount": "金额",
     "amountPlaceholder": "0.00",
     "paidBy": "付款人",
-    "date": "Date",
+    "date": "日期",
     "splitType": "分账模式",
     "splitEqual": "平均分摊",
     "splitExact": "按金额",

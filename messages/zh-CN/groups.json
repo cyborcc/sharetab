@@ -130,18 +130,20 @@
   "empty": "暂无群组",
   "emptyDescription": "创建您的第一个群组，开始与朋友分摊费用。",
   "list": {
-    "title": "All expenses",
-    "search": "Search …",
-    "allPeople": "Everyone",
-    "allCategories": "All categories",
-    "from_": "From",
-    "to": "To",
-    "count": "{count} expenses",
-    "sum": "Total",
-    "none": "No expenses found.",
-    "reset": "Reset",
-    "back": "Back",
-    "paidBy": "Paid by"
+    "subtitle": "管理你的共享费用",
+    "newGroup": "新建群组",
+    "searchPlaceholder": "搜索群组...",
+    "archived": "已归档",
+    "archivedBadge": "已归档",
+    "noArchived": "没有已归档的群组。",
+    "noGroups": "暂无群组。",
+    "noGroupsDescription": "创建一个群组，开始与朋友分摊费用。",
+    "createFirst": "创建你的第一个群组",
+    "noSearchResults": "没有符合搜索条件的群组。",
+    "memberCount": "{count}名成员",
+    "expenseCount": "{count}笔费用",
+    "unarchive": "取消归档",
+    "showAll": "显示全部{count}个群组"
   },
   "stats": {
     "title": "Statistics",
@@ -194,5 +196,19 @@
     "recapBusiestDay": "Most expenses in one day",
     "recapCount": "{count} expenses",
     "recapPerPerson": "Avg per person"
+  },
+  "expList": {
+    "title": "All expenses",
+    "search": "Search …",
+    "allPeople": "Everyone",
+    "allCategories": "All categories",
+    "from_": "From",
+    "to": "To",
+    "count": "{count} expenses",
+    "sum": "Total",
+    "none": "No expenses found.",
+    "reset": "Reset",
+    "back": "Back",
+    "paidBy": "Paid by"
   }
 }

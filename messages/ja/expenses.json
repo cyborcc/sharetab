@@ -6,7 +6,7 @@
     "amount": "金額",
     "amountPlaceholder": "0.00",
     "paidBy": "支払った人",
-    "date": "Date",
+    "date": "日付",
     "splitType": "割り勘モード",
     "splitEqual": "均等",
     "splitExact": "金額指定",

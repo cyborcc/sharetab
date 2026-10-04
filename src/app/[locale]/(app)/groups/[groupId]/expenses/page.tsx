@@ -76,7 +76,7 @@ export default function AllExpensesPage({ params }: { params: Promise<{ groupId:
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="text-2xl font-bold">
-          {g.emoji} {g.name} · {t('list.title')}
+          {g.emoji} {g.name} · {t('expList.title')}
         </h1>
       </div>
 
@@ -84,12 +84,12 @@ export default function AllExpensesPage({ params }: { params: Promise<{ groupId:
         <CardContent className="grid grid-cols-2 gap-3 py-4 sm:grid-cols-3">
           <Input
             className="col-span-2 sm:col-span-3"
-            placeholder={t('list.search')}
+            placeholder={t('expList.search')}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
           <select className={SELECT_CLASS} value={person} onChange={(e) => setPerson(e.target.value)}>
-            <option value="">{t('list.allPeople')}</option>
+            <option value="">{t('expList.allPeople')}</option>
             {g.members.map((m) => (
               <option key={m.user.id} value={m.user.id}>
                 {m.user.placeholderName ?? m.user.name ?? m.user.email}
@@ -97,7 +97,7 @@ export default function AllExpensesPage({ params }: { params: Promise<{ groupId:
             ))}
           </select>
           <select className={SELECT_CLASS} value={category} onChange={(e) => setCategory(e.target.value)}>
-            <option value="">{t('list.allCategories')}</option>
+            <option value="">{t('expList.allCategories')}</option>
             {categories.map((c) => (
               <option key={c} value={c}>
                 {categoryIcon(c)} {c}
@@ -105,8 +105,8 @@ export default function AllExpensesPage({ params }: { params: Promise<{ groupId:
             ))}
           </select>
           <div className="col-span-2 flex items-center gap-2 sm:col-span-1">
-            <Input type="date" aria-label={t('list.from_')} value={from} onChange={(e) => setFrom(e.target.value)} />
-            <Input type="date" aria-label={t('list.to')} value={to} onChange={(e) => setTo(e.target.value)} />
+            <Input type="date" aria-label={t('expList.from_')} value={from} onChange={(e) => setFrom(e.target.value)} />
+            <Input type="date" aria-label={t('expList.to')} value={to} onChange={(e) => setTo(e.target.value)} />
           </div>
           {filtering && (
             <Button
@@ -121,22 +121,22 @@ export default function AllExpensesPage({ params }: { params: Promise<{ groupId:
                 setTo('');
               }}
             >
-              {t('list.reset')}
+              {t('expList.reset')}
             </Button>
           )}
         </CardContent>
       </Card>
 
       <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <span>{t('list.count', { count: filtered.length })}</span>
+        <span>{t('expList.count', { count: filtered.length })}</span>
         <span>
-          {t('list.sum')}: <span className="font-semibold text-foreground tabular-nums">{formatCents(sum, g.currency, locale)}</span>
+          {t('expList.sum')}: <span className="font-semibold text-foreground tabular-nums">{formatCents(sum, g.currency, locale)}</span>
         </span>
       </div>
 
       {filtered.length === 0 ? (
         <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">{t('list.none')}</CardContent>
+          <CardContent className="py-8 text-center text-muted-foreground">{t('expList.none')}</CardContent>
         </Card>
       ) : (
         <Card className="divide-y divide-border overflow-hidden">
@@ -152,7 +152,7 @@ export default function AllExpensesPage({ params }: { params: Promise<{ groupId:
                     <div className="min-w-0">
                       <p className="truncate font-medium">{hidden ? t('detail.privateExpense') : e.title}</p>
                       <p className="truncate text-sm text-muted-foreground">
-                        {t('list.paidBy')} {e.paidBy.name ?? e.paidBy.email ?? t('detail.unknown')}
+                        {t('expList.paidBy')} {e.paidBy.name ?? e.paidBy.email ?? t('detail.unknown')}
                         {' · '}
                         {new Date(e.expenseDate).toLocaleDateString(locale)}
                         {e.placeName && ` · 📍 ${e.placeName}`}

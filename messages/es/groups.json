@@ -130,18 +130,20 @@
   "empty": "Sin grupos aún",
   "emptyDescription": "Crea tu primer grupo para empezar a dividir gastos con amigos.",
   "list": {
-    "title": "All expenses",
-    "search": "Search …",
-    "allPeople": "Everyone",
-    "allCategories": "All categories",
-    "from_": "From",
-    "to": "To",
-    "count": "{count} expenses",
-    "sum": "Total",
-    "none": "No expenses found.",
-    "reset": "Reset",
-    "back": "Back",
-    "paidBy": "Paid by"
+    "subtitle": "Gestiona tus gastos compartidos",
+    "newGroup": "Nuevo grupo",
+    "searchPlaceholder": "Buscar grupos...",
+    "archived": "Archivados",
+    "archivedBadge": "Archivado",
+    "noArchived": "No hay grupos archivados.",
+    "noGroups": "Sin grupos aún.",
+    "noGroupsDescription": "Crea un grupo para empezar a dividir gastos con amigos.",
+    "createFirst": "Crea tu primer grupo",
+    "noSearchResults": "Ningún grupo coincide con tu búsqueda.",
+    "memberCount": "{count, plural, one {# miembro} other {# miembros}}",
+    "expenseCount": "{count, plural, one {# gasto} other {# gastos}}",
+    "unarchive": "Desarchivar",
+    "showAll": "Mostrar los {count} grupos"
   },
   "stats": {
     "title": "Statistics",
@@ -194,5 +196,19 @@
     "recapBusiestDay": "Most expenses in one day",
     "recapCount": "{count} expenses",
     "recapPerPerson": "Avg per person"
+  },
+  "expList": {
+    "title": "All expenses",
+    "search": "Search …",
+    "allPeople": "Everyone",
+    "allCategories": "All categories",
+    "from_": "From",
+    "to": "To",
+    "count": "{count} expenses",
+    "sum": "Total",
+    "none": "No expenses found.",
+    "reset": "Reset",
+    "back": "Back",
+    "paidBy": "Paid by"
   }
 }

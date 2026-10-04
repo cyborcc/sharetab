@@ -6,7 +6,7 @@
     "amount": "금액",
     "amountPlaceholder": "0.00",
     "paidBy": "결제자",
-    "date": "Date",
+    "date": "날짜",
     "splitType": "분할 모드",
     "splitEqual": "균등 분할",
     "splitExact": "금액 지정",

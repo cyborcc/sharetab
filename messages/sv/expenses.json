@@ -6,7 +6,7 @@
     "amount": "Belopp",
     "amountPlaceholder": "0.00",
     "paidBy": "Betalad av",
-    "date": "Date",
+    "date": "Datum",
     "splitType": "Uppdelningsläge",
     "splitEqual": "Lika",
     "splitExact": "Exakta belopp",

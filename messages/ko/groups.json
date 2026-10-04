@@ -130,18 +130,20 @@
   "empty": "그룹이 없습니다",
   "emptyDescription": "친구들과 비용 분할을 시작하려면 첫 번째 그룹을 만드세요.",
   "list": {
-    "title": "All expenses",
-    "search": "Search …",
-    "allPeople": "Everyone",
-    "allCategories": "All categories",
-    "from_": "From",
-    "to": "To",
-    "count": "{count} expenses",
-    "sum": "Total",
-    "none": "No expenses found.",
-    "reset": "Reset",
-    "back": "Back",
-    "paidBy": "Paid by"
+    "subtitle": "공유 비용을 관리하세요",
+    "newGroup": "새 그룹",
+    "searchPlaceholder": "그룹 검색...",
+    "archived": "보관됨",
+    "archivedBadge": "보관됨",
+    "noArchived": "보관된 그룹이 없습니다.",
+    "noGroups": "그룹이 없습니다.",
+    "noGroupsDescription": "그룹을 만들어 친구들과 비용 분할을 시작하세요.",
+    "createFirst": "첫 번째 그룹 만들기",
+    "noSearchResults": "검색과 일치하는 그룹이 없습니다.",
+    "memberCount": "멤버 {count}명",
+    "expenseCount": "비용 {count}건",
+    "unarchive": "보관 해제",
+    "showAll": "{count}개 그룹 모두 보기"
   },
   "stats": {
     "title": "Statistics",
@@ -194,5 +196,19 @@
     "recapBusiestDay": "Most expenses in one day",
     "recapCount": "{count} expenses",
     "recapPerPerson": "Avg per person"
+  },
+  "expList": {
+    "title": "All expenses",
+    "search": "Search …",
+    "allPeople": "Everyone",
+    "allCategories": "All categories",
+    "from_": "From",
+    "to": "To",
+    "count": "{count} expenses",
+    "sum": "Total",
+    "none": "No expenses found.",
+    "reset": "Reset",
+    "back": "Back",
+    "paidBy": "Paid by"
   }
 }
