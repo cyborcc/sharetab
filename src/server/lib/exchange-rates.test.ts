@@ -58,7 +58,8 @@ describe('getExchangeRate', () => {
   test('fetches rate from API successfully', async () => {
     const mockFetch = vi.fn().mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve([{ base: 'USD', quote: 'EUR', rate: 0.92 }]),
+      json: () =>
+        Promise.resolve([{ base: 'USD', quote: 'EUR', date: new Date().toISOString().slice(0, 10), rate: 0.92 }]),
     });
     vi.stubGlobal('fetch', mockFetch);
 
@@ -71,7 +72,8 @@ describe('getExchangeRate', () => {
   test('uses cached rate on second call', async () => {
     const mockFetch = vi.fn().mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve([{ base: 'USD', quote: 'EUR', rate: 0.92 }]),
+      json: () =>
+        Promise.resolve([{ base: 'USD', quote: 'EUR', date: new Date().toISOString().slice(0, 10), rate: 0.92 }]),
     });
     vi.stubGlobal('fetch', mockFetch);
 
@@ -86,7 +88,7 @@ describe('getExchangeRate', () => {
   test('uses date in URL for historical rates', async () => {
     const mockFetch = vi.fn().mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve([{ base: 'USD', quote: 'GBP', rate: 0.78 }]),
+      json: () => Promise.resolve([{ base: 'USD', quote: 'GBP', date: '2025-01-15', rate: 0.78 }]),
     });
     vi.stubGlobal('fetch', mockFetch);
 
@@ -98,7 +100,7 @@ describe('getExchangeRate', () => {
   test('supports EGP with the v2 endpoint', async () => {
     const mockFetch = vi.fn().mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve([{ base: 'EGP', quote: 'EUR', rate: 0.017 }]),
+      json: () => Promise.resolve([{ base: 'EGP', quote: 'EUR', date: '2026-10-05', rate: 0.017 }]),
     });
     vi.stubGlobal('fetch', mockFetch);
 

@@ -14,10 +14,22 @@ import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Check, Users, Pencil, Trash2, Plus, Image as ImageIcon, Scissors, Bookmark } from 'lucide-react';
 import { toast } from 'sonner';
+import { COMMON_CURRENCIES } from '@/lib/currencies';
+import { ReceiptRatePreview } from './receipt-rate-preview';
 
 type Member = { id: string; name: string | null };
 
 type Assignments = Record<string, Set<string>>; // receiptItemId -> Set<userId>
+
+// A malformed OCR label must not prevent the user from reaching its correction
+// selector. Keep the original label visible rather than substituting a currency.
+function formatReceiptCents(amount: number, currency: string, locale: string): string {
+  try {
+    return formatCents(amount, currency, locale);
+  } catch {
+    return `${centsToDecimal(amount)} ${currency || '?'}`;
+  }
+}
 
 export function ItemAssignment({
   groupId,
@@ -61,8 +73,30 @@ export function ItemAssignment({
   const [splittingItem, setSplittingItem] = useState<string | null>(null);
   const [splitQuantity, setSplitQuantity] = useState('');
 
+  const [useLatestRate, setUseLatestRate] = useState(false);
+  const conversionPreview = trpc.receipts.getConversionPreview.useQuery(
+    { groupId, receiptId, useLatestRate },
+    {
+      enabled: !!receiptData.data?.receipt.extractedData,
+      staleTime: 0,
+      refetchInterval: 60000,
+    },
+  );
+  const correctCurrency = trpc.receipts.correctCurrency.useMutation({
+    onSuccess: async () => {
+      await Promise.all([
+        utils.receipts.getReceiptItems.invalidate({ receiptId }),
+        utils.receipts.getConversionPreview.invalidate({ receiptId }),
+      ]);
+    },
+    onError: (e) => toast.error(e.message),
+  });
   const createExpense = trpc.receipts.assignItemsAndCreateExpense.useMutation({
     onSuccess: onComplete,
+    onError: (e) => {
+      toast.error(e.message);
+      utils.receipts.getConversionPreview.invalidate({ receiptId });
+    },
   });
   const updateItem = trpc.receipts.updateItem.useMutation({
     onSuccess: () => {
@@ -302,12 +336,22 @@ export function ItemAssignment({
   // After early returns, these are guaranteed non-null
   const safeReceipt = receipt!;
   const safeExtracted = extracted;
+  const previewMatchesCurrency =
+    conversionPreview.data?.currency.toUpperCase() === safeExtracted.currency.toUpperCase();
+  const previewReady =
+    previewMatchesCurrency && !conversionPreview.isFetching && !correctCurrency.isPending && !conversionPreview.isError;
+  const euroQuote = previewReady ? conversionPreview.data?.euro : null;
+  const groupQuote = previewReady ? conversionPreview.data?.groupRate : null;
+  const currentTotal = items.reduce((sum, item) => sum + item.totalPrice, 0) + safeExtracted.tax + tip;
+  const de = locale.startsWith('de');
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!paidById || !allAssigned) return;
+    if (!paidById || !allAssigned || !previewReady || !groupQuote) return;
 
     createExpense.mutate({
+      useLatestRate,
+      expectedConversion: groupQuote,
       groupId,
       receiptId,
       title,
@@ -469,6 +513,40 @@ export function ItemAssignment({
           <CardTitle className="text-base">{t('receiptSummary')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-1 text-sm">
+          <div className="space-y-2 pb-2">
+            <Label htmlFor="receipt-currency">{de ? 'Belegwährung korrigieren' : 'Correct receipt currency'}</Label>
+            <select
+              id="receipt-currency"
+              className="w-full rounded-md border bg-background p-2"
+              value={safeExtracted.currency.toUpperCase()}
+              disabled={correctCurrency.isPending || createExpense.isPending}
+              onChange={(e) => {
+                if (
+                  window.confirm(
+                    de
+                      ? 'Nur das Währungslabel ändern? Alle Zahlen bleiben unverändert; gedruckte Alternativsummen werden ungültig.'
+                      : 'Relabel currency only? All numbers remain unchanged; printed alternate totals will be invalidated.',
+                  )
+                ) {
+                  correctCurrency.mutate({ receiptId, currency: e.target.value });
+                }
+              }}
+            >
+              {!COMMON_CURRENCIES.some((c) => c.code === safeExtracted.currency.toUpperCase()) && (
+                <option value={safeExtracted.currency.toUpperCase()}>{safeExtracted.currency}</option>
+              )}
+              {COMMON_CURRENCIES.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.code} — {c.name}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-muted-foreground">
+              {de
+                ? 'Ändert nur die Währung, nicht die Beträge. Danach wird die Euro-Vorschau neu berechnet.'
+                : 'Changes the label, not the amounts. Euro preview is recalculated afterwards.'}
+            </p>
+          </div>
           {safeExtracted.merchantName && (
             <div className="flex justify-between">
               <span className="text-muted-foreground">{t('merchant')}</span>
@@ -477,21 +555,76 @@ export function ItemAssignment({
           )}
           <div className="flex justify-between">
             <span className="text-muted-foreground">{t('subtotal')}</span>
-            <span>{formatCents(safeExtracted.subtotal, safeExtracted.currency, locale)}</span>
+            <span>{formatReceiptCents(safeExtracted.subtotal, safeExtracted.currency, locale)}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">{t('tax')}</span>
-            <span>{formatCents(safeExtracted.tax, safeExtracted.currency, locale)}</span>
+            <span>{formatReceiptCents(safeExtracted.tax, safeExtracted.currency, locale)}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">{t('tip')}</span>
-            <span>{formatCents(tip, safeExtracted.currency, locale)}</span>
+            <span>{formatReceiptCents(tip, safeExtracted.currency, locale)}</span>
           </div>
           <Separator />
           <div className="flex justify-between font-semibold">
             <span>{t('total')}</span>
-            <span>{formatCents(safeExtracted.subtotal + safeExtracted.tax + tip, safeExtracted.currency, locale)}</span>
+            <span>{formatReceiptCents(currentTotal, safeExtracted.currency, locale)}</span>
           </div>
+          <ReceiptRatePreview
+            amount={currentTotal}
+            quote={euroQuote}
+            locale={locale}
+            loading={conversionPreview.isFetching || correctCurrency.isPending}
+          />
+          {groupQuote && groupQuote.to !== 'EUR' && (
+            <p className="text-xs text-muted-foreground">
+              {de ? 'Gruppenkurs' : 'Group rate'}: 1 {groupQuote.from} = {groupQuote.rate} {groupQuote.to} ·{' '}
+              {groupQuote.source} · {groupQuote.rateDate}
+              {groupQuote.source === 'ExchangeRate-API' && (
+                <>
+                  {' '}
+                  ·{' '}
+                  <a
+                    href="https://www.exchangerate-api.com"
+                    className="underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Rates By Exchange Rate API
+                  </a>
+                </>
+              )}
+            </p>
+          )}
+          {safeExtracted.date && (
+            <label className="flex items-start gap-2 pt-2 text-xs">
+              <input
+                type="checkbox"
+                checked={useLatestRate}
+                onChange={(e) => setUseLatestRate(e.target.checked)}
+                disabled={createExpense.isPending || correctCurrency.isPending}
+              />
+              <span>
+                {de
+                  ? `Aktuellen Kurs ausdrücklich als Schätzung statt des historischen Kurses vom ${safeExtracted.date.slice(0, 10)} verwenden (gedruckte Belegkurse bleiben bevorzugt).`
+                  : `Explicitly use the latest rate as an estimate instead of the historical rate for ${safeExtracted.date.slice(0, 10)} (printed receipt rates still take priority).`}
+              </span>
+            </label>
+          )}
+          {!conversionPreview.isFetching && (!groupQuote || conversionPreview.isError) && (
+            <p className="text-xs text-destructive">
+              {de ? 'Speichern erst mit gültiger Kursvorschau möglich.' : 'Saving requires a valid conversion preview.'}
+            </p>
+          )}
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => conversionPreview.refetch()}
+            disabled={conversionPreview.isFetching || correctCurrency.isPending}
+          >
+            {de ? 'Kurs erneut laden' : 'Retry rate lookup'}
+          </Button>
           {safeExtracted.alternateTotals
             .filter((alternateTotal) => alternateTotal.currency !== safeExtracted.currency)
             .map((alternateTotal) => (
@@ -499,7 +632,7 @@ export function ItemAssignment({
                 <span>
                   {t('total')} ({alternateTotal.currency})
                 </span>
-                <span>{formatCents(alternateTotal.total, alternateTotal.currency, locale)}</span>
+                <span>{formatReceiptCents(alternateTotal.total, alternateTotal.currency, locale)}</span>
               </div>
             ))}
         </CardContent>
@@ -552,7 +685,9 @@ export function ItemAssignment({
               type="number"
               step="0.01"
               min="0"
-              placeholder={t('tipDetected', { amount: formatCents(safeExtracted.tip, safeExtracted.currency, locale) })}
+              placeholder={t('tipDetected', {
+                amount: formatReceiptCents(safeExtracted.tip, safeExtracted.currency, locale),
+              })}
               value={tipOverride}
               onChange={(e) => setTipOverride(e.target.value)}
             />
@@ -717,7 +852,7 @@ export function ItemAssignment({
                       )}
                     </div>
                     <span className="font-semibold">
-                      {formatCents(item.totalPrice, safeExtracted.currency, locale)}
+                      {formatReceiptCents(item.totalPrice, safeExtracted.currency, locale)}
                     </span>
                   </div>
                 )}
@@ -810,7 +945,7 @@ export function ItemAssignment({
               return (
                 <div key={m.id} className="flex justify-between text-sm">
                   <span>{m.name ?? t('unnamed')}</span>
-                  <span className="font-medium">{formatCents(total, safeExtracted.currency, locale)}</span>
+                  <span className="font-medium">{formatReceiptCents(total, safeExtracted.currency, locale)}</span>
                 </div>
               );
             })}
@@ -825,7 +960,7 @@ export function ItemAssignment({
       <Button
         type="submit"
         className="w-full"
-        disabled={createExpense.isPending || !allAssigned || !paidById}
+        disabled={createExpense.isPending || !allAssigned || !paidById || !previewReady || !groupQuote}
         data-testid="create-expense-btn"
       >
         {createExpense.isPending

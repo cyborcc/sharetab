@@ -7,7 +7,8 @@ import { processReceiptImage } from '../../lib/receipt-processor';
 import { logger } from '../../lib/logger';
 import { parseExtractedData } from '../../lib/json-schemas';
 import { getAIProvidersWithFallback, getConfiguredProviderPriority } from '@/server/ai/registry';
-import { getExchangeRate, getPrintedReceiptRate, convertCents } from '../../lib/exchange-rates';
+import { convertCents, isValidCurrency, type RateQuote } from '../../lib/exchange-rates';
+import { getReceiptRate, relabelReceiptCurrency } from '../../lib/receipt-conversion';
 import { stripUndefined } from '../../lib/strip-undefined';
 
 /**
@@ -169,21 +170,50 @@ export const receiptsRouter = createTRPCRouter({
         status: receiptWithItems.status,
         imagePath: receiptWithItems.imagePath,
         paidById: receiptWithItems.paidById,
-        extractedData: receiptWithItems.extractedData as {
-          merchantName?: string;
-          merchantAddress?: string;
-          date?: string;
-          subtotal: number;
-          tax: number;
-          tip: number;
-          total: number;
-          currency: string;
-          alternateTotals: { currency: string; total: number }[];
-        } | null,
+        extractedData: receiptWithItems.extractedData ? parseExtractedData(receiptWithItems.extractedData) : null,
       },
       items: receiptWithItems.items as ReceiptItem[],
     };
   }),
+
+  getConversionPreview: groupMemberProcedure
+    .input(z.object({ groupId: z.string(), receiptId: z.string(), useLatestRate: z.boolean().default(false) }))
+    .query(async ({ ctx, input }) => {
+      const receipt = await verifyReceiptAccess(ctx.db, input.receiptId, ctx.user.id);
+      if (receipt.groupId && receipt.groupId !== input.groupId) throw new TRPCError({ code: 'FORBIDDEN' });
+      const data = parseExtractedData(receipt.extractedData);
+      const group = await ctx.db.group.findUniqueOrThrow({ where: { id: input.groupId }, select: { currency: true } });
+      const euro = await getReceiptRate(data, 'EUR', input.useLatestRate, ctx.db);
+      const groupRate =
+        group.currency.toUpperCase() === 'EUR'
+          ? euro
+          : await getReceiptRate(data, group.currency, input.useLatestRate, ctx.db);
+      return { euro, groupRate, currency: data.currency, receiptDate: data.date?.slice(0, 10) ?? null };
+    }),
+
+  correctCurrency: protectedProcedure
+    .input(z.object({ receiptId: z.string(), currency: z.string().refine(isValidCurrency) }))
+    .mutation(async ({ ctx, input }) => {
+      await verifyReceiptAccess(ctx.db, input.receiptId, ctx.user.id);
+      await ctx.db.$transaction(async (tx) => {
+        const receipt = await tx.receipt.findUniqueOrThrow({ where: { id: input.receiptId } });
+        if (
+          receipt.status !== 'COMPLETED' ||
+          (await tx.expense.findUnique({ where: { receiptId: input.receiptId } }))
+        ) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Only unlinked, completed receipts can be corrected.' });
+        }
+        const data = relabelReceiptCurrency(parseExtractedData(receipt.extractedData), input.currency);
+        // Conditional write refuses a rescan/edit that raced this correction.
+        const updated = await tx.receipt.updateMany({
+          where: { id: receipt.id, updatedAt: receipt.updatedAt, status: 'COMPLETED' },
+          data: { extractedData: data as unknown as Prisma.InputJsonValue },
+        });
+        if (updated.count !== 1)
+          throw new TRPCError({ code: 'CONFLICT', message: 'Receipt changed. Reload and try again.' });
+      });
+      return { success: true };
+    }),
 
   updateItem: protectedProcedure
     .input(
@@ -414,6 +444,15 @@ export const receiptsRouter = createTRPCRouter({
         placeName: z.string().max(200).optional(),
         latitude: z.number().min(-90).max(90).optional(),
         longitude: z.number().min(-180).max(180).optional(),
+        useLatestRate: z.boolean().default(false),
+        expectedConversion: z
+          .object({
+            rate: z.number().positive().finite(),
+            source: z.string(),
+            rateDate: z.string(),
+            requestedDate: z.string().nullable(),
+          })
+          .optional(),
         tipOverride: z.number().int().min(0).optional(),
         assignments: z.array(
           z.object({
@@ -538,34 +577,55 @@ export const receiptsRouter = createTRPCRouter({
 
       // Currency conversion for receipt expenses
       const rawCurrency = extractedData.currency;
-      const isValidIso = rawCurrency && /^[a-zA-Z]{3}$/.test(rawCurrency);
-      const receiptCurrency = (isValidIso ? rawCurrency : group!.currency).toUpperCase();
+      if (!isValidCurrency(rawCurrency))
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Correct the receipt currency before saving.' });
+      const receiptCurrency = rawCurrency.toUpperCase();
       const groupCurrency = group!.currency.toUpperCase();
       let exchangeRate: number | null = null;
+      let conversionQuote: RateQuote | null = null;
       let baseCurrencyAmount: number | null = null;
 
       if (receiptCurrency !== groupCurrency) {
-        const receiptDate = extractedData.date?.slice(0, 10);
-        const printedRate = getPrintedReceiptRate(extractedData.total, extractedData.alternateTotals, groupCurrency);
-
-        if (printedRate !== null) {
-          // Prefer the merchant's explicitly printed conversion. It is the
-          // amount actually charged and avoids an unnecessary external lookup.
-          exchangeRate = printedRate;
-        } else {
-          exchangeRate = await getExchangeRate(receiptCurrency, groupCurrency, receiptDate);
-          if (exchangeRate === null) {
-            throw new TRPCError({
-              code: 'BAD_REQUEST',
-              message: 'Could not fetch exchange rate for receipt currency. Please try again.',
-            });
-          }
+        conversionQuote = await getReceiptRate(extractedData, groupCurrency, input.useLatestRate, ctx.db);
+        if (!conversionQuote)
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message:
+              'No valid rate for the requested receipt date. Preview and explicitly select a latest estimate if appropriate.',
+          });
+        const expected = input.expectedConversion;
+        if (
+          !expected ||
+          expected.rate !== conversionQuote.rate ||
+          expected.source !== conversionQuote.source ||
+          expected.rateDate !== conversionQuote.rateDate ||
+          expected.requestedDate !== conversionQuote.requestedDate
+        ) {
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: 'Exchange rate changed or was not previewed. Reload the conversion preview before saving.',
+          });
         }
+        exchangeRate = conversionQuote.rate;
         baseCurrencyAmount = convertCents(totalAmount, exchangeRate);
       }
 
       // All writes in a single transaction for atomicity
       const expense = await ctx.db.$transaction(async (tx) => {
+        // Lock/version-check the receipt before linking it: a currency correction
+        // or rescan must never race an expense built from older amounts/labels.
+        const claimed = await tx.receipt.updateMany({
+          where: { id: receipt.id, status: 'COMPLETED', updatedAt: receipt.updatedAt },
+          data: {
+            extractedData: {
+              ...extractedData,
+              expenseConversion: conversionQuote,
+              latestRateAccepted: input.useLatestRate,
+            } as unknown as Prisma.InputJsonValue,
+          },
+        });
+        if (claimed.count !== 1)
+          throw new TRPCError({ code: 'CONFLICT', message: 'Receipt changed. Reload before saving.' });
         const exp = await tx.expense.create({
           data: {
             groupId: input.groupId,
