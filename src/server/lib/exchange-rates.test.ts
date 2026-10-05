@@ -58,20 +58,20 @@ describe('getExchangeRate', () => {
   test('fetches rate from API successfully', async () => {
     const mockFetch = vi.fn().mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ rates: { EUR: 0.92 } }),
+      json: () => Promise.resolve([{ base: 'USD', quote: 'EUR', rate: 0.92 }]),
     });
     vi.stubGlobal('fetch', mockFetch);
 
     const rate = await getExchangeRate('USD', 'EUR');
     expect(rate).toBe(0.92);
     expect(mockFetch).toHaveBeenCalledTimes(1);
-    expect(mockFetch.mock.calls[0]![0]).toContain('from=USD&to=EUR');
+    expect(mockFetch.mock.calls[0]![0]).toContain('base=USD&quotes=EUR');
   });
 
   test('uses cached rate on second call', async () => {
     const mockFetch = vi.fn().mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ rates: { EUR: 0.92 } }),
+      json: () => Promise.resolve([{ base: 'USD', quote: 'EUR', rate: 0.92 }]),
     });
     vi.stubGlobal('fetch', mockFetch);
 
@@ -86,13 +86,24 @@ describe('getExchangeRate', () => {
   test('uses date in URL for historical rates', async () => {
     const mockFetch = vi.fn().mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ rates: { GBP: 0.78 } }),
+      json: () => Promise.resolve([{ base: 'USD', quote: 'GBP', rate: 0.78 }]),
     });
     vi.stubGlobal('fetch', mockFetch);
 
     const rate = await getExchangeRate('USD', 'GBP', '2025-01-15');
     expect(rate).toBe(0.78);
     expect(mockFetch.mock.calls[0]![0]).toContain('2025-01-15');
+  });
+
+  test('supports EGP with the v2 endpoint', async () => {
+    const mockFetch = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve([{ base: 'EGP', quote: 'EUR', rate: 0.017 }]),
+    });
+    vi.stubGlobal('fetch', mockFetch);
+
+    await expect(getExchangeRate('EGP', 'EUR', '2026-10-05')).resolves.toBe(0.017);
+    expect(mockFetch.mock.calls[0]![0]).toContain('base=EGP&quotes=EUR&date=2026-10-05');
   });
 
   test('returns null on API error', async () => {
@@ -117,7 +128,7 @@ describe('getExchangeRate', () => {
   test('returns null for invalid rate data', async () => {
     const mockFetch = vi.fn().mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ rates: {} }), // missing target currency
+      json: () => Promise.resolve([]), // missing rate
     });
     vi.stubGlobal('fetch', mockFetch);
 

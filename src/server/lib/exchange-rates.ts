@@ -1,12 +1,14 @@
 /**
- * Exchange rate fetcher using frankfurter.app (free, no API key, ECB data).
+ * Exchange rate fetcher using Frankfurter v2 (free, no API key).
+ * It combines official central-bank sources and supports currencies such as EGP
+ * that are not included in the legacy ECB-only API.
  * Caches rates in memory with a configurable TTL.
  */
 
 import { TRPCError } from '@trpc/server';
 import { MAX_MONEY_CENTS } from '@/lib/money';
 
-const FRANKFURTER_BASE = 'https://api.frankfurter.app';
+const FRANKFURTER_BASE = 'https://api.frankfurter.dev/v2/rates';
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 type CacheEntry = {
@@ -47,8 +49,12 @@ export async function getExchangeRate(from: string, to: string, date?: string): 
   }
 
   try {
-    const endpoint = date ? `${FRANKFURTER_BASE}/${date}` : `${FRANKFURTER_BASE}/latest`;
-    const url = `${endpoint}?from=${encodeURIComponent(from.toUpperCase())}&to=${encodeURIComponent(to.toUpperCase())}`;
+    const params = new URLSearchParams({
+      base: from.toUpperCase(),
+      quotes: to.toUpperCase(),
+    });
+    if (date) params.set('date', date);
+    const url = `${FRANKFURTER_BASE}?${params}`;
 
     const response = await fetch(url, {
       signal: AbortSignal.timeout(5000), // 5s timeout
@@ -59,11 +65,10 @@ export async function getExchangeRate(from: string, to: string, date?: string): 
       return null;
     }
 
-    const data = (await response.json()) as {
-      rates: Record<string, number>;
-    };
-
-    const rate = data.rates[to.toUpperCase()];
+    const data = (await response.json()) as Array<{
+      rate?: number;
+    }>;
+    const rate = data[0]?.rate;
     if (typeof rate !== 'number' || !isFinite(rate) || rate <= 0) {
       console.error(`[exchange-rates] Invalid rate for ${key}:`, data);
       return null;
