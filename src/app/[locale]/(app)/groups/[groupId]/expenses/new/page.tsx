@@ -97,7 +97,10 @@ export default function NewExpensePage({ params }: { params: Promise<{ groupId: 
 
   // Private only when the signed-in payer is the sole sharer of the expense
   const privateEligible =
-    !!authSession?.user?.id && paidById === authSession.user.id && shares.length === 1 && shares[0]?.userId === paidById;
+    !!authSession?.user?.id &&
+    paidById === authSession.user.id &&
+    shares.length === 1 &&
+    shares[0]?.userId === paidById;
   const isPrivateEffective = isPrivate && privateEligible;
 
   function handleSubmit(e: React.FormEvent) {
@@ -113,7 +116,9 @@ export default function NewExpensePage({ params }: { params: Promise<{ groupId: 
       ...(isDifferentCurrency && manualRateValid ? { exchangeRate: parsedManualRate } : {}),
       category: category.trim() || undefined,
       ...(place.placeName.trim() ? { placeName: place.placeName.trim() } : {}),
-      ...(place.latitude !== null && place.longitude !== null ? { latitude: place.latitude, longitude: place.longitude } : {}),
+      ...(place.latitude !== null && place.longitude !== null
+        ? { latitude: place.latitude, longitude: place.longitude }
+        : {}),
       ...(isPrivateEffective ? { isPrivate: true } : {}),
       ...(expenseDate ? { expenseDate: new Date(`${expenseDate}T12:00:00`).toISOString() } : {}),
       paidById,
@@ -241,7 +246,12 @@ export default function NewExpensePage({ params }: { params: Promise<{ groupId: 
 
             <div className="space-y-2">
               <Label htmlFor="expenseDate">{t('new.date')}</Label>
-              <Input id="expenseDate" type="date" value={expenseDate} onChange={(e) => setExpenseDate(e.target.value)} />
+              <Input
+                id="expenseDate"
+                type="date"
+                value={expenseDate}
+                onChange={(e) => setExpenseDate(e.target.value)}
+              />
             </div>
 
             <div className="space-y-2">
@@ -262,11 +272,7 @@ export default function NewExpensePage({ params }: { params: Promise<{ groupId: 
               />
             </div>
 
-            <PrivateToggle
-              checked={isPrivateEffective}
-              eligible={privateEligible}
-              onChange={setIsPrivate}
-            />
+            <PrivateToggle checked={isPrivateEffective} eligible={privateEligible} onChange={setIsPrivate} />
 
             <div className="space-y-2">
               <Label htmlFor="paidBy">{t('new.paidBy')}</Label>

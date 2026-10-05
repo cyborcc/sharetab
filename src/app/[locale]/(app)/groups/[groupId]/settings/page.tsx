@@ -150,7 +150,13 @@ function TripForecastForm({
           <p className="text-sm text-muted-foreground">{t('settings.tripHint')}</p>
           <div className="space-y-2">
             <Label htmlFor="budget">{t('settings.budgetTotal', { currency })}</Label>
-            <Input id="budget" inputMode="decimal" placeholder="0.00" value={budget} onChange={(e) => setBudget(e.target.value)} />
+            <Input
+              id="budget"
+              inputMode="decimal"
+              placeholder="0.00"
+              value={budget}
+              onChange={(e) => setBudget(e.target.value)}
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
@@ -164,7 +170,13 @@ function TripForecastForm({
           </div>
           <div className="space-y-2">
             <Label htmlFor="food">{t('settings.foodPerDay', { currency })}</Label>
-            <Input id="food" inputMode="decimal" placeholder="0.00" value={food} onChange={(e) => setFood(e.target.value)} />
+            <Input
+              id="food"
+              inputMode="decimal"
+              placeholder="0.00"
+              value={food}
+              onChange={(e) => setFood(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="transport">{t('settings.transportPerDay', { currency })}</Label>
@@ -178,7 +190,13 @@ function TripForecastForm({
           </div>
           <div className="space-y-2">
             <Label htmlFor="other">{t('settings.otherPerDay', { currency })}</Label>
-            <Input id="other" inputMode="decimal" placeholder="0.00" value={other} onChange={(e) => setOther(e.target.value)} />
+            <Input
+              id="other"
+              inputMode="decimal"
+              placeholder="0.00"
+              value={other}
+              onChange={(e) => setOther(e.target.value)}
+            />
             {updateGroup.error && <p className="text-xs text-destructive">{updateGroup.error.message}</p>}
           </div>
           <Button type="submit" disabled={updateGroup.isPending}>

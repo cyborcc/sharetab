@@ -243,7 +243,10 @@ function EditExpenseForm({
 
   // Private only when the signed-in payer is the sole sharer of the expense
   const privateEligible =
-    !!authSession?.user?.id && paidById === authSession.user.id && shares.length === 1 && shares[0]?.userId === paidById;
+    !!authSession?.user?.id &&
+    paidById === authSession.user.id &&
+    shares.length === 1 &&
+    shares[0]?.userId === paidById;
   const isPrivateEffective = isPrivate && privateEligible;
 
   function handleSubmit(e: React.FormEvent) {
@@ -260,7 +263,9 @@ function EditExpenseForm({
       ...(isDifferentCurrency && manualRateValid ? { exchangeRate: parsedManualRate } : {}),
       category: category.trim() || undefined,
       ...(place.placeName.trim() ? { placeName: place.placeName.trim() } : {}),
-      ...(place.latitude !== null && place.longitude !== null ? { latitude: place.latitude, longitude: place.longitude } : {}),
+      ...(place.latitude !== null && place.longitude !== null
+        ? { latitude: place.latitude, longitude: place.longitude }
+        : {}),
       isPrivate: isPrivateEffective,
       ...(expenseDate ? { expenseDate: new Date(`${expenseDate}T12:00:00`).toISOString() } : {}),
       paidById,
@@ -402,7 +407,12 @@ function EditExpenseForm({
 
             <div className="space-y-2">
               <Label htmlFor="expenseDate">{t('new.date')}</Label>
-              <Input id="expenseDate" type="date" value={expenseDate} onChange={(e) => setExpenseDate(e.target.value)} />
+              <Input
+                id="expenseDate"
+                type="date"
+                value={expenseDate}
+                onChange={(e) => setExpenseDate(e.target.value)}
+              />
             </div>
 
             <div className="space-y-2">
@@ -423,11 +433,7 @@ function EditExpenseForm({
               />
             </div>
 
-            <PrivateToggle
-              checked={isPrivateEffective}
-              eligible={privateEligible}
-              onChange={setIsPrivate}
-            />
+            <PrivateToggle checked={isPrivateEffective} eligible={privateEligible} onChange={setIsPrivate} />
 
             <div className="space-y-2">
               <Label htmlFor="paidBy">{t('new.paidBy')}</Label>

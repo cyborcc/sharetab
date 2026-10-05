@@ -32,7 +32,13 @@ export function DonutChart({
   const segments = slices.map((s, i) => {
     const pct = total > 0 ? (s.value / total) * 100 : 0;
     const before = slices.slice(0, i).reduce((sum, x) => sum + (total > 0 ? (x.value / total) * 100 : 0), 0);
-    return { ...s, pct, dash: `${pct} ${100 - pct}`, offset: 25 - before, color: CHART_COLORS[i % CHART_COLORS.length] };
+    return {
+      ...s,
+      pct,
+      dash: `${pct} ${100 - pct}`,
+      offset: 25 - before,
+      color: CHART_COLORS[i % CHART_COLORS.length],
+    };
   });
 
   return (
@@ -158,7 +164,10 @@ export function TimeBars({
               {b.parts.map((p) => (
                 <div
                   key={p.key}
-                  style={{ height: `${total > 0 ? (p.value / total) * 100 : 0}%`, backgroundColor: colors.get(p.key) ?? CHART_COLORS[8] }}
+                  style={{
+                    height: `${total > 0 ? (p.value / total) * 100 : 0}%`,
+                    backgroundColor: colors.get(p.key) ?? CHART_COLORS[8],
+                  }}
                 />
               ))}
             </div>
@@ -184,7 +193,9 @@ export function BalanceBars({ rows, currency, locale }: { rows: BalanceRow[]; cu
           <div key={r.label} className="space-y-1">
             <div className="flex items-center justify-between text-sm">
               <span className="truncate font-medium">{r.label}</span>
-              <span className={`tabular-nums ${positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+              <span
+                className={`tabular-nums ${positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}
+              >
                 {r.net > 0 ? '+' : ''}
                 {formatCents(r.net, currency, locale)}
               </span>

@@ -142,7 +142,9 @@ export function LocationField({
       .query({ name: 'geolocation' })
       .then((status) => {
         if (status.state !== 'granted') return;
-        navigator.geolocation.getCurrentPosition((pos) => setBias({ lat: pos.coords.latitude, lon: pos.coords.longitude }));
+        navigator.geolocation.getCurrentPosition((pos) =>
+          setBias({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+        );
       })
       .catch(() => undefined);
   }, [suggestion]);
@@ -245,7 +247,14 @@ export function LocationField({
             }}
           />
         </div>
-        <Button type="button" variant="outline" size="icon" disabled={busy} onClick={useMyLocation} aria-label={t('new.locationUse')}>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          disabled={busy}
+          onClick={useMyLocation}
+          aria-label={t('new.locationUse')}
+        >
           <LocateFixed className="h-4 w-4" />
         </Button>
         {(query || value.latitude !== null) && (

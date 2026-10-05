@@ -63,10 +63,7 @@ export default function AllExpensesPage({ params }: { params: Promise<{ groupId:
   if (!group.data) return null;
   const g = group.data;
 
-  const sum = filtered.reduce(
-    (a, e) => a + (isHidden(e) ? 0 : (e.baseCurrencyAmount ?? e.amount)),
-    0,
-  );
+  const sum = filtered.reduce((a, e) => a + (isHidden(e) ? 0 : (e.baseCurrencyAmount ?? e.amount)), 0);
   const filtering = !!(query || person || category || from || to);
 
   return (
@@ -130,7 +127,8 @@ export default function AllExpensesPage({ params }: { params: Promise<{ groupId:
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <span>{t('expList.count', { count: filtered.length })}</span>
         <span>
-          {t('expList.sum')}: <span className="font-semibold text-foreground tabular-nums">{formatCents(sum, g.currency, locale)}</span>
+          {t('expList.sum')}:{' '}
+          <span className="font-semibold text-foreground tabular-nums">{formatCents(sum, g.currency, locale)}</span>
         </span>
       </div>
 

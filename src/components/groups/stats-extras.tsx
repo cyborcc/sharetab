@@ -40,7 +40,9 @@ export function DailyPlanCard({
             <div className="flex items-end justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">{t('stats.dailyReal')}</p>
-                <p className={`text-xl font-bold tabular-nums ${over ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                <p
+                  className={`text-xl font-bold tabular-nums ${over ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}
+                >
                   {money(real)}
                 </p>
               </div>
@@ -99,7 +101,10 @@ export function BudgetBar({
       <div className="relative h-3 rounded-full bg-muted">
         <div
           className="absolute top-0 bottom-0 rounded-full opacity-40"
-          style={{ width: `${(forecast / max) * 100}%`, backgroundColor: forecast > budget ? '#ef4444' : CHART_COLORS[1] }}
+          style={{
+            width: `${(forecast / max) * 100}%`,
+            backgroundColor: forecast > budget ? '#ef4444' : CHART_COLORS[1],
+          }}
         />
         <div
           className="absolute top-0 bottom-0 rounded-full"
@@ -128,15 +133,30 @@ export function RecapCard({ recap, currency, locale }: { recap: Recap; currency:
   const t = useTranslations('groups');
   const money = (c: number) => formatCents(c, currency, locale);
   const tiles = [
-    recap.priciestDay && { icon: '📅', title: t('stats.recapPriciestDay'), main: recap.priciestDay.label, sub: money(recap.priciestDay.value) },
+    recap.priciestDay && {
+      icon: '📅',
+      title: t('stats.recapPriciestDay'),
+      main: recap.priciestDay.label,
+      sub: money(recap.priciestDay.value),
+    },
     recap.topCategory && {
       icon: categoryIcon(recap.topCategory.label),
       title: t('stats.recapTopCategory'),
       main: recap.topCategory.label,
       sub: money(recap.topCategory.value),
     },
-    recap.topPayer && { icon: '💳', title: t('stats.recapTopPayer'), main: recap.topPayer.label, sub: money(recap.topPayer.value) },
-    recap.biggest && { icon: '💸', title: t('stats.recapBiggest'), main: recap.biggest.label, sub: money(recap.biggest.value) },
+    recap.topPayer && {
+      icon: '💳',
+      title: t('stats.recapTopPayer'),
+      main: recap.topPayer.label,
+      sub: money(recap.topPayer.value),
+    },
+    recap.biggest && {
+      icon: '💸',
+      title: t('stats.recapBiggest'),
+      main: recap.biggest.label,
+      sub: money(recap.biggest.value),
+    },
     recap.busiestDay && {
       icon: '🧾',
       title: t('stats.recapBusiestDay'),

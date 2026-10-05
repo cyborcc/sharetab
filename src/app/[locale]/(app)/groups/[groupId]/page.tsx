@@ -12,7 +12,18 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { BarChart3, Plus, Settings, UserPlus, ArrowRight, Receipt, Handshake, Camera, Archive, Trash2 } from 'lucide-react';
+import {
+  BarChart3,
+  Plus,
+  Settings,
+  UserPlus,
+  ArrowRight,
+  Receipt,
+  Handshake,
+  Camera,
+  Archive,
+  Trash2,
+} from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { toast } from 'sonner';
 import { InviteDialog } from '@/components/groups/invite-dialog';
@@ -102,12 +113,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
             <UserPlus className="mr-2 h-4 w-4" />
             {t('detail.invite')}
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={<Link href={`/groups/${groupId}/stats`} />}
-          >
+          <Button variant="outline" size="sm" nativeButton={false} render={<Link href={`/groups/${groupId}/stats`} />}>
             <BarChart3 className="mr-2 h-4 w-4" />
             {t('detail.stats')}
           </Button>
@@ -388,7 +394,9 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent text-base">
-                      {expense.isPrivate && expense.paidById !== authSession?.user?.id ? '🔒' : categoryIcon(expense.category)}
+                      {expense.isPrivate && expense.paidById !== authSession?.user?.id
+                        ? '🔒'
+                        : categoryIcon(expense.category)}
                     </div>
                     <div className="min-w-0">
                       <p className="font-medium truncate">

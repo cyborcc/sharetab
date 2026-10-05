@@ -40,13 +40,22 @@ export function MySpendingCard({
   const top = totals.categories.slice(0, 5);
   const restValue = totals.categories.slice(5).reduce((a, c) => a + c.amount, 0);
   const slices = [
-    ...top.map((c) => ({ label: c.category ?? t('stats.noCategory'), icon: categoryIcon(c.category), value: c.amount })),
+    ...top.map((c) => ({
+      label: c.category ?? t('stats.noCategory'),
+      icon: categoryIcon(c.category),
+      value: c.amount,
+    })),
     ...(restValue > 0 ? [{ label: t('stats.other'), icon: '…', value: restValue }] : []),
   ];
 
   const tiles = [
     { icon: '💳', label: t('detail.myPaid'), value: money(totals.paid), sub: '' },
-    { icon: '🧾', label: t('detail.myShare'), value: money(totals.share), sub: t('detail.myShareOfTotal', { pct: sharePct }) },
+    {
+      icon: '🧾',
+      label: t('detail.myShare'),
+      value: money(totals.share),
+      sub: t('detail.myShareOfTotal', { pct: sharePct }),
+    },
     { icon: '🌍', label: t('detail.myTotalAll'), value: money(totals.total), sub: '' },
     {
       icon: net >= 0 ? '⬆️' : '⬇️',
@@ -62,7 +71,10 @@ export function MySpendingCard({
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base">{t('detail.myTitle')}</CardTitle>
-          <Link href={`/groups/${groupId}/stats`} className="flex items-center gap-1 text-xs text-primary hover:underline">
+          <Link
+            href={`/groups/${groupId}/stats`}
+            className="flex items-center gap-1 text-xs text-primary hover:underline"
+          >
             <BarChart3 className="h-3.5 w-3.5" />
             {t('detail.stats')}
           </Link>
@@ -89,14 +101,20 @@ export function MySpendingCard({
                 <div
                   key={s.label}
                   title={`${s.label}: ${money(s.value)}`}
-                  style={{ width: `${(s.value / totals.share) * 100}%`, backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }}
+                  style={{
+                    width: `${(s.value / totals.share) * 100}%`,
+                    backgroundColor: CHART_COLORS[i % CHART_COLORS.length],
+                  }}
                 />
               ))}
             </div>
             <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
               {slices.map((s, i) => (
                 <li key={s.label} className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }} />
+                  <span
+                    className="h-2.5 w-2.5 rounded-sm"
+                    style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }}
+                  />
                   {s.icon} {s.label} <span className="tabular-nums">{money(s.value)}</span>
                 </li>
               ))}

@@ -49,7 +49,9 @@ export default function GroupStatsPage({ params }: { params: Promise<{ groupId: 
       .map((e) => ({
         ...e,
         value:
-          scope === 'group' ? e.amount : e.shares.filter((sh) => sh.userId === myId).reduce((a, sh) => a + sh.amount, 0),
+          scope === 'group'
+            ? e.amount
+            : e.shares.filter((sh) => sh.userId === myId).reduce((a, sh) => a + sh.amount, 0),
       }))
       .filter((e) => e.value > 0);
 
@@ -69,7 +71,9 @@ export default function GroupStatsPage({ params }: { params: Promise<{ groupId: 
       })),
       ...(otherValue > 0 ? [{ label: t('stats.other'), value: otherValue }] : []),
     ];
-    const colorOf = new Map<string, string>(categories.map((c, i) => [c.label, CHART_COLORS[i % CHART_COLORS.length]!]));
+    const colorOf = new Map<string, string>(
+      categories.map((c, i) => [c.label, CHART_COLORS[i % CHART_COLORS.length]!]),
+    );
     const partKey = (c: string | null) => (topLabels.includes(catLabel(c)) ? catLabel(c) : t('stats.other'));
 
     const perPerson = new Map<string, { paid: number; share: number }>();
@@ -136,7 +140,20 @@ export default function GroupStatsPage({ params }: { params: Promise<{ groupId: 
       });
     }
 
-    return { actual, total, count: scoped.length, categories, colorOf, perPerson, timeline, spanDays, biggest, foodSpent, mapPoints, scoped };
+    return {
+      actual,
+      total,
+      count: scoped.length,
+      categories,
+      colorOf,
+      perPerson,
+      timeline,
+      spanDays,
+      biggest,
+      foodSpent,
+      mapPoints,
+      scoped,
+    };
   }, [stats.data, scope, myId, locale, t]);
 
   if ((group.isLoading || stats.isLoading) && !group.isError) return <LoadingSpinner />;
@@ -188,7 +205,12 @@ export default function GroupStatsPage({ params }: { params: Promise<{ groupId: 
     dayTotals.set(key, cur);
   }
   const dayLabel = (key: string) =>
-    new Date(`${key}T12:00:00Z`).toLocaleDateString(locale, { weekday: 'short', day: '2-digit', month: '2-digit', timeZone: 'UTC' });
+    new Date(`${key}T12:00:00Z`).toLocaleDateString(locale, {
+      weekday: 'short',
+      day: '2-digit',
+      month: '2-digit',
+      timeZone: 'UTC',
+    });
   const priciest = [...dayTotals.entries()].sort((a, b) => b[1].value - a[1].value)[0];
   const busiest = [...dayTotals.entries()].sort((a, b) => b[1].count - a[1].count)[0];
   const topCat = view.categories.find((c) => c.label !== t('stats.other'));
@@ -288,7 +310,12 @@ export default function GroupStatsPage({ params }: { params: Promise<{ groupId: 
               <CardTitle className="text-base">{t('stats.byCategory')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <DonutChart slices={view.categories} currency={g.currency} locale={locale} centerLabel={t('stats.total')} />
+              <DonutChart
+                slices={view.categories}
+                currency={g.currency}
+                locale={locale}
+                centerLabel={t('stats.total')}
+              />
             </CardContent>
           </Card>
 

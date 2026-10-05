@@ -124,14 +124,29 @@ function ForecastChart({
             strokeWidth="1"
             strokeDasharray="2 3"
           />
-          <text x={x(today)} y={pad.t - 6} textAnchor="middle" className="fill-foreground" fontSize="10" fontWeight="600">
+          <text
+            x={x(today)}
+            y={pad.t - 6}
+            textAnchor="middle"
+            className="fill-foreground"
+            fontSize="10"
+            fontWeight="600"
+          >
             {todayLabel}
           </text>
         </g>
       )}
       {budget !== null && (
         <g>
-          <line x1={pad.l} x2={W - pad.r} y1={y(budget)} y2={y(budget)} stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3 3" />
+          <line
+            x1={pad.l}
+            x2={W - pad.r}
+            y1={y(budget)}
+            y2={y(budget)}
+            stroke="#ef4444"
+            strokeWidth="1.5"
+            strokeDasharray="3 3"
+          />
           <text x={pad.l + 4} y={y(budget) - 4} fontSize="10" fill="#ef4444">
             {budgetLabel} {money(budget)}
           </text>
@@ -209,7 +224,9 @@ export function ForecastCard({
           <CardTitle className="text-base">{t('stats.forecast')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
-          {budget !== null && <BudgetBar budget={budget} spent={spent} forecast={spent} currency={currency} locale={locale} />}
+          {budget !== null && (
+            <BudgetBar budget={budget} spent={spent} forecast={spent} currency={currency} locale={locale} />
+          )}
           <p>{t('stats.forecastNone')}</p>
           <Link href={`/groups/${groupId}/settings`} className="text-primary hover:underline">
             {t('stats.forecastSettings')}
@@ -230,7 +247,8 @@ export function ForecastCard({
   const transport = (config.transportPerDay ?? 0) * headcount * daysLeft;
   const other = (config.otherPerDay ?? 0) * headcount * daysLeft;
   const total = spent + food + transport + other;
-  const dailyExpected = ((config.foodPerDay ?? 0) + (config.transportPerDay ?? 0) + (config.otherPerDay ?? 0)) * headcount;
+  const dailyExpected =
+    ((config.foodPerDay ?? 0) + (config.transportPerDay ?? 0) + (config.otherPerDay ?? 0)) * headcount;
 
   const detail = (perDay: number | null) => ({ perDay: money(perDay ?? 0), people: headcount, days: daysLeft });
   const rows = [
@@ -271,7 +289,9 @@ export function ForecastCard({
           <span className="flex items-center gap-1.5">
             <span
               className="inline-block h-0.5 w-5"
-              style={{ backgroundImage: `repeating-linear-gradient(90deg, ${CHART_COLORS[1]} 0 5px, transparent 5px 9px)` }}
+              style={{
+                backgroundImage: `repeating-linear-gradient(90deg, ${CHART_COLORS[1]} 0 5px, transparent 5px 9px)`,
+              }}
             />
             {t('stats.forecast')}
           </span>
