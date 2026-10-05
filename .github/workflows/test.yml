@@ -128,6 +128,7 @@ jobs:
           GUEST_RATE_LIMIT_MAX: "1000"
           ADMIN_EMAIL: alice@example.com
           AI_PROVIDER_PRIORITY: mock
+          E2E_AI_CORRECTION: "1"
           EMAIL_SERVER_HOST: localhost
           EMAIL_SERVER_PORT: "2525"
         run: |

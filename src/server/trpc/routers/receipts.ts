@@ -9,6 +9,7 @@ import { parseExtractedData } from '../../lib/json-schemas';
 import { getAIProvidersWithFallback, getConfiguredProviderPriority } from '@/server/ai/registry';
 import { convertCents, isValidCurrency, type RateQuote } from '../../lib/exchange-rates';
 import { getReceiptRate, relabelReceiptCurrency } from '../../lib/receipt-conversion';
+import { previewReceiptCorrection, resolveReceiptCorrection } from '../../lib/receipt-correction';
 import { stripUndefined } from '../../lib/strip-undefined';
 
 /**
@@ -41,6 +42,33 @@ async function verifyReceiptAccess(
 }
 
 export const receiptsRouter = createTRPCRouter({
+  previewCorrection: protectedProcedure
+    .input(
+      z
+        .object({
+          receiptId: z.string().max(100),
+          groupId: z.string().max(100),
+          correctionHint: z.string().trim().min(1).max(500),
+        })
+        .strict(),
+    )
+    .mutation(({ ctx, input }) =>
+      previewReceiptCorrection(ctx.db, input.receiptId, input.groupId, ctx.user.id, input.correctionHint),
+    ),
+  confirmCorrection: protectedProcedure
+    .input(
+      z.object({ receiptId: z.string().max(100), groupId: z.string().max(100), token: z.string().uuid() }).strict(),
+    )
+    .mutation(({ ctx, input }) =>
+      resolveReceiptCorrection(ctx.db, input.receiptId, input.groupId, ctx.user.id, input.token, true),
+    ),
+  discardCorrection: protectedProcedure
+    .input(
+      z.object({ receiptId: z.string().max(100), groupId: z.string().max(100), token: z.string().uuid() }).strict(),
+    )
+    .mutation(({ ctx, input }) =>
+      resolveReceiptCorrection(ctx.db, input.receiptId, input.groupId, ctx.user.id, input.token, false),
+    ),
   getScanProviderInfo: protectedProcedure.query(async () => {
     try {
       const configured = getConfiguredProviderPriority();
@@ -70,6 +98,16 @@ export const receiptsRouter = createTRPCRouter({
       const receipt = await verifyReceiptAccess(ctx.db, input.receiptId, ctx.user.id);
       if (!receipt) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Receipt not found' });
+      }
+
+      if (input.correctionHint !== undefined) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Use previewCorrection and confirmCorrection for corrections.',
+        });
+      }
+      if (await ctx.db.expense.findUnique({ where: { receiptId: input.receiptId } })) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Finalized receipts cannot be reprocessed.' });
       }
 
       if (input.groupId) {

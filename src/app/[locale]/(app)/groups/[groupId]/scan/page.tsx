@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Loader2, Camera, RefreshCw, Users } from 'lucide-react';
+import { ArrowLeft, Loader2, Camera, Users } from 'lucide-react';
+import { CorrectionChat } from '@/components/receipts/correction-chat';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import { ItemAssignment } from '@/components/receipts/item-assignment';
@@ -41,8 +42,9 @@ function ScanReceiptContent({ params }: { params: Promise<{ groupId: string }> }
   const [errorMessage, setErrorMessage] = useState('');
   const [uploading, setUploading] = useState(false);
   const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
-  const [correctionHint, setCorrectionHint] = useState('');
-  const [showRescan, setShowRescan] = useState(false);
+  const [correctionBlocked, setCorrectionBlocked] = useState(false);
+  const [correctionRevision, setCorrectionRevision] = useState(0);
+  const utils = trpc.useUtils();
 
   // Rotate loading messages while processing
   useEffect(() => {
@@ -264,14 +266,29 @@ function ScanReceiptContent({ params }: { params: Promise<{ groupId: string }> }
 
       {step === 'assign' && receiptId && (
         <>
-          <ItemAssignment
+          <CorrectionChat
             key={receiptId}
-            groupId={groupId}
             receiptId={receiptId}
-            members={members}
-            onComplete={handleExpenseCreated}
-            onSaveForLater={() => router.push(`/groups/${groupId}`)}
+            groupId={groupId}
+            onBlocked={setCorrectionBlocked}
+            onApplied={async () => {
+              await Promise.all([
+                utils.receipts.getReceiptItems.invalidate({ receiptId }),
+                utils.receipts.getConversionPreview.invalidate({ receiptId }),
+              ]);
+              setCorrectionRevision((v) => v + 1);
+            }}
           />
+          <fieldset disabled={correctionBlocked} className={correctionBlocked ? 'pointer-events-none opacity-60' : ''}>
+            <ItemAssignment
+              key={`${receiptId}:${correctionRevision}`}
+              groupId={groupId}
+              receiptId={receiptId}
+              members={members}
+              onComplete={handleExpenseCreated}
+              onSaveForLater={() => router.push(`/groups/${groupId}`)}
+            />
+          </fieldset>
           <div className="flex items-center gap-2 text-muted-foreground">
             <div className="flex-1 h-px bg-border" />
             <span className="text-xs">{t('or')}</span>
@@ -282,6 +299,7 @@ function ScanReceiptContent({ params }: { params: Promise<{ groupId: string }> }
             className="w-full"
             onClick={handleShareForClaiming}
             disabled={
+              correctionBlocked ||
               shareForClaiming.isPending ||
               !authSession?.user?.id ||
               !receiptData.data?.receipt?.extractedData ||
@@ -293,51 +311,6 @@ function ScanReceiptContent({ params }: { params: Promise<{ groupId: string }> }
             <Users className="mr-2 h-4 w-4" />
             {shareForClaiming.isPending ? t('creatingSession') : t('shareForClaiming')}
           </Button>
-          <div className="space-y-2">
-            {!showRescan ? (
-              <Button variant="outline" onClick={() => setShowRescan(true)} data-testid="scan-rescan-btn">
-                <RefreshCw className="mr-2 h-4 w-4" />
-                {t('rescanCorrections')}
-              </Button>
-            ) : (
-              <Card>
-                <CardContent className="space-y-3 pt-4">
-                  <p className="text-sm text-muted-foreground">{t('rescanDescription')}</p>
-                  <textarea
-                    placeholder={t('rescanPlaceholder')}
-                    value={correctionHint}
-                    onChange={(e) => setCorrectionHint(e.target.value)}
-                    rows={3}
-                    className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  />
-                  <div className="flex gap-2">
-                    <Button
-                      className="flex-1"
-                      onClick={() => {
-                        if (!correctionHint.trim()) return;
-                        setStep('processing');
-                        setShowRescan(false);
-                        processReceipt.mutate({ receiptId, groupId, correctionHint: correctionHint.trim() });
-                      }}
-                      disabled={!correctionHint.trim()}
-                    >
-                      <RefreshCw className="mr-2 h-4 w-4" />
-                      {t('rescan')}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setShowRescan(false);
-                        setCorrectionHint('');
-                      }}
-                    >
-                      {t('cancel')}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
         </>
       )}
 

@@ -88,6 +88,27 @@
     "receiptImage": "Belegfoto"
   },
   "scan": {
+    "correction": {
+      "title": "KI-Belegkorrektur",
+      "description": "Beschreibe eine Korrektur. Dein Beleg bleibt bis zur Bestätigung unverändert.",
+      "request": "Deine Korrektur",
+      "preview": "Vorschau anfordern",
+      "working": "Wird bearbeitet…",
+      "review": "Vergleiche Original und Vorschlag vor dem Übernehmen.",
+      "original": "Original",
+      "proposed": "Vorschlag",
+      "resetWarning": "Beim Übernehmen werden alle Positionen ersetzt und Zuordnungen, manuelle Überschreibungen und Kursvorschauen zurückgesetzt. Gedruckte Alternativbeträge werden entfernt; prüfe die Umrechnung erneut.",
+      "apply": "Bestätigen und übernehmen",
+      "discard": "Verwerfen",
+      "applied": "Korrektur übernommen.",
+      "discarded": "Vorschau verworfen. Beleg unverändert.",
+      "failed": "Vorschau fehlgeschlagen. Dein Beleg ist unverändert. Versuche es erneut.",
+      "stale": "Diese Vorschau kann nicht übernommen werden. Verwirf sie und fordere eine neue an; der Beleg wurde möglicherweise geändert.",
+      "subtotal": "Zwischensumme",
+      "tax": "Steuer",
+      "tip": "Trinkgeld",
+      "total": "Gesamt"
+    },
     "title": "Beleg scannen",
     "upload": "Einen Beleg hochladen",
     "uploadDescription": "Fotografieren oder laden Sie ein Bild Ihres Belegs hoch. Die KI extrahiert Artikel, Steuern und Trinkgeld, damit Sie sie Gruppenmitgliedern zuordnen können.",

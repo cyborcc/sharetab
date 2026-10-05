@@ -88,6 +88,27 @@
     "receiptImage": "Receipt photo"
   },
   "scan": {
+    "correction": {
+      "title": "AI receipt correction",
+      "description": "Describe a correction. Your receipt stays unchanged until you confirm.",
+      "request": "Your correction",
+      "preview": "Request preview",
+      "working": "Working…",
+      "review": "Compare the original with the proposed extraction before applying.",
+      "original": "Original",
+      "proposed": "Proposed",
+      "resetWarning": "Applying replaces all items and clears assignments, overrides and exchange-rate previews. Printed alternate totals are cleared; review currency conversion again.",
+      "apply": "Confirm and apply",
+      "discard": "Discard",
+      "applied": "Correction applied.",
+      "discarded": "Preview discarded. Receipt unchanged.",
+      "failed": "Preview failed. Your receipt is unchanged. Try again.",
+      "stale": "Cannot apply this preview. Discard it and request a new preview; the receipt may have changed.",
+      "subtotal": "Subtotal",
+      "tax": "Tax",
+      "tip": "Tip",
+      "total": "Total"
+    },
     "title": "Scanner un reçu",
     "upload": "Envoyer un reçu",
     "uploadDescription": "Prenez une photo ou envoyez une image de votre reçu. L'IA extraira les articles, les taxes et le pourboire pour que vous puissiez les attribuer aux membres du groupe.",
