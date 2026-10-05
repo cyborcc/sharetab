@@ -59,15 +59,6 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 
 if (authConfig.magicLink) {
   providers.push(
-    // @ts-expect-error -- upstream next-auth type bug (not fixable from the call
-    // site): NodemailerConfig["server"] is declared `server?: AllTransportOptions`,
-    // but the base EmailConfig re-derives it via an indexed-access type
-    // (`server?: NodemailerConfig["server"]`), which flattens the optional-property
-    // bit into an explicit `AllTransportOptions | undefined` value type. Under
-    // exactOptionalPropertyTypes that reads as "may be present-as-undefined", which
-    // NodemailerConfig's own (correctly) optional `server?:` field does not accept.
-    // See also the (related but not identical) upstream discussion in
-    // nextauthjs/next-auth#9883 / #9890.
     Nodemailer({
       server: {
         host: process.env.EMAIL_SERVER_HOST,
