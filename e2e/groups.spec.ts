@@ -100,7 +100,11 @@ test.describe('Groups', () => {
       await page.waitForURL(/\/groups\/\w+\/settings$/);
       await page.getByLabel('Name').clear();
       await page.getByLabel('Name').fill('Renamed Group');
-      await page.getByRole('button', { name: 'Save changes' }).click();
+      await page
+        .locator('form')
+        .filter({ has: page.getByLabel('Name', { exact: true }) })
+        .getByRole('button', { name: 'Save changes', exact: true })
+        .click();
       await expect(page.getByText('Saved!')).toBeVisible({ timeout: 10000 });
     });
   });

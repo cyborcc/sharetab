@@ -20,7 +20,7 @@ test.describe('Expenses', () => {
 
       await page.getByLabel('Description').fill('Detail Test Expense');
       await page.getByLabel('Amount').fill('85.47');
-      await page.getByLabel('Category (optional)').fill('Food');
+      await page.getByLabel('Category (optional)').selectOption('Food');
       await page.getByLabel('Paid by').selectOption({ label: 'Alice Johnson' });
       await page.getByRole('button', { name: 'Add Expense' }).click();
       await page.waitForURL(/\/groups\/\w+$/, { timeout: 15000 });
