@@ -7,6 +7,11 @@ const MAX_RECEIPT_CENTS = 1_000_000_000;
 
 const moneyCents = z.number().int().min(0).max(MAX_RECEIPT_CENTS);
 
+const currencyCode = z
+  .string()
+  .max(10)
+  .transform((c) => (/^[a-zA-Z]{3}$/.test(c.trim()) ? c.trim().toUpperCase() : 'USD'));
+
 export const receiptItemSchema = z.object({
   name: z.string().max(500),
   quantity: z.number().int().min(1).max(10_000).default(1),
@@ -26,11 +31,19 @@ export const receiptExtractionSchema = z.object({
   total: moneyCents,
   // Normalize to an uppercase ISO 4217-shaped code: downstream UI passes this
   // into Intl.NumberFormat, which throws for malformed currency strings.
-  currency: z
-    .string()
+  currency: currencyCode.default('USD'),
+  // Some receipts print their final total in a second currency. Preserve those
+  // merchant-provided values so a matching group currency can use the printed
+  // conversion instead of a third-party exchange-rate estimate.
+  alternateTotals: z
+    .array(
+      z.object({
+        currency: currencyCode,
+        total: moneyCents,
+      }),
+    )
     .max(10)
-    .default('USD')
-    .transform((c) => (/^[a-zA-Z]{3}$/.test(c.trim()) ? c.trim().toUpperCase() : 'USD')),
+    .default([]),
   confidence: z.number().min(0).max(1).optional(),
 });
 

@@ -15,6 +15,18 @@ describe('parseExtractedData', () => {
     expect(result.subtotal).toBe(1000);
     expect(result.tax).toBe(80);
     expect(result.currency).toBe('USD');
+    expect(result.alternateTotals).toEqual([]);
+  });
+
+  it('keeps printed totals in additional currencies', () => {
+    const result = parseExtractedData({
+      subtotal: 194500,
+      tax: 53838,
+      total: 248338,
+      currency: 'EGP',
+      alternateTotals: [{ currency: 'eur', total: 4282 }],
+    });
+    expect(result.alternateTotals).toEqual([{ currency: 'EUR', total: 4282 }]);
   });
 
   it('defaults missing numeric fields to 0', () => {

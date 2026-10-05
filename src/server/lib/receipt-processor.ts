@@ -117,6 +117,7 @@ export async function processReceiptImage({
           tip: extraction.tip,
           total: extraction.total,
           currency: extraction.currency,
+          alternateTotals: extraction.alternateTotals,
         } as unknown as Prisma.InputJsonValue,
       },
     });

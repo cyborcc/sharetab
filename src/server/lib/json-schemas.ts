@@ -11,6 +11,18 @@ export const extractedDataSchema = z
     tip: z.number().int().min(0).default(0),
     total: z.number().int().min(0).default(0),
     currency: z.string().default('USD'),
+    alternateTotals: z
+      .array(
+        z.object({
+          currency: z
+            .string()
+            .regex(/^[a-zA-Z]{3}$/)
+            .transform((currency) => currency.toUpperCase()),
+          total: z.number().int().min(0),
+        }),
+      )
+      .max(10)
+      .default([]),
   })
   .passthrough();
 

@@ -56,6 +56,7 @@ export class MockProvider implements AIProvider {
       tip,
       total,
       currency: 'USD',
+      alternateTotals: [],
       confidence: 0.95,
     };
   }

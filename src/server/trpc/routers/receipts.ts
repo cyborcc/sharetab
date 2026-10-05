@@ -7,7 +7,7 @@ import { processReceiptImage } from '../../lib/receipt-processor';
 import { logger } from '../../lib/logger';
 import { parseExtractedData } from '../../lib/json-schemas';
 import { getAIProvidersWithFallback, getConfiguredProviderPriority } from '@/server/ai/registry';
-import { getExchangeRate, convertCents } from '../../lib/exchange-rates';
+import { getExchangeRate, getPrintedReceiptRate, convertCents } from '../../lib/exchange-rates';
 import { stripUndefined } from '../../lib/strip-undefined';
 
 /**
@@ -178,6 +178,7 @@ export const receiptsRouter = createTRPCRouter({
           tip: number;
           total: number;
           currency: string;
+          alternateTotals: { currency: string; total: number }[];
         } | null,
       },
       items: receiptWithItems.items as ReceiptItem[],
@@ -545,12 +546,20 @@ export const receiptsRouter = createTRPCRouter({
 
       if (receiptCurrency !== groupCurrency) {
         const receiptDate = extractedData.date?.slice(0, 10);
-        exchangeRate = await getExchangeRate(receiptCurrency, groupCurrency, receiptDate);
-        if (exchangeRate === null) {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: 'Could not fetch exchange rate for receipt currency. Please try again.',
-          });
+        const printedRate = getPrintedReceiptRate(extractedData.total, extractedData.alternateTotals, groupCurrency);
+
+        if (printedRate !== null) {
+          // Prefer the merchant's explicitly printed conversion. It is the
+          // amount actually charged and avoids an unnecessary external lookup.
+          exchangeRate = printedRate;
+        } else {
+          exchangeRate = await getExchangeRate(receiptCurrency, groupCurrency, receiptDate);
+          if (exchangeRate === null) {
+            throw new TRPCError({
+              code: 'BAD_REQUEST',
+              message: 'Could not fetch exchange rate for receipt currency. Please try again.',
+            });
+          }
         }
         baseCurrencyAmount = convertCents(totalAmount, exchangeRate);
       }

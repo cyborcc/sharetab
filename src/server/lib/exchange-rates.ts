@@ -16,6 +16,11 @@ type CacheEntry = {
   fetchedAt: number;
 };
 
+export type PrintedReceiptTotal = {
+  currency: string;
+  total: number;
+};
+
 // Cache key format: "FROM:TO:DATE" where DATE is YYYY-MM-DD or "latest"
 const rateCache = new Map<string, CacheEntry>();
 
@@ -82,6 +87,27 @@ export async function getExchangeRate(from: string, to: string, date?: string): 
     console.error(`[exchange-rates] Failed to fetch rate for ${key}:`, error);
     return null;
   }
+}
+
+/**
+ * Derive a rate from a receipt's explicitly printed total in the target
+ * currency. Returns null when the receipt does not contain a usable total.
+ */
+export function getPrintedReceiptRate(
+  sourceTotalCents: number,
+  alternateTotals: PrintedReceiptTotal[],
+  targetCurrency: string,
+): number | null {
+  if (!Number.isInteger(sourceTotalCents) || sourceTotalCents <= 0) return null;
+
+  const printedTargetTotal = alternateTotals.find(
+    (alternateTotal) => alternateTotal.currency.toUpperCase() === targetCurrency.toUpperCase(),
+  )?.total;
+  if (typeof printedTargetTotal !== 'number' || !Number.isInteger(printedTargetTotal) || printedTargetTotal <= 0) {
+    return null;
+  }
+
+  return printedTargetTotal / sourceTotalCents;
 }
 
 /**

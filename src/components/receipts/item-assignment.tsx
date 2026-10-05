@@ -313,7 +313,9 @@ export function ItemAssignment({
       title,
       paidById,
       ...(place.placeName.trim() ? { placeName: place.placeName.trim() } : {}),
-      ...(place.latitude !== null && place.longitude !== null ? { latitude: place.latitude, longitude: place.longitude } : {}),
+      ...(place.latitude !== null && place.longitude !== null
+        ? { latitude: place.latitude, longitude: place.longitude }
+        : {}),
       tipOverride:
         tipOverride !== '' && isFinite(parseFloat(tipOverride)) ? Math.round(parseFloat(tipOverride) * 100) : undefined,
       assignments: Object.entries(assignments)
@@ -490,6 +492,16 @@ export function ItemAssignment({
             <span>{t('total')}</span>
             <span>{formatCents(safeExtracted.subtotal + safeExtracted.tax + tip, safeExtracted.currency, locale)}</span>
           </div>
+          {safeExtracted.alternateTotals
+            .filter((alternateTotal) => alternateTotal.currency !== safeExtracted.currency)
+            .map((alternateTotal) => (
+              <div key={alternateTotal.currency} className="flex justify-between font-semibold text-primary">
+                <span>
+                  {t('total')} ({alternateTotal.currency})
+                </span>
+                <span>{formatCents(alternateTotal.total, alternateTotal.currency, locale)}</span>
+              </div>
+            ))}
         </CardContent>
       </Card>
 

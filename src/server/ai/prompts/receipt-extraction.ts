@@ -12,7 +12,10 @@ Return a JSON object with exactly this structure:
   "tax": 104,
   "tip": 0,
   "total": 1403,
-  "currency": "USD"
+  "currency": "USD",
+  "alternateTotals": [
+    { "currency": "EUR", "total": 1287 }
+  ]
 }
 
 CRITICAL RULES:
@@ -21,6 +24,10 @@ CRITICAL RULES:
 - quantity * unitPrice should equal totalPrice for each item
 - subtotal should equal the sum of all item totalPrices
 - total should equal subtotal + tax + tip
+- If the receipt prints its final total in one or more additional currencies,
+  add each printed final total to alternateTotals. Do not infer or calculate
+  alternate totals: only include a value that is explicitly printed.
+- The primary total and currency are the receipt's local/original amount.
 - If you cannot read a value clearly, make your best estimate
 - Do not include any text outside the JSON object
 - Return ONLY valid JSON, no markdown code fences`;

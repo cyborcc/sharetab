@@ -1,5 +1,5 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
-import { getExchangeRate, convertCents, clearRateCache } from './exchange-rates';
+import { getExchangeRate, getPrintedReceiptRate, convertCents, clearRateCache } from './exchange-rates';
 
 describe('convertCents', () => {
   test('converts cents with exchange rate', () => {
@@ -134,5 +134,15 @@ describe('getExchangeRate', () => {
 
     const rate = await getExchangeRate('USD', 'XYZ');
     expect(rate).toBeNull();
+  });
+});
+
+describe('getPrintedReceiptRate', () => {
+  test('uses the merchant-printed EGP to EUR total', () => {
+    expect(getPrintedReceiptRate(248_338, [{ currency: 'EUR', total: 4_282 }], 'EUR')).toBe(4_282 / 248_338);
+  });
+
+  test('returns null when the receipt has no matching printed total', () => {
+    expect(getPrintedReceiptRate(248_338, [{ currency: 'USD', total: 4_893 }], 'EUR')).toBeNull();
   });
 });
