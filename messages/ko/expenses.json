@@ -170,6 +170,7 @@
     "creatingExpense": "비용 생성 중...",
     "assignAllItems": "모든 항목 배정 ({remaining}개 남음)",
     "createExpense": "영수증에서 비용 생성",
+    "tapToCount": "다시 탭하면 수량이 늘어납니다",
     "saveChanges": "변경 사항 저장",
     "updatingExpense": "지출 업데이트 중...",
     "saving": "저장 중...",

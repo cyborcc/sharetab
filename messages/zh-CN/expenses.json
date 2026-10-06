@@ -170,6 +170,7 @@
     "creatingExpense": "正在创建费用...",
     "assignAllItems": "分配所有项目（剩余 {remaining}）",
     "createExpense": "从小票创建费用",
+    "tapToCount": "再次点击可增加一份",
     "saveChanges": "保存更改",
     "updatingExpense": "正在更新支出...",
     "saving": "正在保存...",

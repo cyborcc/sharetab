@@ -170,6 +170,7 @@
     "creatingExpense": "Creating expense...",
     "assignAllItems": "Assign all items ({remaining} remaining)",
     "createExpense": "Create Expense from Receipt",
+    "tapToCount": "Tap again for another unit",
     "saveChanges": "Save changes",
     "updatingExpense": "Updating expense...",
     "saving": "Saving...",
