@@ -170,6 +170,8 @@
     "creatingExpense": "Creating expense...",
     "assignAllItems": "Assign all items ({remaining} remaining)",
     "createExpense": "Create Expense from Receipt",
+    "saveChanges": "Save changes",
+    "updatingExpense": "Updating expense...",
     "saving": "Saving...",
     "saveForLater": "Save for Later",
     "loadingItems": "Loading items...",

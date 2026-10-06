@@ -170,6 +170,8 @@
     "creatingExpense": "Ausgabe wird erstellt...",
     "assignAllItems": "Alle Artikel zuordnen ({remaining} übrig)",
     "createExpense": "Ausgabe aus Beleg erstellen",
+    "saveChanges": "Änderungen speichern",
+    "updatingExpense": "Ausgabe wird aktualisiert...",
     "saving": "Wird gespeichert...",
     "saveForLater": "Für später speichern",
     "loadingItems": "Artikel werden geladen...",

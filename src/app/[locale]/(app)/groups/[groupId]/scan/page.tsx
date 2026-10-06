@@ -14,6 +14,7 @@ import { CorrectionChat } from '@/components/receipts/correction-chat';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import { ItemAssignment } from '@/components/receipts/item-assignment';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { loadingMessageKeys } from '@/lib/loading-messages';
 
 type Step = 'upload' | 'processing' | 'assign' | 'error';
@@ -34,6 +35,12 @@ function ScanReceiptContent({ params }: { params: Promise<{ groupId: string }> }
   const tc = useTranslations('common');
   const { data: authSession } = useSession();
   const resumeReceiptId = searchParams.get('receiptId');
+  // Set when an expense that was already created from this receipt is edited (items, payer, tip).
+  const editExpenseId = searchParams.get('expenseId');
+  const editExpense = trpc.expenses.get.useQuery(
+    { groupId, expenseId: editExpenseId! },
+    { enabled: !!editExpenseId },
+  );
   const group = trpc.groups.get.useQuery({ groupId });
   const providerInfo = trpc.receipts.getScanProviderInfo.useQuery();
 
@@ -150,7 +157,7 @@ function ScanReceiptContent({ params }: { params: Promise<{ groupId: string }> }
   }
 
   function handleExpenseCreated() {
-    router.push(`/groups/${groupId}`);
+    router.push(editExpenseId ? `/groups/${groupId}/expenses/${editExpenseId}` : `/groups/${groupId}`);
   }
 
   const members =
@@ -280,14 +287,33 @@ function ScanReceiptContent({ params }: { params: Promise<{ groupId: string }> }
             }}
           />
           <fieldset disabled={correctionBlocked} className={correctionBlocked ? 'pointer-events-none opacity-60' : ''}>
-            <ItemAssignment
-              key={`${receiptId}:${correctionRevision}`}
-              groupId={groupId}
-              receiptId={receiptId}
-              members={members}
-              onComplete={handleExpenseCreated}
-              onSaveForLater={() => router.push(`/groups/${groupId}`)}
-            />
+            {editExpenseId && !editExpense.data ? (
+              <LoadingSpinner />
+            ) : (
+              <ItemAssignment
+                key={`${receiptId}:${correctionRevision}:${editExpenseId ?? ''}`}
+                groupId={groupId}
+                receiptId={receiptId}
+                members={members}
+                onComplete={handleExpenseCreated}
+                onSaveForLater={() => router.push(`/groups/${groupId}`)}
+                {...(editExpenseId && editExpense.data
+                  ? {
+                      expenseId: editExpenseId,
+                      initial: {
+                        title: editExpense.data.title,
+                        paidById: editExpense.data.paidById,
+                        amount: editExpense.data.amount,
+                        place: {
+                          placeName: editExpense.data.placeName ?? '',
+                          latitude: editExpense.data.latitude ?? null,
+                          longitude: editExpense.data.longitude ?? null,
+                        },
+                      },
+                    }
+                  : {})}
+              />
+            )}
           </fieldset>
           <div className="flex items-center gap-2 text-muted-foreground">
             <div className="flex-1 h-px bg-border" />

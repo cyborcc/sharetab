@@ -170,6 +170,8 @@
     "creatingExpense": "Creando gasto...",
     "assignAllItems": "Asignar todos los artículos ({remaining} restantes)",
     "createExpense": "Crear gasto desde recibo",
+    "saveChanges": "Guardar cambios",
+    "updatingExpense": "Actualizando gasto...",
     "saving": "Guardando...",
     "saveForLater": "Guardar para después",
     "loadingItems": "Cargando artículos...",

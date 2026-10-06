@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useMemo, useState } from 'react';
+import { use, useEffect, useMemo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/i18n/navigation';
 import type { inferRouterOutputs } from '@trpc/server';
@@ -63,7 +63,22 @@ export default function EditExpensePage({ params }: { params: Promise<{ groupId:
     );
   }
 
+  // An expense created from a receipt scan is split per item. The generic form below cannot edit
+  // that (it would turn the expense into a plain split and drop the item assignments), so it opens
+  // the receipt editor instead, which shows the receipt image, the items and who has which one.
+  if (expense.data.splitMode === 'ITEM' && expense.data.receiptId) {
+    return <OpenReceiptEditor groupId={groupId} expenseId={expenseId} receiptId={expense.data.receiptId} />;
+  }
+
   return <EditExpenseForm groupId={groupId} expenseId={expenseId} expense={expense.data} group={group.data} />;
+}
+
+function OpenReceiptEditor({ groupId, expenseId, receiptId }: { groupId: string; expenseId: string; receiptId: string }) {
+  const router = useRouter();
+  useEffect(() => {
+    router.replace(`/groups/${groupId}/scan?receiptId=${receiptId}&expenseId=${expenseId}`);
+  }, [router, groupId, expenseId, receiptId]);
+  return <LoadingSpinner />;
 }
 
 // Rendered only once expense + group data is available, so all form state can

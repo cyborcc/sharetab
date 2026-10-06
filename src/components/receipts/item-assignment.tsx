@@ -37,12 +37,18 @@ export function ItemAssignment({
   members,
   onComplete,
   onSaveForLater,
+  expenseId,
+  initial,
 }: {
   groupId: string;
   receiptId: string;
   members: Member[];
   onComplete: () => void;
   onSaveForLater?: () => void;
+  /** Set when an expense that was already created from this receipt is edited. */
+  expenseId?: string;
+  /** Values of that expense; the form starts from them instead of the receipt defaults. */
+  initial?: { title: string; paidById: string; amount: number; place: PlaceValue };
 }) {
   const locale = useLocale();
   const t = useTranslations('expenses.receipt');
@@ -159,6 +165,32 @@ export function ItemAssignment({
     if (!receiptData.data || hasRestoredRef.current) return;
     const data = receiptData.data;
 
+    if (initial) {
+      // Editing an existing expense: start from what was saved, not from the receipt defaults.
+      setTitle(initial.title);
+      setPaidById(initial.paidById);
+      setPlace(initial.place);
+      const restoredAssignments: Assignments = {};
+      for (const item of data.items) {
+        if (item.assignments && item.assignments.length > 0) {
+          restoredAssignments[item.id] = new Set(item.assignments.map((a: { userId: string }) => a.userId));
+        }
+      }
+      setAssignments(restoredAssignments);
+      // The saved total may contain a tip that differs from the receipt: keep it as an override.
+      const ex = data.receipt.extractedData;
+      if (ex) {
+        const assignedSum = data.items.reduce(
+          (sum: number, item: { id: string; totalPrice: number }) => sum + (restoredAssignments[item.id] ? item.totalPrice : 0),
+          0,
+        );
+        const savedTip = initial.amount - assignedSum - ex.tax;
+        if (savedTip >= 0 && savedTip !== ex.tip) setTipOverride(centsToDecimal(savedTip));
+      }
+      hasRestoredRef.current = true;
+      return;
+    }
+
     if (data.receipt.extractedData?.merchantName && !title) {
       setTitle(data.receipt.extractedData.merchantName);
     }
@@ -183,7 +215,7 @@ export function ItemAssignment({
       }
       hasRestoredRef.current = true;
     }
-  }, [receiptData.data, title]);
+  }, [receiptData.data, title, initial]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const { receipt, items } = receiptData.data ?? { receipt: null, items: [] };
@@ -354,6 +386,7 @@ export function ItemAssignment({
       expectedConversion: groupQuote,
       groupId,
       receiptId,
+      ...(expenseId ? { expenseId } : {}),
       title,
       paidById,
       ...(place.placeName.trim() ? { placeName: place.placeName.trim() } : {}),
@@ -964,13 +997,17 @@ export function ItemAssignment({
         data-testid="create-expense-btn"
       >
         {createExpense.isPending
-          ? t('creatingExpense')
+          ? expenseId
+            ? t('updatingExpense')
+            : t('creatingExpense')
           : !allAssigned
             ? t('assignAllItems', { remaining: items.length - assignedItemCount })
-            : t('createExpense')}
+            : expenseId
+              ? t('saveChanges')
+              : t('createExpense')}
       </Button>
 
-      {onSaveForLater && (
+      {onSaveForLater && !expenseId && (
         <Button
           type="button"
           variant="outline"

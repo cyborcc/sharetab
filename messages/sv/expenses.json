@@ -170,6 +170,8 @@
     "creatingExpense": "Skapar kostnad...",
     "assignAllItems": "Tilldela alla artiklar ({remaining} kvar)",
     "createExpense": "Skapa kostnad från kvitto",
+    "saveChanges": "Spara ändringar",
+    "updatingExpense": "Uppdaterar utgift...",
     "saving": "Sparar...",
     "saveForLater": "Spara till senare",
     "loadingItems": "Laddar artiklar...",

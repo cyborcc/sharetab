@@ -492,6 +492,9 @@ export const receiptsRouter = createTRPCRouter({
           })
           .optional(),
         tipOverride: z.number().int().min(0).optional(),
+        // Set when an expense that was already created from this receipt is edited: the
+        // expense, its shares and the item assignments are replaced instead of created.
+        expenseId: z.string().optional(),
         assignments: z.array(
           z.object({
             receiptItemId: z.string(),
@@ -555,6 +558,23 @@ export const receiptsRouter = createTRPCRouter({
       for (const a of input.assignments) {
         if (!itemMap.has(a.receiptItemId)) {
           throw new TRPCError({ code: 'BAD_REQUEST', message: 'Item does not belong to this receipt' });
+        }
+      }
+
+      if (input.expenseId) {
+        const existing = await ctx.db.expense.findFirst({
+          where: { id: input.expenseId, groupId: input.groupId },
+          select: { receiptId: true, splitMode: true, paidById: true, addedById: true },
+        });
+        if (!existing || existing.receiptId !== input.receiptId || existing.splitMode !== 'ITEM') {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Expense does not belong to this receipt' });
+        }
+        const isOwnerOrAdmin = ctx.membership.role === 'OWNER' || ctx.membership.role === 'ADMIN';
+        if (!isOwnerOrAdmin && existing.paidById !== ctx.user.id && existing.addedById !== ctx.user.id) {
+          throw new TRPCError({
+            code: 'FORBIDDEN',
+            message: 'Only the expense creator, payer, or group owner/admin can modify this expense',
+          });
         }
       }
 
@@ -664,32 +684,47 @@ export const receiptsRouter = createTRPCRouter({
         });
         if (claimed.count !== 1)
           throw new TRPCError({ code: 'CONFLICT', message: 'Receipt changed. Reload before saving.' });
-        const exp = await tx.expense.create({
-          data: {
-            groupId: input.groupId,
-            title: input.title,
-            amount: totalAmount,
-            currency: receiptCurrency,
-            exchangeRate: exchangeRate ?? 1.0,
-            baseCurrencyAmount,
-            splitMode: 'ITEM',
-            paidById: input.paidById,
-            addedById: ctx.user.id,
-            receiptId: input.receiptId,
-            ...(input.placeName ? { placeName: input.placeName } : {}),
-            ...(input.latitude !== undefined && input.longitude !== undefined
-              ? { latitude: input.latitude, longitude: input.longitude }
-              : {}),
-            shares: {
-              create: Array.from(userTotals.entries()).map(([userId, amount]) => ({
-                userId,
-                amount,
-              })),
-            },
-          },
-        });
+        const shareRows = Array.from(userTotals.entries()).map(([userId, amount]) => ({ userId, amount }));
+        const hasPlace = input.latitude !== undefined && input.longitude !== undefined;
+        const exp = input.expenseId
+          ? await tx.expense.update({
+              where: { id: input.expenseId },
+              data: {
+                title: input.title,
+                amount: totalAmount,
+                currency: receiptCurrency,
+                exchangeRate: exchangeRate ?? 1.0,
+                baseCurrencyAmount,
+                paidById: input.paidById,
+                placeName: input.placeName ? input.placeName : null,
+                latitude: hasPlace ? input.latitude! : null,
+                longitude: hasPlace ? input.longitude! : null,
+                shares: { deleteMany: {}, create: shareRows },
+              },
+            })
+          : await tx.expense.create({
+              data: {
+                groupId: input.groupId,
+                title: input.title,
+                amount: totalAmount,
+                currency: receiptCurrency,
+                exchangeRate: exchangeRate ?? 1.0,
+                baseCurrencyAmount,
+                splitMode: 'ITEM',
+                paidById: input.paidById,
+                addedById: ctx.user.id,
+                receiptId: input.receiptId,
+                ...(input.placeName ? { placeName: input.placeName } : {}),
+                ...(hasPlace ? { latitude: input.latitude!, longitude: input.longitude! } : {}),
+                shares: { create: shareRows },
+              },
+            });
 
-        const itemIds = [...new Set(input.assignments.map((a) => a.receiptItemId))];
+        // When editing, drop the assignments of every item of the receipt: an item that was
+        // unassigned in the editor must not keep its old assignee.
+        const itemIds = input.expenseId
+          ? receipt.items.map((item) => item.id)
+          : [...new Set(input.assignments.map((a) => a.receiptItemId))];
         await tx.receiptItemAssignment.deleteMany({
           where: { receiptItemId: { in: itemIds } },
         });
@@ -702,7 +737,7 @@ export const receiptsRouter = createTRPCRouter({
           data: {
             groupId: input.groupId,
             userId: ctx.user.id,
-            type: 'EXPENSE_CREATED',
+            type: input.expenseId ? 'EXPENSE_UPDATED' : 'EXPENSE_CREATED',
             entityId: exp.id,
             metadata: { title: input.title, amount: totalAmount, fromReceipt: true },
           },
