@@ -73,7 +73,15 @@ export default function EditExpensePage({ params }: { params: Promise<{ groupId:
   return <EditExpenseForm groupId={groupId} expenseId={expenseId} expense={expense.data} group={group.data} />;
 }
 
-function OpenReceiptEditor({ groupId, expenseId, receiptId }: { groupId: string; expenseId: string; receiptId: string }) {
+function OpenReceiptEditor({
+  groupId,
+  expenseId,
+  receiptId,
+}: {
+  groupId: string;
+  expenseId: string;
+  receiptId: string;
+}) {
   const router = useRouter();
   useEffect(() => {
     router.replace(`/groups/${groupId}/scan?receiptId=${receiptId}&expenseId=${expenseId}`);
