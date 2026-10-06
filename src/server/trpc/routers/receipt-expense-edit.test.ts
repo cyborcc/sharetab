@@ -20,7 +20,15 @@ function fixture(over: { role?: string; existing?: Record<string, unknown> | nul
     groupId: 'group',
     updatedAt: new Date('2026-10-05T10:00:00Z'),
     group: { members: [{ userId: 'user' }] },
-    extractedData: { currency: 'EUR', date: '2026-10-01', total: 3000, subtotal: 3000, tax: 0, tip: 0, alternateTotals: [] },
+    extractedData: {
+      currency: 'EUR',
+      date: '2026-10-01',
+      total: 3000,
+      subtotal: 3000,
+      tax: 0,
+      tip: 0,
+      alternateTotals: [],
+    },
     items: [
       { id: 'a', totalPrice: 1000 },
       { id: 'b', totalPrice: 2000 },
@@ -82,9 +90,17 @@ test('editing updates the expense and replaces its shares instead of creating a 
   const result = await caller.assignItemsAndCreateExpense(input);
   expect(db.expense.create).not.toHaveBeenCalled();
   expect(db.expense.update).toHaveBeenCalledTimes(1);
-  const data = (db.expense.update.mock.calls[0] as unknown as [{ where: { id: string }; data: Record<string, unknown> }])[0];
+  const data = (
+    db.expense.update.mock.calls[0] as unknown as [{ where: { id: string }; data: Record<string, unknown> }]
+  )[0];
   expect(data.where).toEqual({ id: 'expense' });
-  expect(data.data).toMatchObject({ title: 'Dinner (korrigiert)', amount: 3000, paidById: 'friend', placeName: null, latitude: null });
+  expect(data.data).toMatchObject({
+    title: 'Dinner (korrigiert)',
+    amount: 3000,
+    paidById: 'friend',
+    placeName: null,
+    latitude: null,
+  });
   expect(data.data.shares).toMatchObject({ deleteMany: {} });
   const created = (data.data.shares as { create: { userId: string; amount: number }[] }).create;
   expect(created.reduce((s, x) => s + x.amount, 0)).toBe(3000);
@@ -94,7 +110,13 @@ test('editing updates the expense and replaces its shares instead of creating a 
 
 test('editing clears the assignments of every item of the receipt, then writes the new ones', async () => {
   const { caller, db, input } = fixture();
-  await caller.assignItemsAndCreateExpense({ ...input, assignments: [{ receiptItemId: 'a', userIds: ['user'] }, { receiptItemId: 'b', userIds: ['user'] }] });
+  await caller.assignItemsAndCreateExpense({
+    ...input,
+    assignments: [
+      { receiptItemId: 'a', userIds: ['user'] },
+      { receiptItemId: 'b', userIds: ['user'] },
+    ],
+  });
   expect(db.receiptItemAssignment.deleteMany).toHaveBeenCalledWith({ where: { receiptItemId: { in: ['a', 'b'] } } });
   expect(db.receiptItemAssignment.createMany).toHaveBeenCalledTimes(1);
 });
@@ -102,7 +124,9 @@ test('editing clears the assignments of every item of the receipt, then writes t
 test('editing is logged as an update', async () => {
   const { caller, db, input } = fixture();
   await caller.assignItemsAndCreateExpense(input);
-  expect(db.activityLog.create).toHaveBeenCalledWith({ data: expect.objectContaining({ type: 'EXPENSE_UPDATED', entityId: 'expense' }) });
+  expect(db.activityLog.create).toHaveBeenCalledWith({
+    data: expect.objectContaining({ type: 'EXPENSE_UPDATED', entityId: 'expense' }),
+  });
 });
 
 test('without expenseId a new expense is still created', async () => {
@@ -117,17 +141,28 @@ test('without expenseId a new expense is still created', async () => {
 test('an expense that belongs to another receipt or is not an item split is refused', async () => {
   const other = fixture({ existing: { receiptId: 'other', splitMode: 'ITEM', paidById: 'user', addedById: 'user' } });
   await expect(other.caller.assignItemsAndCreateExpense(other.input)).rejects.toMatchObject({ code: 'BAD_REQUEST' });
-  const equal = fixture({ existing: { receiptId: 'receipt', splitMode: 'EQUAL', paidById: 'user', addedById: 'user' } });
+  const equal = fixture({
+    existing: { receiptId: 'receipt', splitMode: 'EQUAL', paidById: 'user', addedById: 'user' },
+  });
   await expect(equal.caller.assignItemsAndCreateExpense(equal.input)).rejects.toMatchObject({ code: 'BAD_REQUEST' });
   const missing = fixture({ existing: null });
-  await expect(missing.caller.assignItemsAndCreateExpense(missing.input)).rejects.toMatchObject({ code: 'BAD_REQUEST' });
+  await expect(missing.caller.assignItemsAndCreateExpense(missing.input)).rejects.toMatchObject({
+    code: 'BAD_REQUEST',
+  });
   expect(other.db.expense.update).not.toHaveBeenCalled();
 });
 
 test('only the creator, the payer or an owner/admin may edit', async () => {
-  const stranger = fixture({ existing: { receiptId: 'receipt', splitMode: 'ITEM', paidById: 'friend', addedById: 'friend' } });
-  await expect(stranger.caller.assignItemsAndCreateExpense(stranger.input)).rejects.toMatchObject({ code: 'FORBIDDEN' });
+  const stranger = fixture({
+    existing: { receiptId: 'receipt', splitMode: 'ITEM', paidById: 'friend', addedById: 'friend' },
+  });
+  await expect(stranger.caller.assignItemsAndCreateExpense(stranger.input)).rejects.toMatchObject({
+    code: 'FORBIDDEN',
+  });
   expect(stranger.db.expense.update).not.toHaveBeenCalled();
-  const admin = fixture({ role: 'ADMIN', existing: { receiptId: 'receipt', splitMode: 'ITEM', paidById: 'friend', addedById: 'friend' } });
+  const admin = fixture({
+    role: 'ADMIN',
+    existing: { receiptId: 'receipt', splitMode: 'ITEM', paidById: 'friend', addedById: 'friend' },
+  });
   await expect(admin.caller.assignItemsAndCreateExpense(admin.input)).resolves.toMatchObject({ id: 'expense' });
 });

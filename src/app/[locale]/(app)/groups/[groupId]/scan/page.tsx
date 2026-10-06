@@ -37,10 +37,7 @@ function ScanReceiptContent({ params }: { params: Promise<{ groupId: string }> }
   const resumeReceiptId = searchParams.get('receiptId');
   // Set when an expense that was already created from this receipt is edited (items, payer, tip).
   const editExpenseId = searchParams.get('expenseId');
-  const editExpense = trpc.expenses.get.useQuery(
-    { groupId, expenseId: editExpenseId! },
-    { enabled: !!editExpenseId },
-  );
+  const editExpense = trpc.expenses.get.useQuery({ groupId, expenseId: editExpenseId! }, { enabled: !!editExpenseId });
   const group = trpc.groups.get.useQuery({ groupId });
   const providerInfo = trpc.receipts.getScanProviderInfo.useQuery();
 

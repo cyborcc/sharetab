@@ -33,7 +33,13 @@ describe('receiptExtractionSchema with null answers from the model', () => {
   });
 
   it('keeps real values untouched', () => {
-    const r = receiptExtractionSchema.parse({ ...base, merchantName: 'Sonnenhof', date: '2026-10-05', tax: 62, tip: 100 });
+    const r = receiptExtractionSchema.parse({
+      ...base,
+      merchantName: 'Sonnenhof',
+      date: '2026-10-05',
+      tax: 62,
+      tip: 100,
+    });
     expect(r).toMatchObject({ merchantName: 'Sonnenhof', date: '2026-10-05', tax: 62, tip: 100 });
   });
 

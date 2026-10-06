@@ -181,7 +181,8 @@ export function ItemAssignment({
       const ex = data.receipt.extractedData;
       if (ex) {
         const assignedSum = data.items.reduce(
-          (sum: number, item: { id: string; totalPrice: number }) => sum + (restoredAssignments[item.id] ? item.totalPrice : 0),
+          (sum: number, item: { id: string; totalPrice: number }) =>
+            sum + (restoredAssignments[item.id] ? item.totalPrice : 0),
           0,
         );
         const savedTip = initial.amount - assignedSum - ex.tax;
