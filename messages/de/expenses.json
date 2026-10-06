@@ -170,6 +170,7 @@
     "creatingExpense": "Ausgabe wird erstellt...",
     "assignAllItems": "Alle Artikel zuordnen ({remaining} übrig)",
     "createExpense": "Ausgabe aus Beleg erstellen",
+    "tapToCount": "Nochmal tippen für ein weiteres Stück",
     "saveChanges": "Änderungen speichern",
     "updatingExpense": "Ausgabe wird aktualisiert...",
     "saving": "Wird gespeichert...",

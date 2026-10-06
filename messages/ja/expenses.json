@@ -170,6 +170,7 @@
     "creatingExpense": "支出を作成中...",
     "assignAllItems": "すべての品目を割り当て（残り{remaining}）",
     "createExpense": "レシートから支出を作成",
+    "tapToCount": "もう一度タップすると数量が増えます",
     "saveChanges": "変更を保存",
     "updatingExpense": "支出を更新中...",
     "saving": "保存中...",

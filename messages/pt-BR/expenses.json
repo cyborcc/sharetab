@@ -170,6 +170,7 @@
     "creatingExpense": "Criando despesa...",
     "assignAllItems": "Atribuir todos os itens ({remaining} restantes)",
     "createExpense": "Criar despesa a partir do recibo",
+    "tapToCount": "Toque novamente para mais uma unidade",
     "saveChanges": "Salvar alterações",
     "updatingExpense": "Atualizando despesa...",
     "saving": "Salvando...",

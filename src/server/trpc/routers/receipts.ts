@@ -496,10 +496,16 @@ export const receiptsRouter = createTRPCRouter({
         // expense, its shares and the item assignments are replaced instead of created.
         expenseId: z.string().optional(),
         assignments: z.array(
-          z.object({
-            receiptItemId: z.string(),
-            userIds: z.array(z.string()).min(1),
-          }),
+          z
+            .object({
+              receiptItemId: z.string(),
+              userIds: z.array(z.string()).min(1),
+              // how many units of the line each person has, aligned with userIds (default 1 each)
+              weights: z.array(z.number().int().min(1).max(99)).optional(),
+            })
+            .refine((a) => !a.weights || a.weights.length === a.userIds.length, {
+              message: 'weights must match userIds',
+            }),
         ),
       }),
     )
@@ -584,6 +590,21 @@ export const receiptsRouter = createTRPCRouter({
       for (const assignment of input.assignments) {
         const item = itemMap.get(assignment.receiptItemId)!;
 
+        if (assignment.weights && assignment.weights.some((w) => w !== 1)) {
+          // Split by the units each person had (e.g. 2 of 3 coffees); the last share takes the rounding rest
+          const totalWeight = assignment.weights.reduce((a, b) => a + b, 0);
+          let allocated = 0;
+          for (const [i, userId] of assignment.userIds.entries()) {
+            const amount =
+              i === assignment.userIds.length - 1
+                ? item.totalPrice - allocated
+                : Math.floor((item.totalPrice * assignment.weights[i]!) / totalWeight);
+            allocated += amount;
+            userSubtotals.set(userId, (userSubtotals.get(userId) ?? 0) + amount);
+          }
+          continue;
+        }
+
         const perPerson = Math.floor(item.totalPrice / assignment.userIds.length);
         const remainder = item.totalPrice - perPerson * assignment.userIds.length;
 
@@ -627,9 +648,10 @@ export const receiptsRouter = createTRPCRouter({
 
       // Save assignments in a single batch (replaces N×M individual upserts)
       const assignmentData = input.assignments.flatMap((a) =>
-        a.userIds.map((userId) => ({
+        a.userIds.map((userId, i) => ({
           receiptItemId: a.receiptItemId,
           userId,
+          shareOfItem: a.weights?.[i] ?? 1,
         })),
       );
 
@@ -760,6 +782,7 @@ export const receiptsRouter = createTRPCRouter({
             z.object({
               receiptItemId: z.string(),
               userIds: z.array(z.string()).max(100),
+              weights: z.array(z.number().int().min(1).max(99)).max(100).optional(),
             }),
           )
           .max(200)
@@ -848,9 +871,9 @@ export const receiptsRouter = createTRPCRouter({
 
           // Create new assignments
           const seenAssignments = new Set<string>();
-          const assignmentData: { receiptItemId: string; userId: string }[] = [];
+          const assignmentData: { receiptItemId: string; userId: string; shareOfItem: number }[] = [];
           for (const assignment of input.assignments) {
-            for (const userId of assignment.userIds) {
+            for (const [i, userId] of assignment.userIds.entries()) {
               const key = `${assignment.receiptItemId}\u0000${userId}`;
               if (seenAssignments.has(key)) {
                 continue;
@@ -859,6 +882,7 @@ export const receiptsRouter = createTRPCRouter({
               assignmentData.push({
                 receiptItemId: assignment.receiptItemId,
                 userId,
+                shareOfItem: assignment.weights?.[i] ?? 1,
               });
             }
           }

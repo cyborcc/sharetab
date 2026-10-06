@@ -170,6 +170,7 @@
     "creatingExpense": "Création de la dépense...",
     "assignAllItems": "Attribuer tous les articles ({remaining} restants)",
     "createExpense": "Créer une dépense à partir du reçu",
+    "tapToCount": "Touchez à nouveau pour une unité de plus",
     "saveChanges": "Enregistrer les modifications",
     "updatingExpense": "Mise à jour de la dépense...",
     "saving": "Enregistrement...",

@@ -4,7 +4,8 @@
  */
 export function calculateSplitTotals(params: {
   items: { totalPrice: number }[];
-  assignments: { itemIndex: number; personIndices: number[] }[];
+  // weights: optional per-person count for this item, aligned with personIndices (e.g. 2 of 3 coffees)
+  assignments: { itemIndex: number; personIndices: number[]; weights?: number[] }[];
   tax: number;
   tip: number;
   peopleCount: number;
@@ -19,15 +20,17 @@ export function calculateSplitTotals(params: {
     const item = items[assignment.itemIndex];
     if (!item || assignment.personIndices.length === 0) continue;
 
-    if (personWeights) {
-      // Weighted proportional splitting
+    const itemWeights = assignment.weights;
+    if (personWeights || itemWeights) {
+      // Weighted proportional splitting: per-item counts win over per-person weights
+      const weightAt = (i: number, pi: number) => itemWeights?.[i] ?? personWeights?.[pi] ?? 1;
       const totalWeight = Math.max(
         1,
-        assignment.personIndices.reduce((sum, pi) => sum + (personWeights[pi] ?? 1), 0),
+        assignment.personIndices.reduce((sum, pi, i) => sum + weightAt(i, pi), 0),
       );
       let allocated = 0;
       for (const [i, personIdx] of assignment.personIndices.entries()) {
-        const weight = personWeights[personIdx] ?? 1;
+        const weight = weightAt(i, personIdx);
         let amount: number;
         if (i === assignment.personIndices.length - 1) {
           amount = item.totalPrice - allocated;

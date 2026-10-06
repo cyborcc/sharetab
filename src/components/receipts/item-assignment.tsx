@@ -20,6 +20,7 @@ import { ReceiptRatePreview } from './receipt-rate-preview';
 type Member = { id: string; name: string | null };
 
 type Assignments = Record<string, Set<string>>; // receiptItemId -> Set<userId>
+type Counts = Record<string, Record<string, number>>; // receiptItemId -> userId -> units (absent = 1)
 
 // A malformed OCR label must not prevent the user from reaching its correction
 // selector. Keep the original label visible rather than substituting a currency.
@@ -56,6 +57,18 @@ export function ItemAssignment({
   const utils = trpc.useUtils();
 
   const [assignments, setAssignments] = useState<Assignments>({});
+  const [counts, setCounts] = useState<Counts>({});
+  const countOf = (itemId: string, userId: string) => counts[itemId]?.[userId] ?? 1;
+  const countsFrom = (list: { id: string; assignments?: { userId: string; shareOfItem?: number }[] }[]) => {
+    const out: Counts = {};
+    for (const item of list) {
+      for (const a of item.assignments ?? []) {
+        if ((a.shareOfItem ?? 1) > 1) out[item.id] = { ...(out[item.id] ?? {}), [a.userId]: a.shareOfItem! };
+      }
+    }
+    return out;
+  };
+  const weightsFor = (itemId: string, userIds: Set<string>) => Array.from(userIds).map((u) => countOf(itemId, u));
   const [title, setTitle] = useState('');
   const [place, setPlace] = useState<PlaceValue>({ placeName: '', latitude: null, longitude: null });
   const tExp = useTranslations('expenses');
@@ -177,6 +190,7 @@ export function ItemAssignment({
         }
       }
       setAssignments(restoredAssignments);
+      setCounts(countsFrom(data.items));
       // The saved total may contain a tip that differs from the receipt: keep it as an override.
       const ex = data.receipt.extractedData;
       if (ex) {
@@ -213,6 +227,7 @@ export function ItemAssignment({
       }
       if (Object.keys(restored).length > 0) {
         setAssignments(restored);
+        setCounts(countsFrom(data.items));
       }
       hasRestoredRef.current = true;
     }
@@ -229,21 +244,36 @@ export function ItemAssignment({
   // duplicated from split/page.tsx. This component uses Record<string, Set<string>>
   // (id-based) while split/page uses Record<number, Set<number>> (index-based).
   // The different key types make a shared abstraction more complex than the duplication.
+  // Tapping a person adds them; on a line with several units each further tap adds one unit
+  // (2 of 3 coffees), and tapping at the line's quantity removes the person again.
   function toggleAssignment(itemId: string, userId: string) {
+    const quantity = Math.max(1, items.find((it) => it.id === itemId)?.quantity ?? 1);
+    const isAssigned = assignments[itemId]?.has(userId) ?? false;
+    const current = countOf(itemId, userId);
+    if (isAssigned && current < quantity) {
+      setCounts((prev) => ({ ...prev, [itemId]: { ...(prev[itemId] ?? {}), [userId]: current + 1 } }));
+      return;
+    }
+    setCounts((prev) => {
+      const forItem = { ...(prev[itemId] ?? {}) };
+      delete forItem[userId];
+      return { ...prev, [itemId]: forItem };
+    });
     setAssignments((prev) => {
       const next = { ...prev };
-      const current = new Set(next[itemId] ?? []);
-      if (current.has(userId)) {
-        current.delete(userId);
+      const set = new Set(next[itemId] ?? []);
+      if (isAssigned) {
+        set.delete(userId);
       } else {
-        current.add(userId);
+        set.add(userId);
       }
-      next[itemId] = current;
+      next[itemId] = set;
       return next;
     });
   }
 
   function assignAllToEveryone() {
+    setCounts({});
     const next: Assignments = {};
     for (const item of items) {
       next[item.id] = new Set(members.map((m) => m.id));
@@ -309,11 +339,11 @@ export function ItemAssignment({
       .filter(([, userIds]) => userIds.size > 0)
       .map(([receiptItemId, userIds]) => {
         const itemIdx = items.findIndex((it) => it.id === receiptItemId);
+        const known = Array.from(userIds).filter((uid) => memberIdToIndex.has(uid));
         return {
           itemIndex: itemIdx,
-          personIndices: Array.from(userIds)
-            .map((uid) => memberIdToIndex.get(uid))
-            .filter((idx): idx is number => idx !== undefined),
+          personIndices: known.map((uid) => memberIdToIndex.get(uid)!),
+          weights: known.map((uid) => counts[receiptItemId]?.[uid] ?? 1),
         };
       })
       .filter((a) => a.itemIndex >= 0 && a.personIndices.length > 0);
@@ -333,7 +363,7 @@ export function ItemAssignment({
       if (member) totals.set(member.id, r.total);
     }
     return totals;
-  }, [items, assignments, members, extracted, tip]);
+  }, [items, assignments, counts, members, extracted, tip]);
   const assignedItemCount = Object.values(assignments).filter((s) => s.size > 0).length;
   const allAssigned = items.length > 0 && assignedItemCount === items.length;
 
@@ -401,6 +431,7 @@ export function ItemAssignment({
         .map(([receiptItemId, userIds]) => ({
           receiptItemId,
           userIds: Array.from(userIds),
+          weights: weightsFor(receiptItemId, userIds),
         })),
     });
   }
@@ -415,6 +446,7 @@ export function ItemAssignment({
         .map(([receiptItemId, userIds]) => ({
           receiptItemId,
           userIds: Array.from(userIds),
+          weights: weightsFor(receiptItemId, userIds),
         })),
     });
   }
@@ -939,11 +971,13 @@ export function ItemAssignment({
                 <div className="flex flex-wrap gap-1.5">
                   {members.map((m) => {
                     const isAssigned = assigned.has(m.id);
+                    const units = isAssigned ? countOf(item.id, m.id) : 0;
                     return (
                       <button
                         key={m.id}
                         type="button"
                         onClick={() => toggleAssignment(item.id, m.id)}
+                        title={item.quantity > 1 ? t('tapToCount') : undefined}
                         data-testid={`member-toggle-${m.id}`}
                         className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs transition-colors ${
                           isAssigned
@@ -955,7 +989,8 @@ export function ItemAssignment({
                           <AvatarFallback className="text-[8px]">{memberInitials.get(m.id) ?? '?'}</AvatarFallback>
                         </Avatar>
                         {m.name?.split(' ')[0] ?? '?'}
-                        {isAssigned && <Check className="h-3 w-3" />}
+                        {isAssigned &&
+                          (units > 1 ? <span className="font-semibold">×{units}</span> : <Check className="h-3 w-3" />)}
                       </button>
                     );
                   })}
