@@ -7,6 +7,10 @@ const MAX_RECEIPT_CENTS = 1_000_000_000;
 
 const moneyCents = z.number().int().min(0).max(MAX_RECEIPT_CENTS);
 
+// The prompt asks the model for "null" when it cannot read a value, and models also send null for
+// missing tax or tip lines. null means "not there", the same as leaving the field out.
+const nullAsMissing = (v: unknown) => v ?? undefined;
+
 const currencyCode = z
   .string()
   .max(10)
@@ -20,30 +24,33 @@ export const receiptItemSchema = z.object({
 });
 
 export const receiptExtractionSchema = z.object({
-  merchantName: z.string().max(500).optional(),
+  merchantName: z.preprocess(nullAsMissing, z.string().max(500).optional()),
   // street, postal code and city as printed on the receipt; used to find the place on the map
-  merchantAddress: z.preprocess((v) => v ?? undefined, z.string().max(500).optional()),
-  date: z.string().max(100).optional(),
+  merchantAddress: z.preprocess(nullAsMissing, z.string().max(500).optional()),
+  date: z.preprocess(nullAsMissing, z.string().max(100).optional()),
   items: z.array(receiptItemSchema).min(1).max(500),
   subtotal: moneyCents,
-  tax: moneyCents.default(0),
-  tip: moneyCents.default(0),
+  tax: z.preprocess(nullAsMissing, moneyCents.default(0)),
+  tip: z.preprocess(nullAsMissing, moneyCents.default(0)),
   total: moneyCents,
   // Normalize to an uppercase ISO 4217-shaped code: downstream UI passes this
   // into Intl.NumberFormat, which throws for malformed currency strings.
-  currency: currencyCode.default('USD'),
+  currency: z.preprocess(nullAsMissing, currencyCode.default('USD')),
   // Some receipts print their final total in a second currency. Preserve those
   // merchant-provided values so a matching group currency can use the printed
   // conversion instead of a third-party exchange-rate estimate.
-  alternateTotals: z
-    .array(
-      z.object({
-        currency: currencyCode,
-        total: moneyCents,
-      }),
-    )
-    .max(10)
-    .default([]),
+  alternateTotals: z.preprocess(
+    nullAsMissing,
+    z
+      .array(
+        z.object({
+          currency: currencyCode,
+          total: moneyCents,
+        }),
+      )
+      .max(10)
+      .default([]),
+  ),
   confidence: z.number().min(0).max(1).optional(),
 });
 
