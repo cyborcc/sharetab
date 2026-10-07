@@ -32,68 +32,70 @@ export function MobileHeader({ isAdmin }: { isAdmin?: boolean }) {
         <span className="text-lg font-bold tracking-wide">ShareTab</span>
       </div>
 
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger render={<Button variant="ghost" size="icon" aria-label={t('actions.openMenu')} />}>
-          <Menu className="h-5 w-5" />
-        </SheetTrigger>
-        <SheetContent side="right" className="w-64">
-          <SheetHeader>
-            <SheetTitle className="flex items-center gap-2.5">
-              <Receipt className="h-5 w-5 text-primary drop-shadow-sm" />
-              <span className="tracking-wide">ShareTab</span>
-            </SheetTitle>
-          </SheetHeader>
-          <nav className="mt-6 space-y-1">
-            {navItems.map((item) => {
-              const active = pathname === item.href || pathname.startsWith(item.href + '/');
-              return (
-                <Link key={item.href} href={item.href} onClick={() => setOpen(false)}>
+      <div className="flex items-center gap-1">
+        <LanguageSwitcher />
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetTrigger render={<Button variant="ghost" size="icon" aria-label={t('actions.openMenu')} />}>
+            <Menu className="h-5 w-5" />
+          </SheetTrigger>
+          <SheetContent side="right" className="w-64">
+            <SheetHeader>
+              <SheetTitle className="flex items-center gap-2.5">
+                <Receipt className="h-5 w-5 text-primary drop-shadow-sm" />
+                <span className="tracking-wide">ShareTab</span>
+              </SheetTitle>
+            </SheetHeader>
+            <nav className="mt-6 space-y-1">
+              {navItems.map((item) => {
+                const active = pathname === item.href || pathname.startsWith(item.href + '/');
+                return (
+                  <Link key={item.href} href={item.href} onClick={() => setOpen(false)}>
+                    <span
+                      className={cn(
+                        'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
+                        active
+                          ? 'border-l-[3px] border-primary bg-primary/10 text-primary shadow-sm'
+                          : 'border-l-[3px] border-transparent text-muted-foreground hover:bg-muted/80 hover:text-foreground',
+                      )}
+                    >
+                      <item.icon className="h-5 w-5 shrink-0" />
+                      {t(`nav.${item.key}`)}
+                    </span>
+                  </Link>
+                );
+              })}
+              {isAdmin && (
+                <Link href="/admin" onClick={() => setOpen(false)}>
                   <span
                     className={cn(
                       'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
-                      active
+                      pathname === '/admin'
                         ? 'border-l-[3px] border-primary bg-primary/10 text-primary shadow-sm'
                         : 'border-l-[3px] border-transparent text-muted-foreground hover:bg-muted/80 hover:text-foreground',
                     )}
                   >
-                    <item.icon className="h-5 w-5 shrink-0" />
-                    {t(`nav.${item.key}`)}
+                    <Shield className="h-5 w-5 shrink-0" />
+                    {t('nav.admin')}
                   </span>
                 </Link>
-              );
-            })}
-            {isAdmin && (
-              <Link href="/admin" onClick={() => setOpen(false)}>
-                <span
-                  className={cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
-                    pathname === '/admin'
-                      ? 'border-l-[3px] border-primary bg-primary/10 text-primary shadow-sm'
-                      : 'border-l-[3px] border-transparent text-muted-foreground hover:bg-muted/80 hover:text-foreground',
-                  )}
+              )}
+              <div className="mt-2 flex w-full items-center gap-2 rounded-lg px-3 py-2">
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    signOut({ callbackUrl: `/${locale}/login` });
+                  }}
+                  className="flex flex-1 items-center gap-3 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground"
                 >
-                  <Shield className="h-5 w-5 shrink-0" />
-                  {t('nav.admin')}
-                </span>
-              </Link>
-            )}
-            <div className="mt-2 flex w-full items-center gap-2 rounded-lg px-3 py-2">
-              <button
-                onClick={() => {
-                  setOpen(false);
-                  signOut({ callbackUrl: `/${locale}/login` });
-                }}
-                className="flex flex-1 items-center gap-3 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground"
-              >
-                <LogOut className="h-5 w-5" />
-                {t('nav.signOut')}
-              </button>
-              <LanguageSwitcher />
-              <ThemeToggle />
-            </div>
-          </nav>
-        </SheetContent>
-      </Sheet>
+                  <LogOut className="h-5 w-5" />
+                  {t('nav.signOut')}
+                </button>
+                <ThemeToggle />
+              </div>
+            </nav>
+          </SheetContent>
+        </Sheet>
+      </div>
     </header>
   );
 }

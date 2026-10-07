@@ -56,7 +56,20 @@
     "myBalanceGet": "you get back",
     "myBalanceOwe": "you owe",
     "myBalanceEven": "settled",
-    "allExpenses": "Show all expenses"
+    "allExpenses": "Show all expenses",
+    "paidShort": "{name} paid",
+    "you": "You",
+    "involved": "Involved",
+    "onlyFor": "only {name}",
+    "filterAll": "All",
+    "howToSettle": "How to settle up",
+    "balanceGets": "gets",
+    "balancePays": "pays",
+    "balanceEven": "settled",
+    "balancePaidOwes": "paid {paid} · share {owes}",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "noneForFilter": "No expenses for this person."
   },
   "settings": {
     "title": "그룹 설정",

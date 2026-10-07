@@ -56,10 +56,20 @@ function LanguageSwitcherInner() {
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button variant="ghost" size="icon-sm" aria-label={t('nav.changeLanguage')} data-testid="language-switcher" />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 gap-1 px-2 text-xs font-medium"
+            aria-label={t('nav.changeLanguage')}
+            title={t('nav.changeLanguage')}
+            data-testid="language-switcher"
+          />
         }
       >
-        <Globe className="h-4 w-4" />
+        {/* Flag and code instead of a bare globe, so it is clear that this switches the language */}
+        <Globe className="h-3.5 w-3.5 opacity-60" />
+        <span>{languageConfig[locale]?.flag}</span>
+        <span className="uppercase">{locale.split('-')[0]}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {locales.map((l) => (

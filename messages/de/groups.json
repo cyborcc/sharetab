@@ -56,7 +56,20 @@
     "myBalanceGet": "du bekommst",
     "myBalanceOwe": "du schuldest",
     "myBalanceEven": "ausgeglichen",
-    "allExpenses": "Alle Ausgaben anzeigen"
+    "allExpenses": "Alle Ausgaben anzeigen",
+    "paidShort": "{name} hat bezahlt",
+    "you": "Du",
+    "involved": "Beteiligt",
+    "onlyFor": "nur {name}",
+    "filterAll": "Alle",
+    "howToSettle": "So wird ausgeglichen",
+    "balanceGets": "bekommt",
+    "balancePays": "zahlt",
+    "balanceEven": "ausgeglichen",
+    "balancePaidOwes": "bezahlt {paid} · Anteil {owes}",
+    "today": "Heute",
+    "yesterday": "Gestern",
+    "noneForFilter": "Keine Ausgaben für diese Person."
   },
   "settings": {
     "title": "Gruppeneinstellungen",
