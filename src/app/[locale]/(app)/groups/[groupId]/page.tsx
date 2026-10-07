@@ -294,6 +294,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
                   <div key={i} className="flex items-center gap-2">
                     <button
                       type="button"
+                      aria-label={`${memberName(from, t('detail.unknown'))} → ${toName}: ${formatCents(debt.amount, g.currency, locale)}`}
                       className={`flex flex-1 items-center gap-2 rounded-xl border p-2.5 text-sm transition-all hover:bg-muted/70 hover:shadow-sm ${
                         debt.from === myId || debt.to === myId ? 'border-primary/40 bg-primary/5' : ''
                       }`}

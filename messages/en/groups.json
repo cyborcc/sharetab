@@ -57,7 +57,7 @@
     "myBalanceOwe": "you owe",
     "myBalanceEven": "settled",
     "allExpenses": "Show all expenses",
-    "paidShort": "{name} paid",
+    "paidShort": "Paid by {name}",
     "you": "You",
     "involved": "Involved",
     "onlyFor": "only {name}",

@@ -10,7 +10,7 @@ test.describe('Mobile Admin Page', () => {
   });
 
   test('admin link visible in mobile hamburger menu', async ({ page }) => {
-    const menuButton = page.locator('header').getByRole('button');
+    const menuButton = page.locator('header').getByRole('button', { name: 'Open menu' });
     await menuButton.click();
 
     const dialog = page.getByRole('dialog');
@@ -18,7 +18,7 @@ test.describe('Mobile Admin Page', () => {
   });
 
   test('hamburger menu navigates to admin page', async ({ page }) => {
-    const menuButton = page.locator('header').getByRole('button');
+    const menuButton = page.locator('header').getByRole('button', { name: 'Open menu' });
     await menuButton.click();
 
     const dialog = page.getByRole('dialog');
@@ -160,7 +160,7 @@ test.describe('Mobile Admin Page', () => {
     const page = await context.newPage();
     await login(page, users.bob.email, users.bob.password);
 
-    const menuButton = page.locator('header').getByRole('button');
+    const menuButton = page.locator('header').getByRole('button', { name: 'Open menu' });
     await menuButton.click();
 
     const dialog = page.getByRole('dialog');
