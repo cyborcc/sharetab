@@ -21,5 +21,13 @@
     "submit": "Changer le mot de passe",
     "submitting": "Modification...",
     "success": "Mot de passe modifié !"
+  },
+  "avatar": {
+    "upload": "Upload photo",
+    "reset": "Remove",
+    "saved": "Avatar updated",
+    "failed": "Could not save the avatar",
+    "color": "Colour",
+    "emojiHint": "Or pick an emoji and a colour:"
   }
 }

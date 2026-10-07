@@ -21,5 +21,13 @@
     "submit": "パスワードを変更",
     "submitting": "変更中...",
     "success": "パスワードを変更しました!"
+  },
+  "avatar": {
+    "upload": "Upload photo",
+    "reset": "Remove",
+    "saved": "Avatar updated",
+    "failed": "Could not save the avatar",
+    "color": "Colour",
+    "emojiHint": "Or pick an emoji and a colour:"
   }
 }

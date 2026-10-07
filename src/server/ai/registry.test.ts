@@ -183,3 +183,51 @@ describe('getAIProviderWithFallback', () => {
     expect(provider.constructor.name).toBe('OpenAIProvider');
   });
 });
+
+describe('selectable models', () => {
+  const originalEnv = process.env;
+
+  beforeEach(() => {
+    vi.resetModules();
+    process.env = { ...originalEnv };
+    delete process.env.OPENAI_API_KEY;
+    delete process.env.OPENAI_MODEL;
+    delete process.env.OPENAI_MODELS;
+    delete process.env.SWISSCOM_MYAI_API_KEY;
+    delete process.env.SWISSCOM_MODELS;
+    delete process.env.CHATGPT_MODELS;
+    process.env.AI_PROVIDER_PRIORITY = 'openai';
+  });
+
+  test('lists the default endpoint first, then Swisscom and ChatGPT with prefixes', async () => {
+    process.env.OPENAI_API_KEY = 'k';
+    process.env.OPENAI_MODEL = 'Qwen38.S';
+    process.env.OPENAI_MODELS = 'Qwen38.S,mistral';
+    process.env.SWISSCOM_MYAI_API_KEY = 's';
+    process.env.SWISSCOM_MODELS = 'qwen-a,qwen-b';
+    process.env.AI_PROVIDER_PRIORITY = 'openai,openai-codex';
+    process.env.OPENAI_CODEX_MODEL = 'gpt-5.5';
+    const { getSelectableModels } = await import('./registry');
+    expect(getSelectableModels()).toEqual([
+      'Qwen38.S',
+      'mistral',
+      'swisscom:qwen-a',
+      'swisscom:qwen-b',
+      'chatgpt:gpt-5.5',
+    ]);
+  });
+
+  test('offers nothing for providers that are not configured', async () => {
+    const { getSelectableModels, createProviderForModel } = await import('./registry');
+    expect(getSelectableModels()).toEqual([]);
+    await expect(createProviderForModel('swisscom:x')).rejects.toThrow('Model not available');
+  });
+
+  test('builds a Swisscom provider that targets its own endpoint and can be deduplicated', async () => {
+    process.env.SWISSCOM_MYAI_API_KEY = 's';
+    process.env.SWISSCOM_MODELS = 'qwen-a';
+    const { createProviderForModel } = await import('./registry');
+    const provider = await createProviderForModel('swisscom:qwen-a');
+    expect(provider).toMatchObject({ name: 'swisscom', model: 'qwen-a', selectionId: 'swisscom:qwen-a' });
+  });
+});

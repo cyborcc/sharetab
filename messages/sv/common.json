@@ -7,7 +7,8 @@
     "settings": "Inställningar",
     "admin": "Administration",
     "signOut": "Logga ut",
-    "changeLanguage": "Byt språk"
+    "changeLanguage": "Byt språk",
+    "feedback": "Feedback"
   },
   "actions": {
     "save": "Spara",

@@ -21,5 +21,13 @@
     "submit": "Passwort ändern",
     "submitting": "Ändern...",
     "success": "Passwort geändert!"
+  },
+  "avatar": {
+    "upload": "Foto hochladen",
+    "reset": "Entfernen",
+    "saved": "Avatar gespeichert",
+    "failed": "Avatar konnte nicht gespeichert werden",
+    "color": "Farbe",
+    "emojiHint": "Oder ein Emoji und eine Farbe wählen:"
   }
 }

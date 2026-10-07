@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { avatarColor, guestAvatarColor, getInitials } from './avatar';
+import {
+  avatarColor,
+  guestAvatarColor,
+  getInitials,
+  parseAvatar,
+  encodeEmojiAvatar,
+  AVATAR_BACKGROUNDS,
+} from './avatar';
 
 describe('avatarColor', () => {
   it('returns a Tailwind bg class', () => {
@@ -58,5 +65,25 @@ describe('getInitials', () => {
 
   it('uppercases', () => {
     expect(getInitials('alice johnson')).toBe('AJ');
+  });
+});
+
+describe('parseAvatar', () => {
+  it('reads a chosen emoji avatar', () => {
+    expect(parseAvatar(encodeEmojiAvatar('🦊', 2), 'u1')).toEqual({
+      kind: 'emoji',
+      emoji: '🦊',
+      background: AVATAR_BACKGROUNDS[2],
+    });
+  });
+
+  it('uses photo URLs as they are', () => {
+    expect(parseAvatar('/api/avatar/u1?v=1', 'u1')).toEqual({ kind: 'photo', src: '/api/avatar/u1?v=1' });
+  });
+
+  it('gives everybody without an image a stable emoji avatar', () => {
+    const a = parseAvatar(null, 'user-a');
+    expect(a.kind).toBe('emoji');
+    expect(parseAvatar(null, 'user-a')).toEqual(a);
   });
 });

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { AvatarEditor } from '@/components/settings/avatar-editor';
 
 // Rendered only once the profile has loaded, so all fields can be
 // initialized directly from the data (no sync-from-query effects that
@@ -113,11 +114,14 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           {profile.data ? (
-            <ProfileForm
-              email={profile.data.email ?? session?.user?.email ?? ''}
-              initialName={profile.data.name ?? session?.user?.name ?? ''}
-              initialVenmoUsername={profile.data.venmoUsername ?? ''}
-            />
+            <div className="space-y-6">
+              <AvatarEditor userId={profile.data.id} name={profile.data.name} image={profile.data.image} />
+              <ProfileForm
+                email={profile.data.email ?? session?.user?.email ?? ''}
+                initialName={profile.data.name ?? session?.user?.name ?? ''}
+                initialVenmoUsername={profile.data.venmoUsername ?? ''}
+              />
+            </div>
           ) : (
             <div className="space-y-4">
               {[0, 1, 2].map((i) => (

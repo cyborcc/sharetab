@@ -256,10 +256,12 @@ export function resolveCodexModel(model: string | undefined): string {
 
 export class OpenAICodexProvider implements AIProvider {
   readonly name = 'openai-codex';
-  private model: string;
+  readonly model: string;
+  readonly selectionId: string;
 
   constructor(model?: string) {
     this.model = resolveCodexModel(model);
+    this.selectionId = `chatgpt:${this.model}`;
   }
 
   async extractReceipt(

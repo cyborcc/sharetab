@@ -7,7 +7,8 @@
     "settings": "Settings",
     "admin": "Admin",
     "signOut": "Sign out",
-    "changeLanguage": "Change language"
+    "changeLanguage": "Change language",
+    "feedback": "Feedback"
   },
   "actions": {
     "save": "Save",

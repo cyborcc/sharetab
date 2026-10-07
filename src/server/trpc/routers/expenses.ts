@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { createTRPCRouter, groupMemberProcedure } from '../init';
-import { SplitMode } from '@/generated/prisma/client';
+import { SplitMode, type Prisma } from '@/generated/prisma/client';
 import { getExchangeRate, convertCents } from '../../lib/exchange-rates';
 import { MAX_MONEY_CENTS } from '@/lib/money';
 import { stripUndefined } from '../../lib/strip-undefined';
@@ -372,7 +372,9 @@ export const expensesRouter = createTRPCRouter({
             userId: ctx.user.id,
             type: 'EXPENSE_CREATED',
             entityId: created.id,
-            ...(input.isPrivate ? {} : { metadata: { title: input.title, amount: input.amount } }),
+            ...(input.isPrivate
+              ? {}
+              : { metadata: { title: input.title, amount: input.amount, currency: input.currency } }),
           },
         });
 
@@ -541,12 +543,44 @@ export const expensesRouter = createTRPCRouter({
           include: { shares: true },
         });
 
+        // What changed, for the group history (nothing is recorded for private expenses)
+        const changes: Record<string, [unknown, unknown]> = {};
+        const fieldChanges: Record<string, unknown> = {
+          title: data.title,
+          amount: data.amount,
+          currency: inputCurrency,
+          category: data.category,
+          placeName: data.placeName,
+          paidById: data.paidById,
+        };
+        for (const [key, value] of Object.entries(fieldChanges)) {
+          if (value === undefined) continue;
+          const old = existing[key as keyof typeof existing] ?? null;
+          if (old !== value) changes[key] = [old, value];
+        }
+        if (data.expenseDate && new Date(data.expenseDate).getTime() !== existing.expenseDate.getTime()) {
+          changes.expenseDate = [existing.expenseDate.toISOString(), new Date(data.expenseDate).toISOString()];
+        }
+        if (shares) {
+          changes.shares = [null, shares.length];
+        }
+
         await tx.activityLog.create({
           data: {
             groupId,
             userId: ctx.user.id,
             type: 'EXPENSE_UPDATED',
             entityId: expenseId,
+            ...(updated.isPrivate
+              ? {}
+              : {
+                  metadata: {
+                    title: updated.title,
+                    amount: updated.amount,
+                    currency: updated.currency,
+                    ...(Object.keys(changes).length > 0 ? { changes } : {}),
+                  } as Prisma.InputJsonValue,
+                }),
           },
         });
 
@@ -595,7 +629,9 @@ export const expensesRouter = createTRPCRouter({
             userId: ctx.user.id,
             type: 'EXPENSE_DELETED',
             entityId: input.expenseId,
-            ...(expense.isPrivate ? {} : { metadata: { title: expense.title, amount: expense.amount } }),
+            ...(expense.isPrivate
+              ? {}
+              : { metadata: { title: expense.title, amount: expense.amount, currency: expense.currency } }),
           },
         });
       });

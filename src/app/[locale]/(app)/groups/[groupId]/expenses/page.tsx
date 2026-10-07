@@ -29,7 +29,9 @@ export default function AllExpensesPage({ params }: { params: Promise<{ groupId:
   const expenses = trpc.expenses.list.useQuery({ groupId, limit: 100 });
 
   const [query, setQuery] = useState('');
-  const [person, setPerson] = useState('');
+  // Starts on the signed-in person; 'Alle' ('') is a choice
+  const [chosenPerson, setPerson] = useState<string | null>(null);
+  const person = chosenPerson ?? myId ?? '';
   const [category, setCategory] = useState('');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');

@@ -7,7 +7,8 @@
     "settings": "Einstellungen",
     "admin": "Verwaltung",
     "signOut": "Abmelden",
-    "changeLanguage": "Sprache ändern"
+    "changeLanguage": "Sprache ändern",
+    "feedback": "Feedback"
   },
   "actions": {
     "save": "Speichern",

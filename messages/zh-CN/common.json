@@ -7,7 +7,8 @@
     "settings": "设置",
     "admin": "管理",
     "signOut": "退出登录",
-    "changeLanguage": "切换语言"
+    "changeLanguage": "切换语言",
+    "feedback": "Feedback"
   },
   "actions": {
     "save": "保存",

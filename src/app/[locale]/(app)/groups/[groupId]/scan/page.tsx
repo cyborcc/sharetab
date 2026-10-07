@@ -19,6 +19,13 @@ import { loadingMessageKeys } from '@/lib/loading-messages';
 
 type Step = 'upload' | 'processing' | 'assign' | 'error';
 
+/** Scan-dialog label of a model id: Swisscom and ChatGPT choices carry a prefix, the rest is the default endpoint. */
+function modelLabel(id: string): string {
+  if (id.startsWith('swisscom:')) return `Swisscom · ${id.slice('swisscom:'.length)}`;
+  if (id.startsWith('chatgpt:')) return `ChatGPT · ${id.slice('chatgpt:'.length)}`;
+  return id;
+}
+
 export default function ScanReceiptPage({ params }: { params: Promise<{ groupId: string }> }) {
   return (
     <Suspense>
@@ -256,7 +263,7 @@ function ScanReceiptContent({ params }: { params: Promise<{ groupId: string }> }
                 >
                   {models.map((m, i) => (
                     <option key={m} value={m}>
-                      {i === 0 ? `${m} (${t('modelDefault')})` : m}
+                      {i === 0 ? `${modelLabel(m)} (${t('modelDefault')})` : modelLabel(m)}
                     </option>
                   ))}
                 </select>

@@ -51,7 +51,7 @@ export async function extractReceiptImage({
   for (let pass = 0; pass < 2 && !result; pass++) {
     // A copy: the fallback list is cached and shared between requests.
     const providers = [...(await getAIProvidersWithFallback())];
-    if (model && !providers.some((p) => (p as { model?: unknown }).model === model)) {
+    if (model && !providers.some((p) => (p as { selectionId?: unknown }).selectionId === model)) {
       providers.unshift(await createProviderForModel(model));
     }
 

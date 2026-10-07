@@ -7,7 +7,8 @@
     "settings": "Configurações",
     "admin": "Admin",
     "signOut": "Sair",
-    "changeLanguage": "Alterar idioma"
+    "changeLanguage": "Alterar idioma",
+    "feedback": "Feedback"
   },
   "actions": {
     "save": "Salvar",

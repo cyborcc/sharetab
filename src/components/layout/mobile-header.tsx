@@ -6,7 +6,17 @@ import { signOut } from 'next-auth/react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { LayoutDashboard, Users, Receipt, LogOut, Settings, Shield, Menu, Scissors } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Users,
+  Receipt,
+  LogOut,
+  Settings,
+  Shield,
+  Menu,
+  Scissors,
+  MessageSquarePlus,
+} from 'lucide-react';
 import { ThemeToggle } from '@/components/layout/theme-toggle';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { useTranslations, useLocale } from 'next-intl';
@@ -16,6 +26,7 @@ const navItems = [
   { href: '/groups', key: 'groups', icon: Users },
   { href: '/split', key: 'quickSplit', icon: Receipt },
   { href: '/splits', key: 'mySplits', icon: Scissors },
+  { href: '/feedback', key: 'feedback', icon: MessageSquarePlus },
   { href: '/settings', key: 'settings', icon: Settings },
 ] as const;
 

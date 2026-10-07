@@ -49,3 +49,78 @@ export function getInitials(name?: string | null, email?: string | null): string
   }
   return email?.[0]?.toUpperCase() ?? '?';
 }
+
+// ─── Profile avatars ───────────────────────────────────────
+// User.image holds either a photo URL (own upload or an SSO picture) or "emoji:<emoji>:<colour index>".
+// Without one, everybody still gets an avatar: an emoji and colour derived from the user id.
+
+export const AVATAR_EMOJIS = [
+  '🦊',
+  '🐼',
+  '🦁',
+  '🐯',
+  '🐸',
+  '🐙',
+  '🦄',
+  '🐧',
+  '🦉',
+  '🐢',
+  '🦈',
+  '🐬',
+  '🦋',
+  '🐝',
+  '🦖',
+  '🐨',
+  '🐵',
+  '🦩',
+  '🐳',
+  '🦜',
+  '🐺',
+  '🐰',
+  '🦔',
+  '🐞',
+];
+
+export const AVATAR_BACKGROUNDS = [
+  '#3b82f6',
+  '#10b981',
+  '#8b5cf6',
+  '#f59e0b',
+  '#f43f5e',
+  '#06b6d4',
+  '#d946ef',
+  '#84cc16',
+];
+
+export type ParsedAvatar = { kind: 'photo'; src: string } | { kind: 'emoji'; emoji: string; background: string };
+
+export function encodeEmojiAvatar(emoji: string, colorIndex: number): string {
+  return `emoji:${emoji}:${Math.abs(Math.floor(colorIndex)) % AVATAR_BACKGROUNDS.length}`;
+}
+
+function hashId(id: string): number {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) | 0;
+  return Math.abs(hash);
+}
+
+export function parseAvatar(image: string | null | undefined, id: string): ParsedAvatar {
+  if (image?.startsWith('emoji:')) {
+    const [, emoji, color] = image.split(':');
+    if (emoji) {
+      const index = Number(color);
+      return {
+        kind: 'emoji',
+        emoji,
+        background: AVATAR_BACKGROUNDS[Number.isInteger(index) ? index % AVATAR_BACKGROUNDS.length : 0] ?? '#3b82f6',
+      };
+    }
+  }
+  if (image && (image.startsWith('/') || image.startsWith('http'))) return { kind: 'photo', src: image };
+  const hash = hashId(id);
+  return {
+    kind: 'emoji',
+    emoji: AVATAR_EMOJIS[hash % AVATAR_EMOJIS.length] ?? '🦊',
+    background: AVATAR_BACKGROUNDS[Math.floor(hash / AVATAR_EMOJIS.length) % AVATAR_BACKGROUNDS.length] ?? '#3b82f6',
+  };
+}

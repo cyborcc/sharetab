@@ -27,11 +27,35 @@ export const activityRouter = createTRPCRouter({
         nextCursor = next?.id;
       }
 
+      // The expense an entry is about, as it is now: titles of older entries and entries of
+      // expenses that still exist. A private expense only shows its title to the payer.
+      const expenseIds = [
+        ...new Set(
+          items
+            .filter((i) => i.entityId && i.type.startsWith('EXPENSE_') && i.type !== 'EXPENSE_DELETED')
+            .map((i) => i.entityId as string),
+        ),
+      ];
+      const expenses =
+        expenseIds.length > 0
+          ? await ctx.db.expense.findMany({
+              where: { id: { in: expenseIds }, groupId: input.groupId },
+              select: { id: true, title: true, amount: true, currency: true, isPrivate: true, paidById: true },
+            })
+          : [];
+      const expenseById = new Map(expenses.map((e) => [e.id, e]));
+
       return {
-        items: items.map((item) => ({
-          ...item,
-          user: item.user ?? { id: item.userId ?? 'deleted', name: 'Deleted user', image: null },
-        })),
+        items: items.map((item) => {
+          const expense = item.entityId ? expenseById.get(item.entityId) : undefined;
+          const hidden = !!expense?.isPrivate && expense.paidById !== ctx.user.id;
+          return {
+            ...item,
+            user: item.user ?? { id: item.userId ?? 'deleted', name: 'Deleted user', image: null },
+            expense: expense && !hidden ? { id: expense.id, title: expense.title } : null,
+            isPrivate: !!expense?.isPrivate,
+          };
+        }),
         nextCursor,
       };
     }),

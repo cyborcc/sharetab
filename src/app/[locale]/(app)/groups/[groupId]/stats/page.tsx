@@ -123,7 +123,7 @@ export default function GroupStatsPage({ params }: { params: Promise<{ groupId: 
     }
 
     const biggest = [...scoped].sort((a, b) => b.value - a.value).slice(0, 5);
-    const actual = scoped.map((e) => ({ date: e.date, value: e.value }));
+    const actual = scoped.map((e) => ({ date: e.date, value: e.value, category: e.category }));
     const foodSpent = scoped
       .filter((e) => FOOD_CATEGORIES.has((e.category ?? '').toLowerCase()))
       .reduce((a, e) => a + e.value, 0);

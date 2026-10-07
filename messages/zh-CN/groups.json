@@ -69,7 +69,8 @@
     "balancePaidOwes": "paid {paid} · share {owes}",
     "today": "Today",
     "yesterday": "Yesterday",
-    "noneForFilter": "No expenses for this person."
+    "noneForFilter": "No expenses for this person.",
+    "history": "History"
   },
   "settings": {
     "title": "群组设置",
@@ -208,7 +209,13 @@
     "recapBiggest": "Biggest expense",
     "recapBusiestDay": "Most expenses in one day",
     "recapCount": "{count} expenses",
-    "recapPerPerson": "Avg per person"
+    "recapPerPerson": "Avg per person",
+    "trendShort": "Trend (last days)",
+    "trendTitle": "Trend forecast from the last {days} days",
+    "trendHint": "Food and transport at the recent daily average; other costs only as already booked.",
+    "trendFood": "Food (about {perDay} per day × {days} days)",
+    "trendTransport": "Transport (about {perDay} per day × {days} days)",
+    "trendTotal": "Trend forecast total"
   },
   "expList": {
     "title": "All expenses",
@@ -223,5 +230,34 @@
     "reset": "Reset",
     "back": "Back",
     "paidBy": "Paid by"
+  },
+  "history": {
+    "title": "History",
+    "empty": "Nothing has happened in this group yet.",
+    "more": "Load more",
+    "loading": "Loading...",
+    "anExpense": "an expense",
+    "created": "{name} added",
+    "updated": "{name} changed",
+    "deleted": "{name} deleted",
+    "settled": "{name} paid {to} {amount}",
+    "receiptItems": "{name} changed receipt items",
+    "joined": "{name} joined the group",
+    "left": "{name} left the group",
+    "placeholderCreated": "{name} added the placeholder {placeholder}",
+    "placeholderMerged": "{name} merged a placeholder with a member",
+    "archived": "{name} archived the group",
+    "unarchived": "{name} restored the group",
+    "groupUpdated": "{name} changed the group",
+    "field": {
+      "title": "Title",
+      "amount": "Amount",
+      "currency": "Currency",
+      "category": "Category",
+      "placeName": "Place",
+      "paidById": "Paid by",
+      "expenseDate": "Date",
+      "shares": "Split changed"
+    }
   }
 }

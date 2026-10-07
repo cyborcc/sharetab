@@ -4,8 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { formatCents } from '@/lib/money';
 import { categoryIcon } from '@/lib/categories';
-import { avatarColor, getInitials } from '@/lib/avatar';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/ui/user-avatar';
 
 export type RowMember = {
   id: string;
@@ -33,7 +32,7 @@ export function memberName(m: RowMember | undefined, fallback = '?'): string {
   return m?.placeholderName ?? m?.name ?? m?.email ?? fallback;
 }
 
-/** Round avatar: the profile picture, or initials on the member's colour. */
+/** Round avatar: the profile picture or the member's emoji avatar. */
 export function MemberAvatar({
   member,
   id,
@@ -45,23 +44,16 @@ export function MemberAvatar({
   className?: string;
   ring?: boolean;
 }) {
-  const initials = getInitials(member?.placeholderName ?? member?.name ?? null, member?.email ?? null);
   const ringClass = ring ? 'ring-2 ring-primary ring-offset-1 ring-offset-background' : '';
-  if (member?.image) {
-    return (
-      <Avatar className={`${className} ${ringClass}`} title={memberName(member)}>
-        <AvatarImage src={member.image} />
-        <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
-      </Avatar>
-    );
-  }
   return (
-    <span
+    <UserAvatar
+      image={member?.image}
+      id={id}
+      name={member?.placeholderName ?? member?.name ?? null}
+      email={member?.email ?? null}
       title={memberName(member)}
-      className={`inline-flex shrink-0 items-center justify-center rounded-full font-medium text-white ${avatarColor(id)} ${className} ${ringClass}`}
-    >
-      {initials}
-    </span>
+      className={`${className} ${ringClass}`}
+    />
   );
 }
 

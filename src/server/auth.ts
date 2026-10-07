@@ -149,8 +149,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (token.id) {
         const fresh = await db.user.findUnique({
           where: { id: token.id as string },
-          select: { name: true, locale: true },
+          select: { name: true, locale: true, image: true },
         });
+        if (fresh) token.picture = fresh.image;
         if (fresh?.name) token.name = fresh.name;
         if (fresh?.locale) token.locale = fresh.locale;
       }
@@ -160,6 +161,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user) {
         session.user.id = token.id as string;
         session.user.name = (token.name as string | null | undefined) ?? session.user.name ?? null;
+        session.user.image = typeof token.picture === 'string' ? token.picture : null;
         if (typeof token.locale === 'string') {
           session.user.locale = token.locale;
         }

@@ -1,0 +1,27 @@
+{
+  "title": "Feedback",
+  "intro": "Problem gefunden oder eine Idee? Hier eintragen. Der Admin bestätigt Einträge, bevor sie umgesetzt werden.",
+  "new": "Neuer Eintrag",
+  "kind": {
+    "IDEA": "Idee",
+    "BUG": "Problem"
+  },
+  "titleLabel": "Kurzer Titel",
+  "titlePlaceholder": "z. B. Trinkgeld auf dem Beleg anzeigen",
+  "bodyLabel": "Details (optional)",
+  "bodyPlaceholder": "Was ist passiert, oder was soll besser werden?",
+  "send": "Absenden",
+  "sent": "Danke, dein Eintrag ist angekommen.",
+  "empty": "Noch keine Einträge.",
+  "status": {
+    "OPEN": "Offen",
+    "APPROVED": "Bestätigt",
+    "DONE": "Erledigt",
+    "REJECTED": "Abgelehnt"
+  },
+  "approve": "Bestätigen",
+  "markDone": "Als erledigt markieren",
+  "reject": "Ablehnen",
+  "remove": "Zurückziehen",
+  "removeConfirm": "Diesen Eintrag zurückziehen?"
+}

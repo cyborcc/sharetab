@@ -8,9 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ArrowUpRight, ArrowDownLeft, Plus, ChevronRight, TrendingUp, TrendingDown } from 'lucide-react';
-import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
-import { getInitials, avatarColor } from '@/lib/avatar';
+import { UserAvatar } from '@/components/ui/user-avatar';
 
 const GROUPS_PER_PAGE = 6;
 
@@ -191,11 +190,12 @@ export default function DashboardPage() {
                       className="flex items-center justify-between rounded-md px-1 py-2.5 transition-colors hover:bg-muted/50"
                     >
                       <div className="flex items-center gap-3">
-                        <div
-                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-medium text-white shadow-sm ${avatarColor(person.userId)}`}
-                        >
-                          {getInitials(person.userName)}
-                        </div>
+                        <UserAvatar
+                          image={person.image}
+                          id={person.userId}
+                          name={person.userName}
+                          className="h-9 w-9 shadow-sm"
+                        />
                         <span className="text-sm font-medium">{person.userName}</span>
                       </div>
                       <span className="text-sm font-semibold tabular-nums text-green-600 dark:text-green-400">
@@ -239,11 +239,12 @@ export default function DashboardPage() {
                       className="flex items-center justify-between rounded-md px-1 py-2.5 transition-colors hover:bg-muted/50"
                     >
                       <div className="flex items-center gap-3">
-                        <div
-                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-medium text-white shadow-sm ${avatarColor(person.userId)}`}
-                        >
-                          {getInitials(person.userName)}
-                        </div>
+                        <UserAvatar
+                          image={person.image}
+                          id={person.userId}
+                          name={person.userName}
+                          className="h-9 w-9 shadow-sm"
+                        />
                         <span className="text-sm font-medium">{person.userName}</span>
                       </div>
                       <span className="text-sm font-semibold tabular-nums text-red-600 dark:text-red-400">
@@ -308,22 +309,14 @@ export default function DashboardPage() {
                         <div className="flex -space-x-2">
                           {visibleMembers.map((member) => {
                             const name = member.user.name ?? member.user.placeholderName ?? member.user.email ?? '?';
-                            return member.user.image ? (
-                              <Image
+                            return (
+                              <UserAvatar
                                 key={member.user.id}
-                                src={member.user.image}
-                                alt={name}
-                                width={28}
-                                height={28}
-                                className="h-7 w-7 rounded-full ring-2 ring-card"
+                                image={member.user.image}
+                                id={member.user.id}
+                                name={name}
+                                className="h-7 w-7 ring-2 ring-card"
                               />
-                            ) : (
-                              <div
-                                key={member.user.id}
-                                className={`flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-medium text-white ring-2 ring-card ${avatarColor(member.user.id)}`}
-                              >
-                                {getInitials(name)}
-                              </div>
                             );
                           })}
                         </div>

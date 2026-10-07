@@ -4,8 +4,18 @@ import { Link, usePathname } from '@/i18n/navigation';
 import { signOut } from 'next-auth/react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LayoutDashboard, Users, Receipt, LogOut, Settings, Shield, Heart, Scissors } from 'lucide-react';
+import { UserAvatar } from '@/components/ui/user-avatar';
+import {
+  LayoutDashboard,
+  Users,
+  Receipt,
+  LogOut,
+  Settings,
+  Shield,
+  Heart,
+  Scissors,
+  MessageSquarePlus,
+} from 'lucide-react';
 import { ThemeToggle } from '@/components/layout/theme-toggle';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { useTranslations, useLocale } from 'next-intl';
@@ -39,6 +49,7 @@ const navItems = [
   { href: '/groups', key: 'groups', icon: Users },
   { href: '/split', key: 'quickSplit', icon: Receipt },
   { href: '/splits', key: 'mySplits', icon: Scissors },
+  { href: '/feedback', key: 'feedback', icon: MessageSquarePlus },
 ] as const;
 
 type SidebarUser = {
@@ -52,15 +63,6 @@ export function AppSidebar({ user, isAdmin }: { user: SidebarUser; isAdmin?: boo
   const pathname = usePathname();
   const t = useTranslations('common');
   const locale = useLocale();
-
-  const initials = user.name
-    ? user.name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
-    : (user.email?.[0]?.toUpperCase() ?? '?');
 
   return (
     <aside className="hidden w-64 shrink-0 border-r bg-gradient-to-b from-primary/[0.03] to-muted/40 lg:flex lg:flex-col lg:sticky lg:top-0 lg:h-dvh overflow-hidden">
@@ -113,10 +115,13 @@ export function AppSidebar({ user, isAdmin }: { user: SidebarUser; isAdmin?: boo
       {/* User profile section */}
       <div className="shrink-0 border-t border-transparent [border-image:linear-gradient(to_right,transparent,var(--color-border),transparent)_1] p-3">
         <div className="flex items-center gap-3 rounded-lg px-3 py-2">
-          <Avatar className="h-8 w-8 ring-2 ring-primary/20">
-            <AvatarImage src={user.image ?? undefined} />
-            <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">{initials}</AvatarFallback>
-          </Avatar>
+          <UserAvatar
+            image={user.image}
+            id={user.id}
+            name={user.name}
+            email={user.email}
+            className="h-8 w-8 ring-2 ring-primary/20"
+          />
           <div className="flex-1 truncate">
             <p className="truncate text-sm font-medium">{user.name ?? 'User'}</p>
             <p className="truncate text-xs text-muted-foreground">{user.email}</p>

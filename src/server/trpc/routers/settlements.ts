@@ -138,7 +138,7 @@ export const settlementsRouter = createTRPCRouter({
             userId: ctx.user.id,
             type: 'SETTLEMENT_CREATED',
             entityId: created.id,
-            metadata: { toId: input.toId, amount: input.amount },
+            metadata: { toId: input.toId, amount: input.amount, currency: input.currency },
           },
         });
 

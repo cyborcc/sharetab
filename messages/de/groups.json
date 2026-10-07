@@ -69,7 +69,8 @@
     "balancePaidOwes": "bezahlt {paid} · Anteil {owes}",
     "today": "Heute",
     "yesterday": "Gestern",
-    "noneForFilter": "Keine Ausgaben für diese Person."
+    "noneForFilter": "Keine Ausgaben für diese Person.",
+    "history": "Verlauf"
   },
   "settings": {
     "title": "Gruppeneinstellungen",
@@ -208,7 +209,13 @@
     "recapBiggest": "Größte Ausgabe",
     "recapBusiestDay": "Meiste Ausgaben an einem Tag",
     "recapCount": "{count} Ausgaben",
-    "recapPerPerson": "Ø pro Person"
+    "recapPerPerson": "Ø pro Person",
+    "trendShort": "Trend (letzte Tage)",
+    "trendTitle": "Trend-Prognose aus den letzten {days} Tagen",
+    "trendHint": "Essen und Fahrtkosten im Schnitt der letzten Tage; alles andere nur wie bereits gebucht.",
+    "trendFood": "Essen (ca. {perDay} pro Tag × {days} Tage)",
+    "trendTransport": "Fahrtkosten (ca. {perDay} pro Tag × {days} Tage)",
+    "trendTotal": "Trend-Prognose gesamt"
   },
   "expList": {
     "title": "Alle Ausgaben",
@@ -223,5 +230,34 @@
     "reset": "Zurücksetzen",
     "back": "Zurück",
     "paidBy": "Bezahlt von"
+  },
+  "history": {
+    "title": "Verlauf",
+    "empty": "In dieser Gruppe ist noch nichts passiert.",
+    "more": "Mehr laden",
+    "loading": "Lädt...",
+    "anExpense": "eine Ausgabe",
+    "created": "{name} hat hinzugefügt:",
+    "updated": "{name} hat geändert:",
+    "deleted": "{name} hat gelöscht:",
+    "settled": "{name} hat {to} {amount} bezahlt",
+    "receiptItems": "{name} hat Belegposten geändert",
+    "joined": "{name} ist der Gruppe beigetreten",
+    "left": "{name} hat die Gruppe verlassen",
+    "placeholderCreated": "{name} hat den Platzhalter {placeholder} angelegt",
+    "placeholderMerged": "{name} hat einen Platzhalter mit einem Mitglied zusammengeführt",
+    "archived": "{name} hat die Gruppe archiviert",
+    "unarchived": "{name} hat die Gruppe wiederhergestellt",
+    "groupUpdated": "{name} hat die Gruppe geändert",
+    "field": {
+      "title": "Titel",
+      "amount": "Betrag",
+      "currency": "Währung",
+      "category": "Kategorie",
+      "placeName": "Ort",
+      "paidById": "Bezahlt von",
+      "expenseDate": "Datum",
+      "shares": "Aufteilung geändert"
+    }
   }
 }

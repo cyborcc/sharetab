@@ -62,24 +62,28 @@ export const balancesRouter = createTRPCRouter({
           select: { fromId: true, toId: true, amount: true, baseCurrencyAmount: true },
         },
         members: {
-          select: { user: { select: { id: true, name: true, venmoUsername: true } } },
+          select: { user: { select: { id: true, name: true, image: true, venmoUsername: true } } },
         },
       },
     });
 
     // Aggregate net amounts across all groups per person pair
     // Positive = they owe you, Negative = you owe them
-    const aggregated = new Map<string, { userName: string; venmoUsername: string | null; amount: number }>();
+    const aggregated = new Map<
+      string,
+      { userName: string; image: string | null; venmoUsername: string | null; amount: number }
+    >();
 
     for (const group of groups) {
       const balances = computeBalances(group.expenses, group.settlements);
       const debts = simplifyDebts(balances);
 
       // Build a userId -> user info lookup for this group
-      const userMap = new Map<string, { name: string; venmoUsername: string | null }>();
+      const userMap = new Map<string, { name: string; image: string | null; venmoUsername: string | null }>();
       for (const member of group.members) {
         userMap.set(member.user.id, {
           name: member.user.name ?? 'Unknown',
+          image: member.user.image,
           venmoUsername: member.user.venmoUsername,
         });
       }
@@ -97,6 +101,7 @@ export const balancesRouter = createTRPCRouter({
           } else {
             aggregated.set(debt.from, {
               userName: userInfo?.name ?? 'Unknown',
+              image: userInfo?.image ?? null,
               venmoUsername: userInfo?.venmoUsername ?? null,
               amount: debt.amount,
             });
@@ -111,6 +116,7 @@ export const balancesRouter = createTRPCRouter({
           } else {
             aggregated.set(debt.to, {
               userName: userInfo?.name ?? 'Unknown',
+              image: userInfo?.image ?? null,
               venmoUsername: userInfo?.venmoUsername ?? null,
               amount: -debt.amount,
             });
@@ -119,14 +125,21 @@ export const balancesRouter = createTRPCRouter({
       }
     }
 
-    const owedToYou: { userId: string; userName: string; venmoUsername: string | null; amount: number }[] = [];
-    const youOwe: { userId: string; userName: string; venmoUsername: string | null; amount: number }[] = [];
+    type DebtPerson = {
+      userId: string;
+      userName: string;
+      image: string | null;
+      venmoUsername: string | null;
+      amount: number;
+    };
+    const owedToYou: DebtPerson[] = [];
+    const youOwe: DebtPerson[] = [];
 
-    for (const [userId, { userName, venmoUsername, amount }] of aggregated) {
+    for (const [userId, { userName, image, venmoUsername, amount }] of aggregated) {
       if (amount > 0) {
-        owedToYou.push({ userId, userName, venmoUsername, amount });
+        owedToYou.push({ userId, userName, image, venmoUsername, amount });
       } else if (amount < 0) {
-        youOwe.push({ userId, userName, venmoUsername, amount: -amount });
+        youOwe.push({ userId, userName, image, venmoUsername, amount: -amount });
       }
     }
 

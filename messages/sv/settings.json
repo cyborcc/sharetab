@@ -21,5 +21,13 @@
     "submit": "Byt lösenord",
     "submitting": "Ändrar...",
     "success": "Lösenord ändrat!"
+  },
+  "avatar": {
+    "upload": "Upload photo",
+    "reset": "Remove",
+    "saved": "Avatar updated",
+    "failed": "Could not save the avatar",
+    "color": "Colour",
+    "emojiHint": "Or pick an emoji and a colour:"
   }
 }

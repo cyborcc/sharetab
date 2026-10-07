@@ -5,13 +5,21 @@ import { receiptExtractionSchema } from '../schema';
 import { RECEIPT_EXTRACTION_PROMPT } from '../prompts/receipt-extraction';
 
 export class OpenAIProvider implements AIProvider {
-  readonly name = 'openai';
+  readonly name: string;
   private client: OpenAI;
   readonly model: string;
+  /** What a user picks in the scan dialog to get this provider and model (see getSelectableModels). */
+  readonly selectionId: string;
 
-  constructor(apiKey: string, model?: string) {
-    this.client = new OpenAI({ apiKey });
+  /**
+   * `baseURL` points the client at another OpenAI-compatible endpoint (default: OPENAI_BASE_URL or
+   * OpenAI itself); `name` is how it shows up in logs and receipts.
+   */
+  constructor(apiKey: string, model?: string, options: { baseURL?: string; name?: string; selectionId?: string } = {}) {
+    this.client = new OpenAI({ apiKey, ...(options.baseURL ? { baseURL: options.baseURL } : {}) });
     this.model = model ?? 'gpt-4o';
+    this.name = options.name ?? 'openai';
+    this.selectionId = options.selectionId ?? this.model;
   }
 
   async extractReceipt(

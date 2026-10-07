@@ -91,23 +91,62 @@ async function createProvider(name: AIProviderName): Promise<AIProvider> {
  * Models of the OpenAI-compatible endpoint that users may pick per scan: OPENAI_MODELS
  * (comma-separated) plus OPENAI_MODEL, the default, which always comes first.
  */
-export function getSelectableModels(): string[] {
-  if (!process.env.OPENAI_API_KEY) return [];
-  const listed = (process.env.OPENAI_MODELS ?? '')
+export const SWISSCOM_PREFIX = 'swisscom:';
+export const CHATGPT_PREFIX = 'chatgpt:';
+const SWISSCOM_DEFAULT_BASE_URL = 'https://code.myai.swisscom.ch/v1';
+const SWISSCOM_DEFAULT_MODEL = 'qwen3.5-397b-a17b';
+
+function listFromEnv(value: string | undefined): string[] {
+  return (value ?? '')
     .split(',')
     .map((m) => m.trim())
     .filter(Boolean);
-  const fallback = process.env.OPENAI_MODEL?.trim() || 'gpt-4o';
-  return [...new Set([fallback, ...listed])];
 }
 
-/** The OpenAI-compatible provider with a model the user picked; refuses models not offered. */
-export async function createProviderForModel(model: string): Promise<AIProvider> {
-  if (!getSelectableModels().includes(model)) {
-    throw new Error(`Model not available: "${model}"`);
+/**
+ * Choices for the scan dialog, as ids the client sends back:
+ * - the configured OpenAI-compatible endpoint: the bare model names (OPENAI_MODELS plus OPENAI_MODEL,
+ *   the default, which comes first)
+ * - Swisscom myAI (`swisscom:<model>`): with SWISSCOM_MYAI_API_KEY, models from SWISSCOM_MODELS
+ * - the ChatGPT subscription (`chatgpt:<model>`): when `openai-codex` is in AI_PROVIDER_PRIORITY
+ *   (the login happens in the admin dashboard); models from CHATGPT_MODELS, else OPENAI_CODEX_MODEL
+ */
+export function getSelectableModels(): string[] {
+  const out: string[] = [];
+  if (process.env.OPENAI_API_KEY) {
+    const fallback = process.env.OPENAI_MODEL?.trim() || 'gpt-4o';
+    out.push(...new Set([fallback, ...listFromEnv(process.env.OPENAI_MODELS)]));
+  }
+  if (process.env.SWISSCOM_MYAI_API_KEY) {
+    const models = listFromEnv(process.env.SWISSCOM_MODELS);
+    out.push(...(models.length > 0 ? models : [SWISSCOM_DEFAULT_MODEL]).map((m) => `${SWISSCOM_PREFIX}${m}`));
+  }
+  if (isProviderConfigured('openai-codex')) {
+    const models = listFromEnv(process.env.CHATGPT_MODELS);
+    const fallback = process.env.OPENAI_CODEX_MODEL?.trim() || 'gpt-5.5';
+    out.push(...(models.length > 0 ? models : [fallback]).map((m) => `${CHATGPT_PREFIX}${m}`));
+  }
+  return out;
+}
+
+/** The provider and model a user picked; refuses ids that getSelectableModels does not offer. */
+export async function createProviderForModel(selection: string): Promise<AIProvider> {
+  if (!getSelectableModels().includes(selection)) {
+    throw new Error(`Model not available: "${selection}"`);
+  }
+  if (selection.startsWith(CHATGPT_PREFIX)) {
+    const { OpenAICodexProvider } = await import('./providers/openai-codex');
+    return new OpenAICodexProvider(selection.slice(CHATGPT_PREFIX.length));
   }
   const { OpenAIProvider } = await import('./providers/openai');
-  return new OpenAIProvider(process.env.OPENAI_API_KEY!, model);
+  if (selection.startsWith(SWISSCOM_PREFIX)) {
+    return new OpenAIProvider(process.env.SWISSCOM_MYAI_API_KEY!, selection.slice(SWISSCOM_PREFIX.length), {
+      baseURL: process.env.SWISSCOM_MYAI_BASE_URL?.trim() || SWISSCOM_DEFAULT_BASE_URL,
+      name: 'swisscom',
+      selectionId: selection,
+    });
+  }
+  return new OpenAIProvider(process.env.OPENAI_API_KEY!, selection);
 }
 
 export async function createProviderByName(name: string): Promise<AIProvider> {

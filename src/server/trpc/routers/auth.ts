@@ -187,7 +187,16 @@ export const authRouter = createTRPCRouter({
   getProfile: protectedProcedure.query(async ({ ctx }) => {
     const user = await ctx.db.user.findUnique({
       where: { id: ctx.user.id },
-      select: { name: true, email: true, venmoUsername: true, locale: true, defaultCurrency: true, passwordHash: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        venmoUsername: true,
+        locale: true,
+        defaultCurrency: true,
+        passwordHash: true,
+      },
     });
     if (!user) {
       throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found' });
@@ -203,6 +212,12 @@ export const authRouter = createTRPCRouter({
         defaultCurrency: z.string().length(3).optional(),
         locale: z.enum(locales).optional(),
         venmoUsername: z.string().max(50).nullable().optional(),
+        // "emoji:<emoji>:<colour index>" or null (back to the default); photos go through /api/avatar
+        image: z
+          .string()
+          .regex(/^emoji:[^:]{1,16}:[0-7]$/)
+          .nullable()
+          .optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {

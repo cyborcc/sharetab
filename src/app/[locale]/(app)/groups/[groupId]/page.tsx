@@ -10,10 +10,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import {
   BarChart3,
+  History,
   Plus,
   Settings,
   UserPlus,
@@ -28,7 +29,6 @@ import { Link } from '@/i18n/navigation';
 import { toast } from 'sonner';
 import { InviteDialog } from '@/components/groups/invite-dialog';
 import { SettleDialog } from '@/components/groups/settle-dialog';
-import { getInitials, avatarColor } from '@/lib/avatar';
 import { MySpendingCard } from '@/components/groups/my-spending-card';
 import { BalanceStandings } from '@/components/groups/balance-standings';
 import {
@@ -57,8 +57,10 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
   const group = trpc.groups.get.useQuery({ groupId });
   const expenses = trpc.expenses.list.useQuery({ groupId, limit: 50 });
   const balances = trpc.balances.getGroupBalances.useQuery({ groupId });
-  const [personFilter, setPersonFilter] = useState('');
   const myId = authSession?.user?.id;
+  // Starts on the signed-in person; 'Alle' ('') is a choice
+  const [chosenFilter, setPersonFilter] = useState<string | null>(null);
+  const personFilter = chosenFilter ?? myId ?? '';
   // Newest first, grouped by day; the person filter keeps what someone paid for or shares in
   const days = useMemo(() => {
     const list = (expenses.data?.expenses ?? []).filter((e) => !personFilter || involves(e, personFilter));
@@ -139,9 +141,28 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
             <UserPlus className="mr-2 h-4 w-4" />
             {t('detail.invite')}
           </Button>
-          <Button variant="outline" size="sm" nativeButton={false} render={<Link href={`/groups/${groupId}/stats`} />}>
-            <BarChart3 className="mr-2 h-4 w-4" />
-            {t('detail.stats')}
+          <Button
+            variant="outline"
+            size="sm"
+            nativeButton={false}
+            render={<Link href={`/groups/${groupId}/stats`} />}
+            title={t('detail.stats')}
+            aria-label={t('detail.stats')}
+          >
+            <BarChart3 className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">{t('detail.stats')}</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            nativeButton={false}
+            render={<Link href={`/groups/${groupId}/history`} />}
+            title={t('detail.history')}
+            aria-label={t('detail.history')}
+            data-testid="history-btn"
+          >
+            <History className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">{t('detail.history')}</span>
           </Button>
           <Button
             variant="outline"
@@ -163,20 +184,13 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
               m.user.isPlaceholder ? 'border border-dashed border-muted-foreground/40 bg-muted/50' : 'bg-muted'
             }`}
           >
-            {m.user.image ? (
-              <Avatar className="h-6 w-6">
-                <AvatarImage src={m.user.image} />
-                <AvatarFallback className="text-[10px]">
-                  {getInitials(m.user.placeholderName ?? m.user.name, m.user.email)}
-                </AvatarFallback>
-              </Avatar>
-            ) : (
-              <div
-                className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-medium text-white ${avatarColor(m.user.id)}`}
-              >
-                {getInitials(m.user.placeholderName ?? m.user.name, m.user.email)}
-              </div>
-            )}
+            <UserAvatar
+              image={m.user.image}
+              id={m.user.id}
+              name={m.user.placeholderName ?? m.user.name}
+              email={m.user.email}
+              className="h-6 w-6"
+            />
             <span className="text-sm font-medium">{m.user.placeholderName ?? m.user.name ?? m.user.email}</span>
             {m.role === 'OWNER' && (
               <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">

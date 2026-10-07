@@ -1,0 +1,27 @@
+{
+  "title": "Feedback",
+  "intro": "Found a problem or have an idea? Post it here. The admin confirms entries before they are built.",
+  "new": "New entry",
+  "kind": {
+    "IDEA": "Idea",
+    "BUG": "Problem"
+  },
+  "titleLabel": "Short title",
+  "titlePlaceholder": "e.g. Show the tip on the receipt",
+  "bodyLabel": "Details (optional)",
+  "bodyPlaceholder": "What happened, or what should be better?",
+  "send": "Send",
+  "sent": "Thanks, your entry was posted.",
+  "empty": "No entries yet.",
+  "status": {
+    "OPEN": "Open",
+    "APPROVED": "Confirmed",
+    "DONE": "Done",
+    "REJECTED": "Rejected"
+  },
+  "approve": "Confirm",
+  "markDone": "Mark as done",
+  "reject": "Reject",
+  "remove": "Withdraw",
+  "removeConfirm": "Withdraw this entry?"
+}
