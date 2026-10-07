@@ -59,7 +59,9 @@
     "notesPlaceholder": "z. B. WLAN-Passwort, Türcode, Check-in-Zeit",
     "recentPlaces": "Zuletzt:",
     "recentPlaceVisits": "{count}-mal",
-    "locationLinkHint": "Nicht gefunden? Einen Google-Maps-Link oder Koordinaten einfügen."
+    "locationLinkHint": "Nicht gefunden? Einen Google-Maps-Link oder Koordinaten einfügen.",
+    "splitOnly": "Nur {name}",
+    "splitAll": "Alle auswählen"
   },
   "edit": {
     "title": "Ausgabe bearbeiten",

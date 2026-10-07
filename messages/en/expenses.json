@@ -59,7 +59,9 @@
     "notesPlaceholder": "e.g. Wi-Fi password, door code, check-in time",
     "recentPlaces": "Recent:",
     "recentPlaceVisits": "{count} times",
-    "locationLinkHint": "Not found? Paste a Google Maps link or coordinates."
+    "locationLinkHint": "Not found? Paste a Google Maps link or coordinates.",
+    "splitOnly": "Only {name}",
+    "splitAll": "Select all"
   },
   "edit": {
     "title": "Edit Expense",
