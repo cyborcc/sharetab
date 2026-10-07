@@ -65,5 +65,21 @@
     "msg22": "Running advanced algorithms on your guacamole surcharge...",
     "msg23": "Consulting the ancient art of receipt-reading...",
     "msg24": "Translating smudged ink into cold hard numbers..."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "bellUnread": "{count} unread notifications",
+    "markAllRead": "Mark all as read",
+    "settings": "Settings",
+    "which": "You get a message when someone books an expense you share in, changes the price of an expense you are in (so you can check it), or pays you.",
+    "enabled": "Notify me",
+    "pushEnable": "Get messages on this device",
+    "pushDisable": "Stop messages on this device",
+    "pushOn": "Messages are on for this device.",
+    "pushDenied": "Notifications are blocked in the browser settings.",
+    "pushFailed": "Could not turn on messages on this device.",
+    "pushUnsupported": "This browser cannot show push messages. On iPhone, add ShareTab to the home screen first. The bell works everywhere.",
+    "empty": "Nothing new yet.",
+    "back": "Back to dashboard"
   }
 }

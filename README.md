@@ -49,6 +49,7 @@ This fork (`cyborcc/sharetab`) is built for trips with a small group and adds th
 **Accounts**
 
 - Avatars: photo upload (cropped to 256 px) or emoji with colour, editable in the settings; everybody without a choice gets a stable emoji avatar
+- Notifications: bell with unread count plus web push on the phone (keys are generated once and kept in the database, or set `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT`); for expenses you share in, price changes (so others can check) and payments to you; switch off per person
 - Feedback page: users post problems and ideas, the admin (`ADMIN_EMAIL`) confirms, rejects or marks them done
 
 **AI providers** (see [AI Receipt Scanning](#ai-receipt-scanning))

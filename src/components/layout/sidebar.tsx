@@ -4,6 +4,7 @@ import { Link, usePathname } from '@/i18n/navigation';
 import { signOut } from 'next-auth/react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { NotificationBell } from '@/components/layout/notification-bell';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import {
   LayoutDashboard,
@@ -70,6 +71,9 @@ export function AppSidebar({ user, isAdmin }: { user: SidebarUser; isAdmin?: boo
       <div className="flex h-14 items-center gap-2.5 px-5 border-b border-transparent bg-gradient-to-r from-primary/[0.06] via-transparent to-transparent [border-image:linear-gradient(to_right,var(--color-primary)/0.15,transparent)_1]">
         <Receipt className="h-6 w-6 text-primary drop-shadow-sm" />
         <span className="text-lg font-bold tracking-wide text-foreground">ShareTab</span>
+        <span className="ml-auto">
+          <NotificationBell />
+        </span>
       </div>
 
       {/* Navigation */}

@@ -65,5 +65,21 @@
     "msg22": "Running advanced algorithms on your guacamole surcharge...",
     "msg23": "Consulting the ancient art of receipt-reading...",
     "msg24": "Translating smudged ink into cold hard numbers..."
+  },
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "bellUnread": "{count} ungelesene Benachrichtigungen",
+    "markAllRead": "Alle als gelesen markieren",
+    "settings": "Einstellungen",
+    "which": "Du bekommst eine Meldung, wenn jemand eine Ausgabe bucht, an der du beteiligt bist, den Preis einer Ausgabe ändert, in der du vorkommst (zum Prüfen), oder dir etwas bezahlt.",
+    "enabled": "Benachrichtige mich",
+    "pushEnable": "Meldungen auf diesem Gerät erhalten",
+    "pushDisable": "Meldungen auf diesem Gerät beenden",
+    "pushOn": "Meldungen sind für dieses Gerät eingeschaltet.",
+    "pushDenied": "Benachrichtigungen sind in den Browser-Einstellungen blockiert.",
+    "pushFailed": "Meldungen konnten auf diesem Gerät nicht eingeschaltet werden.",
+    "pushUnsupported": "Dieser Browser kann keine Push-Meldungen zeigen. Auf dem iPhone ShareTab erst zum Home-Bildschirm hinzufügen. Die Glocke geht überall.",
+    "empty": "Noch nichts Neues.",
+    "back": "Zurück zum Dashboard"
   }
 }

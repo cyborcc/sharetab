@@ -11,6 +11,7 @@ import { convertCents, isValidCurrency, type RateQuote } from '../../lib/exchang
 import { getReceiptRate, relabelReceiptCurrency } from '../../lib/receipt-conversion';
 import { previewReceiptCorrection, resolveReceiptCorrection } from '../../lib/receipt-correction';
 import { stripUndefined } from '../../lib/strip-undefined';
+import { money, sendNotifications } from '../../lib/notifications';
 
 /**
  * Verify that a receipt exists and the user has access to it (via group membership).
@@ -924,6 +925,46 @@ export const receiptsRouter = createTRPCRouter({
 
         return exp;
       });
+
+      // Same rules as manual bookings: new expense -> its sharers; changed total -> everyone involved
+      const others = Array.from(userTotals.entries(), ([userId, amount]) => ({ userId, amount })).filter(
+        (r) => r.userId !== ctx.user.id && r.amount > 0,
+      );
+      if (!input.expenseId) {
+        void sendNotifications(
+          ctx.db,
+          others.map((r) => ({
+            userId: r.userId,
+            kind: 'EXPENSE_ADDED' as const,
+            groupId: input.groupId,
+            entityId: expense.id,
+            vars: {
+              actor: ctx.user.name ?? '?',
+              title: input.title,
+              amount: money(totalAmount, receiptCurrency),
+              share: money(r.amount, receiptCurrency),
+            },
+          })),
+        );
+      } else if (expenseChanges.amount) {
+        const involved = new Set([input.paidById, ...others.map((r) => r.userId)]);
+        involved.delete(ctx.user.id);
+        void sendNotifications(
+          ctx.db,
+          [...involved].map((userId) => ({
+            userId,
+            kind: 'PRICE_CHANGED' as const,
+            groupId: input.groupId,
+            entityId: expense.id,
+            vars: {
+              actor: ctx.user.name ?? '?',
+              title: input.title,
+              from: money(Number(expenseChanges.amount![0]), receiptCurrency),
+              to: money(totalAmount, receiptCurrency),
+            },
+          })),
+        );
+      }
 
       return expense;
     }),

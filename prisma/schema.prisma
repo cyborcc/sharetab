@@ -78,6 +78,9 @@ model User {
   uploadedReceipts Receipt[] @relation("UploadedReceipts")
   guestSplits      GuestSplit[] @relation("GuestSplits")
   feedback         Feedback[]
+  notifications    Notification[]
+  pushSubscriptions PushSubscription[]
+  notifyEnabled    Boolean   @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -331,6 +334,37 @@ enum ActivityType {
   GROUP_ARCHIVED
   GROUP_UNARCHIVED
   RECEIPT_ITEMS_CHANGED // a receipt line was edited, added, removed, split or reassigned (metadata.receiptId)
+}
+
+// ─── NOTIFICATIONS ─────────────────────────────────────────
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String // EXPENSE_ADDED | PRICE_CHANGED | SETTLEMENT
+  groupId   String?
+  entityId  String?
+  title     String
+  body      String    @default("")
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 // ─── FEEDBACK ──────────────────────────────────────────────

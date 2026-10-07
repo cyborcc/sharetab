@@ -17,6 +17,7 @@ import {
   Scissors,
   MessageSquarePlus,
 } from 'lucide-react';
+import { NotificationBell } from '@/components/layout/notification-bell';
 import { ThemeToggle } from '@/components/layout/theme-toggle';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { useTranslations, useLocale } from 'next-intl';
@@ -44,6 +45,7 @@ export function MobileHeader({ isAdmin }: { isAdmin?: boolean }) {
       </div>
 
       <div className="flex items-center gap-1">
+        <NotificationBell />
         <LanguageSwitcher testId="language-switcher-mobile" />
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger render={<Button variant="ghost" size="icon" aria-label={t('actions.openMenu')} />}>

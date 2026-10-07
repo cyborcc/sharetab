@@ -6,6 +6,7 @@ import { getExchangeRate, convertCents } from '../../lib/exchange-rates';
 import { MAX_MONEY_CENTS } from '@/lib/money';
 import { stripUndefined } from '../../lib/strip-undefined';
 import { searchPlacesIndex } from '../../lib/places-search';
+import { money, sendNotifications } from '../../lib/notifications';
 import { checkRateLimit } from '../../lib/rate-limit';
 
 const expenseShareSchema = z.object({
@@ -425,6 +426,27 @@ export const expensesRouter = createTRPCRouter({
         return created;
       });
 
+      // Everyone who owes a share (not the one who booked it) hears about it
+      if (!input.isPrivate) {
+        void sendNotifications(
+          ctx.db,
+          expense.shares
+            .filter((sh) => sh.userId !== ctx.user.id && sh.amount > 0)
+            .map((sh) => ({
+              userId: sh.userId,
+              kind: 'EXPENSE_ADDED' as const,
+              groupId: input.groupId,
+              entityId: expense.id,
+              vars: {
+                actor: ctx.user.name ?? '?',
+                title: input.title,
+                amount: money(input.amount, input.currency),
+                share: money(sh.amount, input.currency),
+              },
+            })),
+        );
+      }
+
       return expense;
     }),
 
@@ -630,6 +652,33 @@ export const expensesRouter = createTRPCRouter({
 
         return updated;
       });
+
+      // A changed price goes to everyone involved (payer and shares) so they can check it
+      const priceChanged =
+        (data.amount !== undefined && data.amount !== existing.amount) ||
+        (inputCurrency !== undefined && inputCurrency !== existing.currency);
+      if (priceChanged && !expense.isPrivate) {
+        const involved = new Set([
+          expense.paidById,
+          ...expense.shares.filter((s) => s.amount > 0).map((s) => s.userId),
+        ]);
+        involved.delete(ctx.user.id);
+        void sendNotifications(
+          ctx.db,
+          [...involved].map((userId) => ({
+            userId,
+            kind: 'PRICE_CHANGED' as const,
+            groupId,
+            entityId: expenseId,
+            vars: {
+              actor: ctx.user.name ?? '?',
+              title: expense.title,
+              from: money(existing.amount, existing.currency),
+              to: money(expense.amount, expense.currency),
+            },
+          })),
+        );
+      }
 
       return expense;
     }),

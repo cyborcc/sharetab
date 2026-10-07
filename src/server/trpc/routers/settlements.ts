@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { money, sendNotifications } from '../../lib/notifications';
 import { TRPCError } from '@trpc/server';
 import { createTRPCRouter, groupMemberProcedure } from '../init';
 import { getExchangeRate, convertCents } from '../../lib/exchange-rates';
@@ -144,6 +145,19 @@ export const settlementsRouter = createTRPCRouter({
 
         return created;
       });
+
+      if (settlement.toId !== ctx.user.id) {
+        const actor = await ctx.db.user.findUnique({ where: { id: settlement.fromId }, select: { name: true } });
+        void sendNotifications(ctx.db, [
+          {
+            userId: settlement.toId,
+            kind: 'SETTLEMENT',
+            groupId: input.groupId,
+            entityId: settlement.id,
+            vars: { actor: actor?.name ?? '?', amount: money(input.amount, input.currency) },
+          },
+        ]);
+      }
 
       return settlement;
     }),
