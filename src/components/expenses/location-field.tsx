@@ -11,6 +11,10 @@ import { Input } from '@/components/ui/input';
 export type PlaceValue = { placeName: string; latitude: number | null; longitude: number | null };
 
 type Hit = { display_name: string; lat: string; lon: string };
+type Anchor = { lat: number; lon: number };
+
+/** Half-width in degrees of the box around the anchor that the search prefers (about 30 km). */
+const NEAR_DEGREES = 0.3;
 
 const NOMINATIM = 'https://nominatim.openstreetmap.org';
 
@@ -67,6 +71,89 @@ async function fetchNearby(lat: number, lon: number, filters: string[]): Promise
   throw new Error('overpass');
 }
 
+async function nominatimSearch(
+  q: string,
+  locale: string,
+  signal: AbortSignal,
+  anchor: Anchor | null,
+  bounded: boolean,
+): Promise<Hit[]> {
+  const box = anchor
+    ? `&viewbox=${anchor.lon - NEAR_DEGREES},${anchor.lat + NEAR_DEGREES},${anchor.lon + NEAR_DEGREES},${anchor.lat - NEAR_DEGREES}${bounded ? '&bounded=1' : ''}`
+    : '';
+  const res = await fetch(
+    `${NOMINATIM}/search?format=jsonv2&limit=5&accept-language=${locale}&q=${encodeURIComponent(q)}${box}`,
+    { signal },
+  );
+  return res.ok ? ((await res.json()) as Hit[]) : [];
+}
+
+/** Name search in OpenStreetMap around the anchor, for venues Nominatim does not find by text. */
+async function overpassNameSearch(words: string[], anchor: Anchor, signal: AbortSignal): Promise<Hit[]> {
+  const escaped = words.slice(0, 2).map((w) => w.replace(/[^\p{L}\p{N}]/gu, ''));
+  if (escaped.some((w) => w.length < 2)) return [];
+  const regex = escaped.join('.*');
+  const body = `data=${encodeURIComponent(
+    `[out:json][timeout:20];nwr(around:25000,${anchor.lat},${anchor.lon})["name"~"${regex}",i];out center tags 10;`,
+  )}`;
+  for (const url of OVERPASS_URLS) {
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body,
+        signal,
+      });
+      if (!res.ok) continue;
+      const data = (await res.json()) as {
+        elements: { lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: { name?: string } }[];
+      };
+      return data.elements.flatMap((el) => {
+        const lat = el.lat ?? el.center?.lat;
+        const lon = el.lon ?? el.center?.lon;
+        return lat === undefined || lon === undefined || !el.tags?.name
+          ? []
+          : [{ display_name: el.tags.name, lat: String(lat), lon: String(lon) }];
+      });
+    } catch (err) {
+      if (signal.aborted) throw err;
+    }
+  }
+  return [];
+}
+
+/**
+ * Staged place search. A long free-text query such as "White Elephant Thai Restaurant el gouna" often
+ * finds nothing in Nominatim, so with an anchor (the group's accommodation or last place) it tries,
+ * strictly inside the box around it, the query and then shorter versions of it, then the whole world,
+ * and finally a name search in OpenStreetMap around the anchor.
+ */
+async function searchPlaces(q: string, locale: string, signal: AbortSignal, anchor: Anchor | null): Promise<Hit[]> {
+  const words = q.split(/\s+/).filter(Boolean);
+  const variants: string[] = [];
+  for (let n = words.length; n >= Math.min(words.length, 2) && variants.length < 4; n--) {
+    variants.push(words.slice(0, n).join(' '));
+  }
+  if (anchor) {
+    for (const v of variants) {
+      const hits = await nominatimSearch(v, locale, signal, anchor, true);
+      if (hits.length > 0) return hits;
+    }
+  }
+  const world = await nominatimSearch(q, locale, signal, anchor, false);
+  if (world.length > 0 && !anchor) return world;
+  if (anchor) {
+    const named = await overpassNameSearch(words, anchor, signal);
+    if (named.length > 0) return named;
+    return world;
+  }
+  for (const v of variants.slice(1)) {
+    const hits = await nominatimSearch(v, locale, signal, null, false);
+    if (hits.length > 0) return hits;
+  }
+  return [];
+}
+
 function currentPosition(): Promise<{ latitude: number; longitude: number }> {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) return reject(new Error('unsupported'));
@@ -105,7 +192,7 @@ export function LocationField({
   const [query, setQuery] = useState(value.placeName || suggestion || '');
   const autoPicked = useRef(false);
   // Silent position hint (only if location access was already granted) so chain names resolve nearby
-  const [bias, setBias] = useState<{ lat: number; lon: number } | null>(null);
+  const [bias, setBias] = useState<Anchor | null>(null);
   const [hits, setHits] = useState<Hit[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -115,6 +202,12 @@ export function LocationField({
     { groupId: groupId ?? '', ...(category?.trim() ? { category: category.trim() } : {}) },
     { enabled: !!groupId, staleTime: 60_000 },
   );
+  // Where to look first: the group's accommodation or last place, else the device position (if allowed)
+  const groupAnchor = trpc.expenses.placeAnchor.useQuery(
+    { groupId: groupId ?? '' },
+    { enabled: !!groupId, staleTime: 300_000 },
+  );
+  const anchor: Anchor | null = groupAnchor.data ?? bias;
   const searching = query.trim().length >= 3 && !(value.latitude !== null && query.trim() === value.placeName);
 
   async function findNearby() {
@@ -164,20 +257,12 @@ export function LocationField({
     const controller = new AbortController();
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(
-          `${NOMINATIM}/search?format=jsonv2&limit=5&accept-language=${locale}&q=${encodeURIComponent(q)}${
-            bias ? `&viewbox=${bias.lon - 0.5},${bias.lat + 0.5},${bias.lon + 0.5},${bias.lat - 0.5}` : ''
-          }`,
-          { signal: controller.signal },
-        );
-        if (res.ok) {
-          const found = (await res.json()) as Hit[];
-          setHits(found);
-          const best = found[0];
-          if (autoPick && !autoPicked.current && best && value.latitude === null) {
-            autoPicked.current = true;
-            pick(best);
-          }
+        const found = await searchPlaces(q, locale, controller.signal, anchor);
+        setHits(found);
+        const best = found[0];
+        if (autoPick && !autoPicked.current && best && value.latitude === null) {
+          autoPicked.current = true;
+          pick(best);
         }
       } catch {
         // aborted or offline: the typed text is still kept as the place name
@@ -188,7 +273,7 @@ export function LocationField({
       controller.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- pick() only forwards to the stable onChange
-  }, [query, locale, value.latitude, value.placeName, bias, autoPick]);
+  }, [query, locale, value.latitude, value.placeName, anchor?.lat, anchor?.lon, autoPick]);
 
   function pickRecent(p: { placeName: string; latitude: number | null; longitude: number | null }) {
     autoPicked.current = true; // a recent place replaces the receipt's address guess

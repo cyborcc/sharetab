@@ -134,6 +134,30 @@ export const expensesRouter = createTRPCRouter({
     return { paid, share, total, count: expenses.length, categories };
   }),
 
+  // Ausgangspunkt fuer die Ortssuche: die Unterkunft der Gruppe (Kategorie Unterkunft), sonst der zuletzt
+  // erfasste Ort mit Koordinaten. So findet die Suche Lokale in der Naehe statt gleichnamiger am anderen Ende der Welt.
+  placeAnchor: groupMemberProcedure.input(z.object({ groupId: z.string() })).query(async ({ ctx, input }) => {
+    const base: Prisma.ExpenseWhereInput = {
+      groupId: input.groupId,
+      latitude: { not: null },
+      longitude: { not: null },
+      OR: [{ isPrivate: false }, { paidById: ctx.user.id }],
+    };
+    const row =
+      (await ctx.db.expense.findFirst({
+        where: { ...base, category: { in: ['Unterkunft', 'Accommodation'], mode: 'insensitive' } },
+        orderBy: { expenseDate: 'desc' },
+        select: { latitude: true, longitude: true, placeName: true },
+      })) ??
+      (await ctx.db.expense.findFirst({
+        where: base,
+        orderBy: { expenseDate: 'desc' },
+        select: { latitude: true, longitude: true, placeName: true },
+      }));
+    if (!row || row.latitude === null || row.longitude === null) return null;
+    return { lat: row.latitude, lon: row.longitude, placeName: row.placeName };
+  }),
+
   // Zuletzt besuchte Orte der Gruppe (neueste zuerst), um z. B. ein Restaurant wieder auszuwaehlen.
   // Mit Kategorie: nur Ausgaben dieser Kategorie oder ohne Kategorie (Belege hatten frueher keine).
   recentPlaces: groupMemberProcedure

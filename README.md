@@ -26,6 +26,35 @@
 
 ShareTab is a free, self-hosted alternative to Splitwise for tracking shared expenses with roommates, friends, and travel groups. Snap a photo of a receipt, let AI extract the line items, and assign them to group members. Taxes and tips split proportionally. Deploy on your own server with Docker Compose.
 
+## Changes in this fork
+
+This fork (`cyborcc/sharetab`) is built for trips with a small group and adds the following on top of the original ShareTab. Everything else is unchanged, and upstream changes can still be merged.
+
+**Expenses and receipts**
+
+- Currency EGP, amounts shown in the group currency as well, exchange rate of a receipt stored with source and date
+- Category with icons (default "Essen" for scanned receipts), place per expense with OpenStreetMap search, GPS, "places nearby", recently visited places, mini map and map links on the expense page
+- Place search looks around the group's accommodation (or last place) first and tries shorter versions of the query, so long names such as "White Elephant Thai Restaurant el gouna" are found
+- Private expenses (only the payer sees title and amount), notes, receipt photo with comparison of the read and the printed totals
+- Receipt editor for scanned expenses (image, items, assignment), several units of a line per person, per-line history, read-only item list with assignment on the expense page, card charge with the real amount debited
+- AI correction preview that has to be confirmed, scan model chooser per receipt
+
+**Groups and statistics**
+
+- Statistics page: totals, categories, timeline, people, balances, map, biggest expenses, recap
+- Trip period, budget and two forecasts: expected daily costs (food, transport, other) and a trend forecast from the last days
+- Group history page: who added, changed or deleted what, with the changed fields
+- Expense lists start on the signed-in person, filters by person, category, period and search text
+
+**Accounts**
+
+- Avatars: photo upload (cropped to 256 px) or emoji with colour, editable in the settings; everybody without a choice gets a stable emoji avatar
+- Feedback page: users post problems and ideas, the admin (`ADMIN_EMAIL`) confirms, rejects or marks them done
+
+**AI providers** (see [AI Receipt Scanning](#ai-receipt-scanning))
+
+- Besides the default OpenAI-compatible endpoint, the scan dialog can offer Swisscom myAI and the ChatGPT subscription
+
 ## Screenshots
 
 ### Dashboard -- see all your balances at a glance
@@ -336,6 +365,16 @@ After the container is running, open the ShareTab admin dashboard and complete t
 The bundled Docker Compose setup persists `/app/claude` automatically. If you use your own Docker or Unraid template, mount a persistent path to `/app/claude`.
 
 **⚠️ OCR provider (removed):** The `ocr` provider (Tesseract.js) was originally included as a free fallback for users without AI API access, but after extensive testing across hundreds of real-world receipts, the accuracy was too unreliable for production use. Common failures included extracting modifiers as line items, failing to exclude delivery fees, and poor handling of non-standard receipt layouts. The OCR provider has been removed from the codebase. `ocr` in `AI_PROVIDER_PRIORITY` is now ignored, and nothing falls back to OCR any more. With `ocr` on its own there is no provider: ShareTab still starts (the container log shows `app.startup.failed`), but receipt scans fail. If you need reliable receipt scanning, configure one of the AI providers above (openai-codex or meridian are recommended). Community contributions to reintroduce OCR with improved accuracy are welcome.
+
+### Extra scan models (fork)
+
+| Variable                 | Description                                                                                                                                                    |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `OPENAI_MODELS`          | Comma-separated models of the default OpenAI-compatible endpoint (`OPENAI_BASE_URL`) offered in the scan dialog; `OPENAI_MODEL` is the default                 |
+| `SWISSCOM_MYAI_API_KEY`  | Enables Swisscom myAI as a choice (OpenAI-compatible, vision model required)                                                                                   |
+| `SWISSCOM_MYAI_BASE_URL` | Default `https://code.myai.swisscom.ch/v1`                                                                                                                     |
+| `SWISSCOM_MODELS`        | Comma-separated Swisscom models, default `qwen3.5-397b-a17b`                                                                                                   |
+| `CHATGPT_MODELS`         | Models for the ChatGPT subscription choice (needs `openai-codex` in `AI_PROVIDER_PRIORITY` and the login in the admin dashboard); default `OPENAI_CODEX_MODEL` |
 
 ### AI Provider Performance
 

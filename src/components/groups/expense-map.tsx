@@ -34,7 +34,15 @@ function loadLeaflet(): Promise<LeafletLib> {
 }
 
 /** Map with one pin per expense that has coordinates (Leaflet from cdnjs, OpenStreetMap tiles). */
-export function ExpenseMap({ points, errorText }: { points: MapPoint[]; errorText: string }) {
+export function ExpenseMap({
+  points,
+  errorText,
+  heightClass = 'h-72',
+}: {
+  points: MapPoint[];
+  errorText: string;
+  heightClass?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const [failed, setFailed] = useState(false);
 
@@ -71,5 +79,5 @@ export function ExpenseMap({ points, errorText }: { points: MapPoint[]; errorTex
   }, [points]);
 
   if (failed) return <p className="text-sm text-muted-foreground">{errorText}</p>;
-  return <div ref={ref} className="h-72 w-full overflow-hidden rounded-lg border" />;
+  return <div ref={ref} className={`${heightClass} w-full overflow-hidden rounded-lg border`} />;
 }

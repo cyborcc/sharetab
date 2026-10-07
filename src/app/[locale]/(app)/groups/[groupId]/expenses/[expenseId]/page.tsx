@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, Trash2, Pencil } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { ReceiptHistory } from '@/components/receipts/receipt-history';
+import { ExpenseMap } from '@/components/groups/expense-map';
 
 export default function ExpenseDetailPage({ params }: { params: Promise<{ groupId: string; expenseId: string }> }) {
   const { groupId, expenseId } = use(params);
@@ -57,6 +58,14 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ groupI
   }
   const groupCurrency = group.data?.currency ?? 'USD';
   const isCurrencyConverted = e.baseCurrencyAmount != null && e.currency.toUpperCase() !== groupCurrency.toUpperCase();
+  // Group currency (e.g. EUR) next to the amounts of a foreign-currency expense
+  const groupFactor = isCurrencyConverted && e.amount > 0 ? e.baseCurrencyAmount! / e.amount : 1;
+  const inGroupCurrency = (cents: number) => formatCents(Math.round(cents * groupFactor), groupCurrency, locale);
+  const nameOf = (userId: string) => {
+    const m = group.data?.members.find((x) => x.user.id === userId)?.user;
+    return m?.placeholderName ?? m?.name ?? m?.email ?? t('detail.unknown');
+  };
+  const items = receiptItems.data?.items ?? [];
 
   return (
     <div className="mx-auto max-w-lg space-y-6">
@@ -127,6 +136,41 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ groupI
                 ) : (
                   <p className="font-medium">{e.placeName}</p>
                 )}
+                {e.latitude != null && e.longitude != null && (
+                  <div className="mt-2 space-y-1" data-testid="expense-place-map">
+                    <ExpenseMap
+                      heightClass="h-40"
+                      errorText={t('detail.mapFailed')}
+                      points={[
+                        {
+                          id: e.id,
+                          title: e.placeName,
+                          amount: formatCents(e.amount, e.currency, locale),
+                          lat: e.latitude,
+                          lon: e.longitude,
+                        },
+                      ]}
+                    />
+                    <div className="flex gap-3 text-xs">
+                      <a
+                        href={`https://www.openstreetmap.org/?mlat=${e.latitude}&mlon=${e.longitude}#map=17/${e.latitude}/${e.longitude}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        OpenStreetMap
+                      </a>
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${e.latitude},${e.longitude}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        Google Maps
+                      </a>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
             <div>
@@ -162,6 +206,47 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ groupI
             </>
           )}
 
+          {items.length > 0 && (
+            <>
+              <Separator />
+              <details className="group/items" data-testid="expense-items">
+                <summary className="cursor-pointer select-none text-sm font-medium text-muted-foreground">
+                  {t('detail.items', { count: items.length })}
+                </summary>
+                <ul className="mt-2 divide-y text-sm">
+                  {items.map((item) => (
+                    <li key={item.id} className="flex items-start justify-between gap-3 py-1.5">
+                      <div className="min-w-0">
+                        <p className="break-words">
+                          {item.quantity > 1 && <span className="text-muted-foreground">{item.quantity}× </span>}
+                          {item.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {item.assignments.length === 0
+                            ? t('detail.itemUnassigned')
+                            : item.assignments
+                                .map((a) =>
+                                  a.shareOfItem > 1 ? `${nameOf(a.userId)} ×${a.shareOfItem}` : nameOf(a.userId),
+                                )
+                                .join(', ')}
+                        </p>
+                      </div>
+                      <span className="shrink-0 text-right tabular-nums">
+                        {formatCents(item.totalPrice, e.currency, locale)}
+                        {isCurrencyConverted && (
+                          <span className="block text-xs text-muted-foreground">
+                            ≈ {inGroupCurrency(item.totalPrice)}
+                          </span>
+                        )}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-1 text-xs text-muted-foreground">{t('detail.itemsHint')}</p>
+              </details>
+            </>
+          )}
+
           <Separator />
 
           <div>
@@ -170,7 +255,14 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ groupI
               {e.shares.map((share) => (
                 <div key={share.userId} className="flex items-center justify-between text-sm">
                   <span>{share.user.name ?? t('detail.unknown')}</span>
-                  <span className="font-medium">{formatCents(share.amount, e.currency, locale)}</span>
+                  <span className="text-right font-medium">
+                    {formatCents(share.amount, e.currency, locale)}
+                    {isCurrencyConverted && (
+                      <span className="ml-2 text-xs font-normal text-muted-foreground">
+                        ≈ {inGroupCurrency(share.amount)}
+                      </span>
+                    )}
+                  </span>
                 </div>
               ))}
             </div>

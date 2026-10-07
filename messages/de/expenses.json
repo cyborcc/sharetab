@@ -87,7 +87,11 @@
     "privateExpense": "Private Ausgabe",
     "privateExpenseHint": "Titel und Betrag sind nur für die Person sichtbar, die bezahlt hat.",
     "notes": "Notiz",
-    "receiptImage": "Belegfoto"
+    "receiptImage": "Belegfoto",
+    "mapFailed": "Karte konnte nicht geladen werden.",
+    "items": "Positionen ({count})",
+    "itemUnassigned": "Nicht zugeordnet",
+    "itemsHint": "Nur zur Ansicht. Zum Ändern der Zuordnung auf Bearbeiten tippen."
   },
   "scan": {
     "correction": {
