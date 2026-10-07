@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, Trash2, Pencil } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { ReceiptHistory } from '@/components/receipts/receipt-history';
 
 export default function ExpenseDetailPage({ params }: { params: Promise<{ groupId: string; expenseId: string }> }) {
   const { groupId, expenseId } = use(params);
@@ -20,6 +21,9 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ groupI
 
   const expense = trpc.expenses.get.useQuery({ groupId, expenseId });
   const group = trpc.groups.get.useQuery({ groupId });
+  const receiptId = expense.data?.receiptId ?? null;
+  const receiptItems = trpc.receipts.getReceiptItems.useQuery({ receiptId: receiptId ?? '' }, { enabled: !!receiptId });
+  const history = trpc.receipts.history.useQuery({ receiptId: receiptId ?? '' }, { enabled: !!receiptId });
   const deleteExpense = trpc.expenses.delete.useMutation({
     onSuccess: () => router.push(`/groups/${groupId}`),
   });
@@ -131,25 +135,25 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ groupI
             </div>
           </div>
 
+          {e.receipt?.imagePath && (
+            <>
+              <Separator />
+              <div>
+                <p className="mb-2 text-xs text-muted-foreground">{t('detail.receiptImage')}</p>
+                <a href={`/api/uploads/${e.receipt.imagePath}`} target="_blank" rel="noopener noreferrer">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`/api/uploads/${e.receipt.imagePath}`}
+                    alt={t('detail.receiptImage')}
+                    className="max-h-64 w-auto rounded-md border object-contain"
+                  />
+                </a>
+              </div>
+            </>
+          )}
+
           {e.description && (
             <>
-              {e.receipt?.imagePath && (
-                <>
-                  <Separator />
-                  <div>
-                    <p className="mb-2 text-xs text-muted-foreground">{t('detail.receiptImage')}</p>
-                    <a href={`/api/uploads/${e.receipt.imagePath}`} target="_blank" rel="noopener noreferrer">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={`/api/uploads/${e.receipt.imagePath}`}
-                        alt={t('detail.receiptImage')}
-                        className="max-h-64 w-auto rounded-md border object-contain"
-                      />
-                    </a>
-                  </div>
-                </>
-              )}
-
               <Separator />
               <div>
                 <p className="mb-1 text-xs text-muted-foreground">{t('detail.notes')}</p>
@@ -173,6 +177,21 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ groupI
           </div>
         </CardContent>
       </Card>
+
+      {e.receiptId && history.data && (
+        <ReceiptHistory
+          entries={history.data}
+          members={(group.data?.members ?? []).map((m) => ({
+            id: m.user.id,
+            name: m.user.placeholderName ?? m.user.name ?? m.user.email,
+          }))}
+          currency={e.currency}
+          existingItemIds={new Set((receiptItems.data?.items ?? []).map((i) => i.id))}
+          onShowItem={(itemId) =>
+            router.push(`/groups/${groupId}/scan?receiptId=${e.receiptId}&expenseId=${expenseId}#item-${itemId}`)
+          }
+        />
+      )}
 
       <div className="flex gap-2">
         <Button

@@ -48,6 +48,23 @@ function ScanReceiptContent({ params }: { params: Promise<{ groupId: string }> }
   const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
   const [correctionBlocked, setCorrectionBlocked] = useState(false);
   const [correctionRevision, setCorrectionRevision] = useState(0);
+  const [comparing, setComparing] = useState(false);
+  // Model for the next scan; remembered on this device, the server default otherwise.
+  const [model, setModel] = useState('');
+  const models = providerInfo.data?.models ?? [];
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('sharetab.scanModel');
+      if (saved) setModel(saved);
+    } catch {}
+  }, []);
+  const chosenModel = models.includes(model) ? model : undefined;
+  function pickModel(value: string) {
+    setModel(value);
+    try {
+      localStorage.setItem('sharetab.scanModel', value);
+    } catch {}
+  }
   const utils = trpc.useUtils();
 
   // Rotate loading messages while processing
@@ -145,7 +162,7 @@ function ScanReceiptContent({ params }: { params: Promise<{ groupId: string }> }
       setUploading(false);
 
       // Start AI processing with groupId
-      processReceipt.mutate({ receiptId: data.receiptId, groupId });
+      processReceipt.mutate({ receiptId: data.receiptId, groupId, ...(chosenModel ? { model: chosenModel } : {}) });
     } catch (err) {
       setUploading(false);
       setErrorMessage(err instanceof Error ? err.message : t('uploadFailed'));
@@ -202,7 +219,7 @@ function ScanReceiptContent({ params }: { params: Promise<{ groupId: string }> }
   }
 
   return (
-    <div className="mx-auto max-w-lg space-y-6">
+    <div className={`mx-auto space-y-6 ${comparing && step === 'assign' ? 'max-w-lg md:max-w-6xl' : 'max-w-lg'}`}>
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="icon" nativeButton={false} render={<Link href={`/groups/${groupId}`} />}>
           <ArrowLeft className="h-4 w-4" />
@@ -225,6 +242,27 @@ function ScanReceiptContent({ params }: { params: Promise<{ groupId: string }> }
               {' · '}
               {t('fallbackChain')} <span className="font-medium text-foreground">{configuredProviderChain}</span>
             </p>
+
+            {models.length > 1 && (
+              <div className="space-y-2">
+                <Label htmlFor="scan-model">{t('model')}</Label>
+                <select
+                  id="scan-model"
+                  value={chosenModel ?? models[0]}
+                  onChange={(e) => pickModel(e.target.value)}
+                  disabled={uploading}
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+                  data-testid="scan-model-select"
+                >
+                  {models.map((m, i) => (
+                    <option key={m} value={m}>
+                      {i === 0 ? `${m} (${t('modelDefault')})` : m}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-muted-foreground">{t('modelHint')}</p>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="receipt">{t('receiptImage')}</Label>
@@ -256,7 +294,11 @@ function ScanReceiptContent({ params }: { params: Promise<{ groupId: string }> }
             <div className="text-center space-y-2">
               <p className="font-medium">{t('processing')}</p>
               <p className="text-xs text-muted-foreground">
-                {t('using')} <span className="font-medium text-foreground">{activeProvider}</span>
+                {t('using')}{' '}
+                <span className="font-medium text-foreground">
+                  {activeProvider}
+                  {chosenModel ? ` (${chosenModel})` : ''}
+                </span>
                 {' · '}
                 {t('chain')} <span className="font-medium text-foreground">{configuredProviderChain}</span>
               </p>
@@ -292,6 +334,8 @@ function ScanReceiptContent({ params }: { params: Promise<{ groupId: string }> }
                 groupId={groupId}
                 receiptId={receiptId}
                 members={members}
+                currentUserId={authSession?.user?.id}
+                onCompareChange={setComparing}
                 onComplete={handleExpenseCreated}
                 onSaveForLater={() => router.push(`/groups/${groupId}`)}
                 {...(editExpenseId && editExpense.data
@@ -301,6 +345,7 @@ function ScanReceiptContent({ params }: { params: Promise<{ groupId: string }> }
                         title: editExpense.data.title,
                         paidById: editExpense.data.paidById,
                         amount: editExpense.data.amount,
+                        category: editExpense.data.category,
                         place: {
                           placeName: editExpense.data.placeName ?? '',
                           latitude: editExpense.data.latitude ?? null,
@@ -349,7 +394,7 @@ function ScanReceiptContent({ params }: { params: Promise<{ groupId: string }> }
                 <Button
                   onClick={() => {
                     setStep('processing');
-                    processReceipt.mutate({ receiptId, groupId });
+                    processReceipt.mutate({ receiptId, groupId, ...(chosenModel ? { model: chosenModel } : {}) });
                   }}
                 >
                   {t('retryProcessing')}

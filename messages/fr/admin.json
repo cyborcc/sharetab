@@ -163,7 +163,8 @@
     "typeGroupArchived": "Groupe archivé",
     "typeGroupUnarchived": "Groupe désarchivé",
     "typePlaceholderCreated": "Espace réservé ajouté",
-    "typeSettlementCreated": "Règlement"
+    "typeSettlementCreated": "Règlement",
+    "typeReceiptItemsChanged": "Receipt lines changed"
   },
   "tools": {
     "title": "Outils d'administration",

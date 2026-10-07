@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { Compass, LocateFixed, MapPin, X } from 'lucide-react';
+import { Compass, History, LocateFixed, MapPin, X } from 'lucide-react';
+import { trpc } from '@/lib/trpc';
 import { nearbyFilters } from '@/lib/categories';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -87,10 +88,13 @@ export function LocationField({
   category,
   suggestion,
   autoPick = false,
+  groupId,
 }: {
   value: PlaceValue;
   onChange: (value: PlaceValue) => void;
   category?: string;
+  /** Offers the group's recently visited places (of this category) as one-tap choices */
+  groupId?: string;
   /** Pre-filled search text, e.g. merchant name and address read from a receipt */
   suggestion?: string;
   /** Take the best match of the suggestion automatically (only sensible for precise addresses) */
@@ -107,6 +111,10 @@ export function LocationField({
   const [error, setError] = useState<string | null>(null);
   const [nearby, setNearby] = useState<Nearby[] | null>(null);
   const filters = nearbyFilters(category);
+  const recent = trpc.expenses.recentPlaces.useQuery(
+    { groupId: groupId ?? '', ...(category?.trim() ? { category: category.trim() } : {}) },
+    { enabled: !!groupId, staleTime: 60_000 },
+  );
   const searching = query.trim().length >= 3 && !(value.latitude !== null && query.trim() === value.placeName);
 
   async function findNearby() {
@@ -181,6 +189,14 @@ export function LocationField({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- pick() only forwards to the stable onChange
   }, [query, locale, value.latitude, value.placeName, bias, autoPick]);
+
+  function pickRecent(p: { placeName: string; latitude: number | null; longitude: number | null }) {
+    autoPicked.current = true; // a recent place replaces the receipt's address guess
+    setQuery(p.placeName);
+    setHits([]);
+    setNearby(null);
+    onChange({ placeName: p.placeName, latitude: p.latitude, longitude: p.longitude });
+  }
 
   function pick(hit: Hit) {
     const name = shortName(hit.display_name);
@@ -263,6 +279,31 @@ export function LocationField({
           </Button>
         )}
       </div>
+      {recent.data && recent.data.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5" data-testid="recent-places">
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            <History className="h-3 w-3" />
+            {t('new.recentPlaces')}
+          </span>
+          {recent.data.map((p) => {
+            const active = value.placeName.trim().toLowerCase() === p.placeName.toLowerCase();
+            return (
+              <button
+                key={p.placeName}
+                type="button"
+                onClick={() => pickRecent(p)}
+                title={p.visits > 1 ? t('new.recentPlaceVisits', { count: p.visits }) : p.placeName}
+                className={`max-w-[14rem] truncate rounded-full px-2 py-0.5 text-xs transition-colors ${
+                  active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+              >
+                {p.placeName.split(', ')[0]}
+                {p.visits > 1 && <span className="opacity-70"> ·{p.visits}×</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
       {filters && (
         <Button type="button" variant="outline" size="sm" disabled={busy} onClick={findNearby}>
           <Compass className="mr-2 h-4 w-4" />

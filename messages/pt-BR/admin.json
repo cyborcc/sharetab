@@ -163,7 +163,8 @@
     "typeGroupArchived": "Grupo arquivado",
     "typeGroupUnarchived": "Grupo desarquivado",
     "typePlaceholderCreated": "Marcador adicionado",
-    "typeSettlementCreated": "Acerto"
+    "typeSettlementCreated": "Acerto",
+    "typeReceiptItemsChanged": "Receipt lines changed"
   },
   "tools": {
     "title": "Ferramentas administrativas",

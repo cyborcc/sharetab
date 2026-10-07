@@ -51,6 +51,10 @@ export default function NewExpensePage({ params }: { params: Promise<{ groupId: 
   const [place, setPlace] = useState<PlaceValue>({ placeName: '', latitude: null, longitude: null });
   const [expenseDate, setExpenseDate] = useState(() => new Date().toLocaleDateString('sv-SE'));
   const [paidById, setPaidById] = useState('');
+  // The logged-in member pays by default; anyone else can still be picked.
+  const myId = authSession?.user?.id;
+  const iAmMember = !!myId && !!group.data?.members.some((m) => m.user.id === myId);
+  if (!paidById && iAmMember && myId) setPaidById(myId);
   const [splitMode, setSplitMode] = useState<SplitMode>('EQUAL');
   const [shares, setShares] = useState<ShareEntry[]>([]);
   const [currency, setCurrency] = useState<string>('');
@@ -256,7 +260,7 @@ export default function NewExpensePage({ params }: { params: Promise<{ groupId: 
 
             <div className="space-y-2">
               <Label htmlFor="location">{t('new.location')}</Label>
-              <LocationField value={place} onChange={setPlace} category={category} />
+              <LocationField value={place} onChange={setPlace} category={category} groupId={groupId} />
             </div>
 
             <div className="space-y-2">

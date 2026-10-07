@@ -1,7 +1,7 @@
 import type { PrismaClient } from '@/generated/prisma/client';
 import type { Prisma } from '@/generated/prisma/client';
 import type { AIProvider } from '../ai/provider';
-import { getAIProvidersWithFallback, clearProviderCache } from '../ai/registry';
+import { getAIProvidersWithFallback, clearProviderCache, createProviderForModel } from '../ai/registry';
 import { logger } from './logger';
 import { normalizeDate } from './normalize-date';
 
@@ -11,6 +11,14 @@ interface ProcessReceiptImageOptions {
   receipt: { imagePath: string; mimeType: string };
   correctionHint?: string;
   logPrefix?: string;
+  /** Model of the OpenAI-compatible endpoint picked for this scan; the configured chain is the fallback. */
+  model?: string;
+}
+
+/** Provider name plus model where there is one, e.g. "openai (Qwen38.S)", to see which model read a receipt. */
+function providerLabel(provider: AIProvider): string {
+  const model = (provider as { model?: unknown }).model;
+  return typeof model === 'string' && model ? `${provider.name} (${model})` : provider.name;
 }
 
 /**
@@ -23,6 +31,7 @@ export async function extractReceiptImage({
   receipt,
   correctionHint,
   logPrefix = 'receipt',
+  model,
 }: Omit<ProcessReceiptImageOptions, 'db'>) {
   const { readFile } = await import('fs/promises');
   const { resolveUploadPath } = await import('./upload-dir');
@@ -40,18 +49,23 @@ export async function extractReceiptImage({
   let result: Awaited<ReturnType<AIProvider['extractReceipt']>> | null = null;
 
   for (let pass = 0; pass < 2 && !result; pass++) {
-    const providers = await getAIProvidersWithFallback();
+    // A copy: the fallback list is cached and shared between requests.
+    const providers = [...(await getAIProvidersWithFallback())];
+    if (model && !providers.some((p) => (p as { model?: unknown }).model === model)) {
+      providers.unshift(await createProviderForModel(model));
+    }
 
     for (const candidate of providers) {
       try {
         result = await candidate.extractReceipt(imageBuffer, receipt.mimeType, correctionHint);
         provider = candidate;
         break;
-      } catch {
+      } catch (err) {
         logger.warn(`${logPrefix}.extractFailed`, {
           receiptId,
-          provider: candidate.name,
+          provider: providerLabel(candidate),
           pass,
+          error: err instanceof Error ? err.message.slice(0, 300) : 'Unknown',
         });
       }
     }
@@ -70,12 +84,12 @@ export async function extractReceiptImage({
 
   logger.info(`${logPrefix}.extracted`, {
     receiptId,
-    provider: usedProvider.name,
+    provider: providerLabel(usedProvider),
     items: extraction.items.length,
     durationMs: Date.now() - start,
   });
 
-  return { extraction, provider: usedProvider.name };
+  return { extraction, provider: providerLabel(usedProvider) };
 }
 
 export async function processReceiptImage(options: ProcessReceiptImageOptions) {

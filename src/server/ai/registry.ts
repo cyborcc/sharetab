@@ -87,6 +87,29 @@ async function createProvider(name: AIProviderName): Promise<AIProvider> {
   }
 }
 
+/**
+ * Models of the OpenAI-compatible endpoint that users may pick per scan: OPENAI_MODELS
+ * (comma-separated) plus OPENAI_MODEL, the default, which always comes first.
+ */
+export function getSelectableModels(): string[] {
+  if (!process.env.OPENAI_API_KEY) return [];
+  const listed = (process.env.OPENAI_MODELS ?? '')
+    .split(',')
+    .map((m) => m.trim())
+    .filter(Boolean);
+  const fallback = process.env.OPENAI_MODEL?.trim() || 'gpt-4o';
+  return [...new Set([fallback, ...listed])];
+}
+
+/** The OpenAI-compatible provider with a model the user picked; refuses models not offered. */
+export async function createProviderForModel(model: string): Promise<AIProvider> {
+  if (!getSelectableModels().includes(model)) {
+    throw new Error(`Model not available: "${model}"`);
+  }
+  const { OpenAIProvider } = await import('./providers/openai');
+  return new OpenAIProvider(process.env.OPENAI_API_KEY!, model);
+}
+
 export async function createProviderByName(name: string): Promise<AIProvider> {
   if (
     !isAIProviderName(name) ||

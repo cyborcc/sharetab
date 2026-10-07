@@ -10,12 +10,25 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LocationField, type PlaceValue } from '@/components/expenses/location-field';
+import { CategorySelect } from '@/components/expenses/category-select';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Check, Users, Pencil, Trash2, Plus, Image as ImageIcon, Scissors, Bookmark } from 'lucide-react';
+import {
+  Check,
+  Users,
+  Pencil,
+  Trash2,
+  Plus,
+  Image as ImageIcon,
+  Scissors,
+  Bookmark,
+  ZoomIn,
+  ZoomOut,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { COMMON_CURRENCIES } from '@/lib/currencies';
 import { ReceiptRatePreview } from './receipt-rate-preview';
+import { ReceiptHistory, scrollToItem } from './receipt-history';
 
 type Member = { id: string; name: string | null };
 
@@ -40,6 +53,8 @@ export function ItemAssignment({
   onSaveForLater,
   expenseId,
   initial,
+  currentUserId,
+  onCompareChange,
 }: {
   groupId: string;
   receiptId: string;
@@ -49,12 +64,22 @@ export function ItemAssignment({
   /** Set when an expense that was already created from this receipt is edited. */
   expenseId?: string;
   /** Values of that expense; the form starts from them instead of the receipt defaults. */
-  initial?: { title: string; paidById: string; amount: number; place: PlaceValue };
+  initial?: { title: string; paidById: string; amount: number; place: PlaceValue; category?: string | null };
+  /** The logged-in user: pays by default when nothing was saved yet. */
+  currentUserId?: string | undefined;
+  /** Told when the receipt is shown next to the recognized values, so the page can widen. */
+  onCompareChange?: (on: boolean) => void;
 }) {
   const locale = useLocale();
   const t = useTranslations('expenses.receipt');
   const receiptData = trpc.receipts.getReceiptItems.useQuery({ receiptId });
+  const history = trpc.receipts.history.useQuery({ receiptId });
   const utils = trpc.useUtils();
+  const refreshItems = () =>
+    Promise.all([
+      utils.receipts.getReceiptItems.invalidate({ receiptId }),
+      utils.receipts.history.invalidate({ receiptId }),
+    ]);
 
   const [assignments, setAssignments] = useState<Assignments>({});
   const [counts, setCounts] = useState<Counts>({});
@@ -72,9 +97,14 @@ export function ItemAssignment({
   const [title, setTitle] = useState('');
   const [place, setPlace] = useState<PlaceValue>({ placeName: '', latitude: null, longitude: null });
   const tExp = useTranslations('expenses');
+  // Receipts are mostly restaurant bills: the first preset category ("Essen") unless changed.
+  const [category, setCategory] = useState<string>(
+    () => initial?.category ?? (tExp.raw('new.categoryPresets') as string[])[0] ?? '',
+  );
   const [paidById, setPaidById] = useState('');
   const [tipOverride, setTipOverride] = useState<string>('');
   const [showImage, setShowImage] = useState(false);
+  const [flashItem, setFlashItem] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -120,24 +150,24 @@ export function ItemAssignment({
   const updateItem = trpc.receipts.updateItem.useMutation({
     onSuccess: () => {
       setEditingItem(null);
-      utils.receipts.getReceiptItems.invalidate({ receiptId });
+      refreshItems();
     },
     onError: (e) => toast.error(e.message),
   });
   const deleteItem = trpc.receipts.deleteItem.useMutation({
-    onSuccess: () => utils.receipts.getReceiptItems.invalidate({ receiptId }),
+    onSuccess: () => refreshItems(),
     onError: (e) => toast.error(e.message),
   });
   const addItem = trpc.receipts.addItem.useMutation({
     onSuccess: () => {
       setAddingItem(false);
       setNewItem({ name: '', quantity: '1', totalPrice: '' });
-      utils.receipts.getReceiptItems.invalidate({ receiptId });
+      refreshItems();
     },
     onError: (e) => toast.error(e.message),
   });
   const splitItem = trpc.receipts.splitItem.useMutation({
-    onSuccess: () => utils.receipts.getReceiptItems.invalidate({ receiptId }),
+    onSuccess: () => refreshItems(),
     onError: (e) => toast.error(e.message),
   });
   const saveForLater = trpc.receipts.saveForLater.useMutation({
@@ -148,10 +178,14 @@ export function ItemAssignment({
   // Toggle the image. Zoom/pan reset on every toggle (fresh view when
   // opening, cleanup when hiding), and the visibility flip is a functional
   // update so rapid successive clicks can't act on a stale captured value.
-  function toggleImage() {
+  function setCompare(on: boolean) {
     setZoom(1);
     setPan({ x: 0, y: 0 });
-    setShowImage((prev) => !prev);
+    setShowImage(on);
+    onCompareChange?.(on);
+  }
+  function toggleImage() {
+    setCompare(!showImage);
   }
 
   // Wheel zoom — must be non-passive to call preventDefault
@@ -173,7 +207,6 @@ export function ItemAssignment({
   // render gets cached data (without paidById) and the refetch brings fresh data.
   const hasRestoredRef = useRef(false);
 
-  /* eslint-disable react-hooks/set-state-in-effect -- init from async query data */
   useEffect(() => {
     if (!receiptData.data || hasRestoredRef.current) return;
     const data = receiptData.data;
@@ -232,7 +265,38 @@ export function ItemAssignment({
       hasRestoredRef.current = true;
     }
   }, [receiptData.data, title, initial]);
-  /* eslint-enable react-hooks/set-state-in-effect */
+
+  useEffect(() => {
+    if (!flashItem) return;
+    const timer = setTimeout(() => setFlashItem(null), 2000);
+    return () => clearTimeout(timer);
+  }, [flashItem]);
+
+  // Nothing saved yet: the logged-in member paid.
+  useEffect(() => {
+    if (!receiptData.data || initial || receiptData.data.receipt.paidById) return;
+    if (currentUserId && members.some((m) => m.id === currentUserId)) {
+      setPaidById((prev) => prev || currentUserId);
+    }
+  }, [receiptData.data, initial, currentUserId, members]);
+
+  // On a wide screen the receipt opens next to the recognized values; a link to a line
+  // (#item-…, e.g. from the history) scrolls to it once the lines are there.
+  const openedRef = useRef(false);
+  useEffect(() => {
+    if (!receiptData.data || openedRef.current) return;
+    openedRef.current = true;
+    if (receiptData.data.receipt.imagePath && window.matchMedia('(min-width: 768px)').matches) setCompare(true);
+    const hash = window.location.hash;
+    if (hash.startsWith('#item-')) {
+      const itemId = hash.slice('#item-'.length);
+      setTimeout(() => {
+        scrollToItem(itemId);
+        setFlashItem(itemId);
+      }, 300);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once when the receipt has loaded
+  }, [receiptData.data]);
 
   const { receipt, items } = receiptData.data ?? { receipt: null, items: [] };
   const extracted = receipt?.extractedData ?? null;
@@ -405,7 +469,22 @@ export function ItemAssignment({
     previewMatchesCurrency && !conversionPreview.isFetching && !correctCurrency.isPending && !conversionPreview.isError;
   const euroQuote = previewReady ? conversionPreview.data?.euro : null;
   const groupQuote = previewReady ? conversionPreview.data?.groupRate : null;
-  const currentTotal = items.reduce((sum, item) => sum + item.totalPrice, 0) + safeExtracted.tax + tip;
+  const itemsSum = items.reduce((sum, item) => sum + item.totalPrice, 0);
+  const currentTotal = itemsSum + safeExtracted.tax + tip;
+  // Printed total if there is one, else the printed subtotal, against what the lines add up to
+  const sumGap =
+    safeExtracted.total > 0
+      ? safeExtracted.total - (itemsSum + safeExtracted.tax + safeExtracted.tip)
+      : safeExtracted.subtotal - itemsSum;
+  // Lines someone changed by hand after the scan
+  const changedItems = new Set(
+    (history.data ?? []).flatMap((h) => {
+      const m = h.metadata as { action?: string; itemId?: string; changes?: { itemId: string }[] };
+      if (h.type !== 'RECEIPT_ITEMS_CHANGED') return [];
+      if (m.action === 'assign') return [];
+      return m.itemId ? [m.itemId] : [];
+    }),
+  );
   const de = locale.startsWith('de');
 
   function handleSubmit(e: React.FormEvent) {
@@ -420,6 +499,7 @@ export function ItemAssignment({
       ...(expenseId ? { expenseId } : {}),
       title,
       paidById,
+      category: category.trim(),
       ...(place.placeName.trim() ? { placeName: place.placeName.trim() } : {}),
       ...(place.latitude !== null && place.longitude !== null
         ? { latitude: place.latitude, longitude: place.longitude }
@@ -452,610 +532,708 @@ export function ItemAssignment({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" data-testid="item-assignment-form">
-      {/* Receipt image toggle */}
-      {safeReceipt.imagePath && (
-        <Button type="button" variant="outline" size="sm" onClick={toggleImage}>
-          <ImageIcon className="mr-2 h-4 w-4" />
-          {showImage ? t('hideImage') : t('viewImage')}
-        </Button>
+    <form
+      onSubmit={handleSubmit}
+      className={showImage ? 'md:grid md:grid-cols-2 md:items-start md:gap-6' : ''}
+      data-testid="item-assignment-form"
+    >
+      {/* The receipt next to (wide screen) or above (phone, stays while scrolling) the recognized values */}
+      {showImage && safeReceipt.imagePath && (
+        <div className="sticky top-0 z-20 mb-4 bg-background pb-2 md:top-4 md:mb-0" data-testid="receipt-compare">
+          <Card>
+            <CardContent className="p-0 overflow-hidden rounded-lg">
+              <div
+                ref={imageContainerRef}
+                className="relative h-[38vh] overflow-hidden rounded-t-lg bg-muted/30 md:h-[calc(100vh-9rem)]"
+                style={{
+                  cursor: isDragging ? 'grabbing' : 'grab',
+                  touchAction: 'none',
+                  userSelect: 'none',
+                }}
+                onMouseDown={(e) => {
+                  setIsDragging(true);
+                  dragStart.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y };
+                }}
+                onMouseMove={(e) => {
+                  if (!isDragging || !dragStart.current) return;
+                  setPan({
+                    x: dragStart.current.panX + e.clientX - dragStart.current.x,
+                    y: dragStart.current.panY + e.clientY - dragStart.current.y,
+                  });
+                }}
+                onMouseUp={() => {
+                  setIsDragging(false);
+                  dragStart.current = null;
+                }}
+                onMouseLeave={() => {
+                  setIsDragging(false);
+                  dragStart.current = null;
+                }}
+                onDoubleClick={() => {
+                  setZoom(1);
+                  setPan({ x: 0, y: 0 });
+                }}
+                onTouchStart={(e) => {
+                  if (e.touches.length === 2) {
+                    const touch0 = e.touches[0];
+                    const touch1 = e.touches[1];
+                    if (!touch0 || !touch1) return;
+                    const dx = touch0.clientX - touch1.clientX;
+                    const dy = touch0.clientY - touch1.clientY;
+                    lastTouchDist.current = Math.sqrt(dx * dx + dy * dy);
+                  } else {
+                    const touch0 = e.touches[0];
+                    if (!touch0) return;
+                    dragStart.current = { x: touch0.clientX, y: touch0.clientY, panX: pan.x, panY: pan.y };
+                  }
+                }}
+                onTouchMove={(e) => {
+                  if (e.touches.length === 2 && lastTouchDist.current !== null) {
+                    const touch0 = e.touches[0];
+                    const touch1 = e.touches[1];
+                    if (!touch0 || !touch1) return;
+                    const dx = touch0.clientX - touch1.clientX;
+                    const dy = touch0.clientY - touch1.clientY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const factor = dist / lastTouchDist.current;
+                    setZoom((z) => Math.min(Math.max(z * factor, 1), 5));
+                    lastTouchDist.current = dist;
+                  } else if (e.touches.length === 1 && dragStart.current) {
+                    const touch0 = e.touches[0];
+                    if (!touch0) return;
+                    setPan({
+                      x: dragStart.current.panX + touch0.clientX - dragStart.current.x,
+                      y: dragStart.current.panY + touch0.clientY - dragStart.current.y,
+                    });
+                  }
+                }}
+                onTouchEnd={() => {
+                  lastTouchDist.current = null;
+                  dragStart.current = null;
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element -- user-uploaded
+                      receipt photo with unknown natural dimensions, rendered inside a
+                      pinch-zoom/pan viewport; next/image would need either server-side
+                      dimension probing or a fill+aspect-ratio layout change, out of scope
+                      here */}
+                <img
+                  src={`/api/uploads/${safeReceipt.imagePath}`}
+                  alt={t('receiptImageAlt')}
+                  draggable={false}
+                  className="h-full w-full object-contain pointer-events-none"
+                  style={{
+                    transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                    transformOrigin: 'center center',
+                    transition: isDragging ? 'none' : 'transform 0.05s ease-out',
+                  }}
+                />
+              </div>
+              <div className="flex items-center justify-between gap-2 border-t px-3 py-1.5 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    aria-label={t('zoomOut')}
+                    onClick={() => setZoom((z) => Math.max(z / 1.25, 1))}
+                  >
+                    <ZoomOut className="h-3.5 w-3.5" />
+                  </Button>
+                  <span className="w-10 text-center">{Math.round(zoom * 100)}%</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    aria-label={t('zoomIn')}
+                    onClick={() => setZoom((z) => Math.min(z * 1.25, 5))}
+                  >
+                    <ZoomIn className="h-3.5 w-3.5" />
+                  </Button>
+                  {zoom > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2 text-xs"
+                      onClick={() => {
+                        setZoom(1);
+                        setPan({ x: 0, y: 0 });
+                      }}
+                    >
+                      {t('resetView')}
+                    </Button>
+                  )}
+                </div>
+                {safeReceipt.aiProvider && (
+                  <span className="truncate">{t('recognizedBy', { provider: safeReceipt.aiProvider })}</span>
+                )}
+                <Button type="button" variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={toggleImage}>
+                  {t('hideImage')}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
-      {showImage && safeReceipt.imagePath && (
+      <div className="min-w-0 space-y-4">
+        {safeReceipt.imagePath && !showImage && (
+          <Button type="button" variant="outline" size="sm" onClick={toggleImage} data-testid="compare-receipt-btn">
+            <ImageIcon className="mr-2 h-4 w-4" />
+            {t('compareReceipt')}
+          </Button>
+        )}
+
+        {/* Receipt summary */}
         <Card>
-          <CardContent className="p-0 overflow-hidden rounded-lg">
-            <div
-              ref={imageContainerRef}
-              className="relative overflow-hidden rounded-t-lg bg-muted/30"
-              style={{
-                height: 400,
-                cursor: isDragging ? 'grabbing' : 'grab',
-                touchAction: 'none',
-                userSelect: 'none',
-              }}
-              onMouseDown={(e) => {
-                setIsDragging(true);
-                dragStart.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y };
-              }}
-              onMouseMove={(e) => {
-                if (!isDragging || !dragStart.current) return;
-                setPan({
-                  x: dragStart.current.panX + e.clientX - dragStart.current.x,
-                  y: dragStart.current.panY + e.clientY - dragStart.current.y,
-                });
-              }}
-              onMouseUp={() => {
-                setIsDragging(false);
-                dragStart.current = null;
-              }}
-              onMouseLeave={() => {
-                setIsDragging(false);
-                dragStart.current = null;
-              }}
-              onDoubleClick={() => {
-                setZoom(1);
-                setPan({ x: 0, y: 0 });
-              }}
-              onTouchStart={(e) => {
-                if (e.touches.length === 2) {
-                  const touch0 = e.touches[0];
-                  const touch1 = e.touches[1];
-                  if (!touch0 || !touch1) return;
-                  const dx = touch0.clientX - touch1.clientX;
-                  const dy = touch0.clientY - touch1.clientY;
-                  lastTouchDist.current = Math.sqrt(dx * dx + dy * dy);
-                } else {
-                  const touch0 = e.touches[0];
-                  if (!touch0) return;
-                  dragStart.current = { x: touch0.clientX, y: touch0.clientY, panX: pan.x, panY: pan.y };
-                }
-              }}
-              onTouchMove={(e) => {
-                if (e.touches.length === 2 && lastTouchDist.current !== null) {
-                  const touch0 = e.touches[0];
-                  const touch1 = e.touches[1];
-                  if (!touch0 || !touch1) return;
-                  const dx = touch0.clientX - touch1.clientX;
-                  const dy = touch0.clientY - touch1.clientY;
-                  const dist = Math.sqrt(dx * dx + dy * dy);
-                  const factor = dist / lastTouchDist.current;
-                  setZoom((z) => Math.min(Math.max(z * factor, 1), 5));
-                  lastTouchDist.current = dist;
-                } else if (e.touches.length === 1 && dragStart.current) {
-                  const touch0 = e.touches[0];
-                  if (!touch0) return;
-                  setPan({
-                    x: dragStart.current.panX + touch0.clientX - dragStart.current.x,
-                    y: dragStart.current.panY + touch0.clientY - dragStart.current.y,
-                  });
-                }
-              }}
-              onTouchEnd={() => {
-                lastTouchDist.current = null;
-                dragStart.current = null;
-              }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element -- user-uploaded
-                  receipt photo with unknown natural dimensions, rendered inside a
-                  pinch-zoom/pan viewport; next/image would need either server-side
-                  dimension probing or a fill+aspect-ratio layout change, out of scope
-                  here */}
-              <img
-                src={`/api/uploads/${safeReceipt.imagePath}`}
-                alt={t('receiptImageAlt')}
-                draggable={false}
-                className="h-full w-full object-contain pointer-events-none"
-                style={{
-                  transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-                  transformOrigin: 'center center',
-                  transition: isDragging ? 'none' : 'transform 0.05s ease-out',
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">{t('receiptSummary')}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-1 text-sm">
+            <div className="space-y-2 pb-2">
+              <Label htmlFor="receipt-currency">{de ? 'Belegwährung korrigieren' : 'Correct receipt currency'}</Label>
+              <select
+                id="receipt-currency"
+                className="w-full rounded-md border bg-background p-2"
+                value={safeExtracted.currency.toUpperCase()}
+                disabled={correctCurrency.isPending || createExpense.isPending}
+                onChange={(e) => {
+                  if (
+                    window.confirm(
+                      de
+                        ? 'Nur das Währungslabel ändern? Alle Zahlen bleiben unverändert; gedruckte Alternativsummen werden ungültig.'
+                        : 'Relabel currency only? All numbers remain unchanged; printed alternate totals will be invalidated.',
+                    )
+                  ) {
+                    correctCurrency.mutate({ receiptId, currency: e.target.value });
+                  }
                 }}
-              />
+              >
+                {!COMMON_CURRENCIES.some((c) => c.code === safeExtracted.currency.toUpperCase()) && (
+                  <option value={safeExtracted.currency.toUpperCase()}>{safeExtracted.currency}</option>
+                )}
+                {COMMON_CURRENCIES.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.code} — {c.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-muted-foreground">
+                {de
+                  ? 'Ändert nur die Währung, nicht die Beträge. Danach wird die Euro-Vorschau neu berechnet.'
+                  : 'Changes the label, not the amounts. Euro preview is recalculated afterwards.'}
+              </p>
             </div>
-            {zoom > 1 && (
-              <div className="flex items-center justify-between px-3 py-1.5 text-xs text-muted-foreground border-t">
-                <span>{Math.round(zoom * 100)}%</span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 px-2 text-xs"
-                  onClick={() => {
-                    setZoom(1);
-                    setPan({ x: 0, y: 0 });
-                  }}
-                >
-                  {t('resetView')}
-                </Button>
+            {safeExtracted.merchantName && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{t('merchant')}</span>
+                <span>{safeExtracted.merchantName}</span>
               </div>
             )}
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">{t('subtotal')}</span>
+              <span>{formatReceiptCents(safeExtracted.subtotal, safeExtracted.currency, locale)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">{t('tax')}</span>
+              <span>{formatReceiptCents(safeExtracted.tax, safeExtracted.currency, locale)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">{t('tip')}</span>
+              <span>{formatReceiptCents(tip, safeExtracted.currency, locale)}</span>
+            </div>
+            <Separator />
+            <div className="flex justify-between font-semibold">
+              <span>{t('total')}</span>
+              <span>{formatReceiptCents(currentTotal, safeExtracted.currency, locale)}</span>
+            </div>
+            {/* Recognized lines against the printed sums: a gap means a line was misread or missed */}
+            <div className="space-y-0.5 rounded-md bg-muted/40 p-2 text-xs" data-testid="receipt-check">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{t('checkItemsSum', { count: items.length })}</span>
+                <span>{formatReceiptCents(itemsSum, safeExtracted.currency, locale)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{t('checkSubtotal')}</span>
+                <span>{formatReceiptCents(safeExtracted.subtotal, safeExtracted.currency, locale)}</span>
+              </div>
+              {safeExtracted.total > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">{t('checkTotal')}</span>
+                  <span>{formatReceiptCents(safeExtracted.total, safeExtracted.currency, locale)}</span>
+                </div>
+              )}
+              {sumGap === 0 ? (
+                <p className="pt-1 font-medium text-emerald-600 dark:text-emerald-400">{t('checkOk')}</p>
+              ) : (
+                <p className="pt-1 font-medium text-amber-600 dark:text-amber-400">
+                  {t('checkGap', { amount: formatReceiptCents(sumGap, safeExtracted.currency, locale) })}
+                </p>
+              )}
+            </div>
+            <ReceiptRatePreview
+              amount={currentTotal}
+              quote={euroQuote}
+              locale={locale}
+              loading={conversionPreview.isFetching || correctCurrency.isPending}
+            />
+            {groupQuote && groupQuote.to !== 'EUR' && (
+              <p className="text-xs text-muted-foreground">
+                {de ? 'Gruppenkurs' : 'Group rate'}: 1 {groupQuote.from} = {groupQuote.rate} {groupQuote.to} ·{' '}
+                {groupQuote.source} · {groupQuote.rateDate}
+                {groupQuote.source === 'ExchangeRate-API' && (
+                  <>
+                    {' '}
+                    ·{' '}
+                    <a
+                      href="https://www.exchangerate-api.com"
+                      className="underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Rates By Exchange Rate API
+                    </a>
+                  </>
+                )}
+              </p>
+            )}
+            {safeExtracted.date && (
+              <label className="flex items-start gap-2 pt-2 text-xs">
+                <input
+                  type="checkbox"
+                  checked={useLatestRate}
+                  onChange={(e) => setUseLatestRate(e.target.checked)}
+                  disabled={createExpense.isPending || correctCurrency.isPending}
+                />
+                <span>
+                  {de
+                    ? `Aktuellen Kurs ausdrücklich als Schätzung statt des historischen Kurses vom ${safeExtracted.date.slice(0, 10)} verwenden (gedruckte Belegkurse bleiben bevorzugt).`
+                    : `Explicitly use the latest rate as an estimate instead of the historical rate for ${safeExtracted.date.slice(0, 10)} (printed receipt rates still take priority).`}
+                </span>
+              </label>
+            )}
+            {!conversionPreview.isFetching && (!groupQuote || conversionPreview.isError) && (
+              <p className="text-xs text-destructive">
+                {de
+                  ? 'Speichern erst mit gültiger Kursvorschau möglich.'
+                  : 'Saving requires a valid conversion preview.'}
+              </p>
+            )}
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => conversionPreview.refetch()}
+              disabled={conversionPreview.isFetching || correctCurrency.isPending}
+            >
+              {de ? 'Kurs erneut laden' : 'Retry rate lookup'}
+            </Button>
+            {safeExtracted.alternateTotals
+              .filter((alternateTotal) => alternateTotal.currency !== safeExtracted.currency)
+              .map((alternateTotal) => (
+                <div key={alternateTotal.currency} className="flex justify-between font-semibold text-primary">
+                  <span>
+                    {t('total')} ({alternateTotal.currency})
+                  </span>
+                  <span>{formatReceiptCents(alternateTotal.total, alternateTotal.currency, locale)}</span>
+                </div>
+              ))}
           </CardContent>
         </Card>
-      )}
 
-      {/* Receipt summary */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">{t('receiptSummary')}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-1 text-sm">
-          <div className="space-y-2 pb-2">
-            <Label htmlFor="receipt-currency">{de ? 'Belegwährung korrigieren' : 'Correct receipt currency'}</Label>
-            <select
-              id="receipt-currency"
-              className="w-full rounded-md border bg-background p-2"
-              value={safeExtracted.currency.toUpperCase()}
-              disabled={correctCurrency.isPending || createExpense.isPending}
-              onChange={(e) => {
-                if (
-                  window.confirm(
-                    de
-                      ? 'Nur das Währungslabel ändern? Alle Zahlen bleiben unverändert; gedruckte Alternativsummen werden ungültig.'
-                      : 'Relabel currency only? All numbers remain unchanged; printed alternate totals will be invalidated.',
-                  )
-                ) {
-                  correctCurrency.mutate({ receiptId, currency: e.target.value });
-                }
-              }}
-            >
-              {!COMMON_CURRENCIES.some((c) => c.code === safeExtracted.currency.toUpperCase()) && (
-                <option value={safeExtracted.currency.toUpperCase()}>{safeExtracted.currency}</option>
-              )}
-              {COMMON_CURRENCIES.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.code} — {c.name}
-                </option>
-              ))}
-            </select>
-            <p className="text-xs text-muted-foreground">
-              {de
-                ? 'Ändert nur die Währung, nicht die Beträge. Danach wird die Euro-Vorschau neu berechnet.'
-                : 'Changes the label, not the amounts. Euro preview is recalculated afterwards.'}
-            </p>
-          </div>
-          {safeExtracted.merchantName && (
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">{t('merchant')}</span>
-              <span>{safeExtracted.merchantName}</span>
-            </div>
-          )}
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">{t('subtotal')}</span>
-            <span>{formatReceiptCents(safeExtracted.subtotal, safeExtracted.currency, locale)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">{t('tax')}</span>
-            <span>{formatReceiptCents(safeExtracted.tax, safeExtracted.currency, locale)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">{t('tip')}</span>
-            <span>{formatReceiptCents(tip, safeExtracted.currency, locale)}</span>
-          </div>
-          <Separator />
-          <div className="flex justify-between font-semibold">
-            <span>{t('total')}</span>
-            <span>{formatReceiptCents(currentTotal, safeExtracted.currency, locale)}</span>
-          </div>
-          <ReceiptRatePreview
-            amount={currentTotal}
-            quote={euroQuote}
-            locale={locale}
-            loading={conversionPreview.isFetching || correctCurrency.isPending}
-          />
-          {groupQuote && groupQuote.to !== 'EUR' && (
-            <p className="text-xs text-muted-foreground">
-              {de ? 'Gruppenkurs' : 'Group rate'}: 1 {groupQuote.from} = {groupQuote.rate} {groupQuote.to} ·{' '}
-              {groupQuote.source} · {groupQuote.rateDate}
-              {groupQuote.source === 'ExchangeRate-API' && (
-                <>
-                  {' '}
-                  ·{' '}
-                  <a
-                    href="https://www.exchangerate-api.com"
-                    className="underline"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Rates By Exchange Rate API
-                  </a>
-                </>
-              )}
-            </p>
-          )}
-          {safeExtracted.date && (
-            <label className="flex items-start gap-2 pt-2 text-xs">
-              <input
-                type="checkbox"
-                checked={useLatestRate}
-                onChange={(e) => setUseLatestRate(e.target.checked)}
-                disabled={createExpense.isPending || correctCurrency.isPending}
+        {/* Expense details */}
+        <Card>
+          <CardContent className="space-y-3 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">{t('expenseTitle')}</Label>
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder={t('expenseTitlePlaceholder')}
+                required
               />
-              <span>
-                {de
-                  ? `Aktuellen Kurs ausdrücklich als Schätzung statt des historischen Kurses vom ${safeExtracted.date.slice(0, 10)} verwenden (gedruckte Belegkurse bleiben bevorzugt).`
-                  : `Explicitly use the latest rate as an estimate instead of the historical rate for ${safeExtracted.date.slice(0, 10)} (printed receipt rates still take priority).`}
-              </span>
-            </label>
-          )}
-          {!conversionPreview.isFetching && (!groupQuote || conversionPreview.isError) && (
-            <p className="text-xs text-destructive">
-              {de ? 'Speichern erst mit gültiger Kursvorschau möglich.' : 'Saving requires a valid conversion preview.'}
-            </p>
-          )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="category">{tExp('new.category')}</Label>
+              <CategorySelect value={category} onChange={setCategory} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="location">{tExp('new.location')}</Label>
+              <LocationField
+                value={place}
+                onChange={setPlace}
+                category={category}
+                groupId={groupId}
+                suggestion={[safeExtracted.merchantName, safeExtracted.merchantAddress].filter(Boolean).join(', ')}
+                autoPick={!!safeExtracted.merchantAddress}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="paidBy">{t('paidBy')}</Label>
+              <select
+                id="paidBy"
+                value={paidById}
+                onChange={(e) => setPaidById(e.target.value)}
+                required
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+                data-testid="paid-by-select"
+              >
+                <option value="">{t('selectMember')}</option>
+                {members.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name ?? t('unnamed')}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tip">{t('tipOverride')}</Label>
+              <Input
+                id="tip"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder={t('tipDetected', {
+                  amount: formatReceiptCents(safeExtracted.tip, safeExtracted.currency, locale),
+                })}
+                value={tipOverride}
+                onChange={(e) => setTipOverride(e.target.value)}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Quick actions */}
+        <div className="flex gap-2">
+          <Button type="button" variant="outline" size="sm" onClick={assignAllToEveryone} data-testid="split-all-btn">
+            <Users className="mr-2 h-4 w-4" />
+            {t('splitAllEqually')}
+          </Button>
           <Button
             type="button"
-            size="sm"
             variant="outline"
-            onClick={() => conversionPreview.refetch()}
-            disabled={conversionPreview.isFetching || correctCurrency.isPending}
+            size="sm"
+            onClick={() => setAddingItem(true)}
+            data-testid="add-item-btn"
           >
-            {de ? 'Kurs erneut laden' : 'Retry rate lookup'}
+            <Plus className="mr-2 h-4 w-4" />
+            {t('addItem')}
           </Button>
-          {safeExtracted.alternateTotals
-            .filter((alternateTotal) => alternateTotal.currency !== safeExtracted.currency)
-            .map((alternateTotal) => (
-              <div key={alternateTotal.currency} className="flex justify-between font-semibold text-primary">
-                <span>
-                  {t('total')} ({alternateTotal.currency})
-                </span>
-                <span>{formatReceiptCents(alternateTotal.total, alternateTotal.currency, locale)}</span>
+        </div>
+
+        {/* Add new item form */}
+        {addingItem && (
+          <Card className="border-primary/50" data-testid="add-item-form">
+            <CardContent className="py-3">
+              <div
+                className="space-y-2"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && (e.target as HTMLElement).tagName === 'INPUT' && !addItem.isPending) {
+                    e.preventDefault();
+                    handleAddItem();
+                  }
+                }}
+              >
+                <div className="flex gap-2">
+                  <Input
+                    placeholder={t('itemNamePlaceholder')}
+                    value={newItem.name}
+                    onChange={(e) => setNewItem((p) => ({ ...p, name: e.target.value }))}
+                    className="flex-1"
+                  />
+                  <Input
+                    type="number"
+                    placeholder={t('qtyPlaceholder')}
+                    value={newItem.quantity}
+                    onChange={(e) => setNewItem((p) => ({ ...p, quantity: e.target.value }))}
+                    className="w-16"
+                    min="1"
+                  />
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder={t('pricePlaceholder')}
+                    value={newItem.totalPrice}
+                    onChange={(e) => setNewItem((p) => ({ ...p, totalPrice: e.target.value }))}
+                    className="w-24"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button type="button" size="sm" disabled={addItem.isPending} onClick={handleAddItem}>
+                    {addItem.isPending ? t('adding') : t('add')}
+                  </Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setAddingItem(false)}>
+                    {t('cancel')}
+                  </Button>
+                </div>
               </div>
-            ))}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        )}
 
-      {/* Expense details */}
-      <Card>
-        <CardContent className="space-y-3 pt-4">
-          <div className="space-y-2">
-            <Label htmlFor="title">{t('expenseTitle')}</Label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder={t('expenseTitlePlaceholder')}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="location">{tExp('new.location')}</Label>
-            <LocationField
-              value={place}
-              onChange={setPlace}
-              suggestion={[safeExtracted.merchantName, safeExtracted.merchantAddress].filter(Boolean).join(', ')}
-              autoPick={!!safeExtracted.merchantAddress}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="paidBy">{t('paidBy')}</Label>
-            <select
-              id="paidBy"
-              value={paidById}
-              onChange={(e) => setPaidById(e.target.value)}
-              required
-              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
-              data-testid="paid-by-select"
-            >
-              <option value="">{t('selectMember')}</option>
-              {members.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name ?? t('unnamed')}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="tip">{t('tipOverride')}</Label>
-            <Input
-              id="tip"
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder={t('tipDetected', {
-                amount: formatReceiptCents(safeExtracted.tip, safeExtracted.currency, locale),
-              })}
-              value={tipOverride}
-              onChange={(e) => setTipOverride(e.target.value)}
-            />
-          </div>
-        </CardContent>
-      </Card>
+        {/* Item assignment */}
+        <div className="space-y-2">
+          <Label>{t('assignItems', { assigned: assignedItemCount, total: items.length })}</Label>
+          {items.map((item) => {
+            const assigned = assignments[item.id] ?? new Set();
+            const isEditing = editingItem === item.id;
 
-      {/* Quick actions */}
-      <div className="flex gap-2">
-        <Button type="button" variant="outline" size="sm" onClick={assignAllToEveryone} data-testid="split-all-btn">
-          <Users className="mr-2 h-4 w-4" />
-          {t('splitAllEqually')}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => setAddingItem(true)}
-          data-testid="add-item-btn"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          {t('addItem')}
-        </Button>
-      </div>
-
-      {/* Add new item form */}
-      {addingItem && (
-        <Card className="border-primary/50" data-testid="add-item-form">
-          <CardContent className="py-3">
-            <div
-              className="space-y-2"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && (e.target as HTMLElement).tagName === 'INPUT' && !addItem.isPending) {
-                  e.preventDefault();
-                  handleAddItem();
-                }
-              }}
-            >
-              <div className="flex gap-2">
-                <Input
-                  placeholder={t('itemNamePlaceholder')}
-                  value={newItem.name}
-                  onChange={(e) => setNewItem((p) => ({ ...p, name: e.target.value }))}
-                  className="flex-1"
-                />
-                <Input
-                  type="number"
-                  placeholder={t('qtyPlaceholder')}
-                  value={newItem.quantity}
-                  onChange={(e) => setNewItem((p) => ({ ...p, quantity: e.target.value }))}
-                  className="w-16"
-                  min="1"
-                />
-                <Input
-                  type="number"
-                  step="0.01"
-                  placeholder={t('pricePlaceholder')}
-                  value={newItem.totalPrice}
-                  onChange={(e) => setNewItem((p) => ({ ...p, totalPrice: e.target.value }))}
-                  className="w-24"
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button type="button" size="sm" disabled={addItem.isPending} onClick={handleAddItem}>
-                  {addItem.isPending ? t('adding') : t('add')}
-                </Button>
-                <Button type="button" variant="ghost" size="sm" onClick={() => setAddingItem(false)}>
-                  {t('cancel')}
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Item assignment */}
-      <div className="space-y-2">
-        <Label>{t('assignItems', { assigned: assignedItemCount, total: items.length })}</Label>
-        {items.map((item) => {
-          const assigned = assignments[item.id] ?? new Set();
-          const isEditing = editingItem === item.id;
-
-          return (
-            <Card
-              key={item.id}
-              className={assigned.size === 0 ? 'border-amber-300' : ''}
-              data-testid={`item-card-${item.id}`}
-            >
-              <CardContent className="py-3">
-                {isEditing ? (
-                  <div className="mb-2 space-y-2">
-                    <div className="flex gap-2">
-                      <Input
-                        value={editValues.name}
-                        onChange={(e) => setEditValues((p) => ({ ...p, name: e.target.value }))}
-                        className="flex-1"
-                        placeholder={t('itemNamePlaceholder')}
-                      />
-                      <Input
-                        type="number"
-                        value={editValues.quantity}
-                        onChange={(e) => setEditValues((p) => ({ ...p, quantity: e.target.value }))}
-                        className="w-16"
-                        placeholder={t('qtyPlaceholder')}
-                        min="1"
-                      />
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={editValues.totalPrice}
-                        onChange={(e) => setEditValues((p) => ({ ...p, totalPrice: e.target.value }))}
-                        className="w-24"
-                        placeholder={t('pricePlaceholder')}
-                      />
-                    </div>
-                    <div className="flex gap-1">
-                      <Button type="button" size="sm" onClick={() => saveEdit(item.id)} disabled={updateItem.isPending}>
-                        {t('save')}
-                      </Button>
-                      <Button type="button" variant="ghost" size="sm" onClick={() => setEditingItem(null)}>
-                        {t('cancel')}
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="mb-2 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{item.name}</span>
-                      {item.quantity > 1 && <span className="text-xs text-muted-foreground">x{item.quantity}</span>}
-                      <button
-                        type="button"
-                        onClick={() => startEditing(item)}
-                        className="text-muted-foreground hover:text-foreground"
-                      >
-                        <Pencil className="h-3 w-3" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (confirm(t('removeConfirm', { name: item.name }))) {
-                            deleteItem.mutate({ itemId: item.id });
-                          }
-                        }}
-                        className="text-muted-foreground hover:text-destructive"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </button>
-                      {item.quantity > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSplittingItem(item.id);
-                            setSplitQuantity('1');
-                          }}
-                          className="text-muted-foreground hover:text-foreground"
-                          title={t('split')}
-                          aria-label={t('splitAriaLabel', { name: item.name })}
-                          data-testid={`split-btn-${item.id}`}
-                        >
-                          <Scissors className="h-3 w-3" />
-                        </button>
-                      )}
-                    </div>
-                    <span className="font-semibold">
-                      {formatReceiptCents(item.totalPrice, safeExtracted.currency, locale)}
-                    </span>
-                  </div>
-                )}
-                {!isEditing &&
-                  splittingItem === item.id &&
-                  (() => {
-                    const parsed = Number(splitQuantity);
-                    const validQty = Number.isSafeInteger(parsed) && parsed >= 1 && parsed < item.quantity;
-                    return (
-                      <div className="mb-2 flex items-center gap-2" data-testid="split-form">
-                        <span className="text-xs text-muted-foreground">{t('splitOff')}</span>
+            return (
+              <Card
+                key={item.id}
+                id={`item-${item.id}`}
+                className={`scroll-mt-[45vh] transition-shadow md:scroll-mt-4 ${assigned.size === 0 ? 'border-amber-300' : ''} ${
+                  flashItem === item.id ? 'ring-2 ring-primary' : ''
+                }`}
+                data-testid={`item-card-${item.id}`}
+              >
+                <CardContent className="py-3">
+                  {isEditing ? (
+                    <div className="mb-2 space-y-2">
+                      <div className="flex gap-2">
+                        <Input
+                          value={editValues.name}
+                          onChange={(e) => setEditValues((p) => ({ ...p, name: e.target.value }))}
+                          className="flex-1"
+                          placeholder={t('itemNamePlaceholder')}
+                        />
                         <Input
                           type="number"
-                          min={1}
-                          max={item.quantity - 1}
-                          value={splitQuantity}
-                          onChange={(e) => setSplitQuantity(e.target.value)}
-                          className="w-16 h-7 text-xs"
-                          data-testid="split-qty-input"
+                          value={editValues.quantity}
+                          onChange={(e) => setEditValues((p) => ({ ...p, quantity: e.target.value }))}
+                          className="w-16"
+                          placeholder={t('qtyPlaceholder')}
+                          min="1"
                         />
-                        <span className="text-xs text-muted-foreground">
-                          {t('splitOfTotal', { total: item.quantity })}
-                        </span>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={editValues.totalPrice}
+                          onChange={(e) => setEditValues((p) => ({ ...p, totalPrice: e.target.value }))}
+                          className="w-24"
+                          placeholder={t('pricePlaceholder')}
+                        />
+                      </div>
+                      <div className="flex gap-1">
                         <Button
                           type="button"
                           size="sm"
-                          className="h-7 text-xs"
-                          disabled={splitItem.isPending || !validQty}
-                          data-testid="split-submit"
-                          onClick={() => {
-                            if (!validQty) return;
-                            splitItem.mutate({ itemId: item.id, splitQuantity: parsed });
-                            setSplittingItem(null);
-                          }}
+                          onClick={() => saveEdit(item.id)}
+                          disabled={updateItem.isPending}
                         >
-                          {t('split')}
+                          {t('save')}
                         </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 text-xs"
-                          onClick={() => setSplittingItem(null)}
-                        >
+                        <Button type="button" variant="ghost" size="sm" onClick={() => setEditingItem(null)}>
                           {t('cancel')}
                         </Button>
                       </div>
-                    );
-                  })()}
-                <div className="flex flex-wrap gap-1.5">
-                  {members.map((m) => {
-                    const isAssigned = assigned.has(m.id);
-                    const units = isAssigned ? countOf(item.id, m.id) : 0;
-                    return (
-                      <button
-                        key={m.id}
-                        type="button"
-                        onClick={() => toggleAssignment(item.id, m.id)}
-                        title={item.quantity > 1 ? t('tapToCount') : undefined}
-                        data-testid={`member-toggle-${m.id}`}
-                        className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs transition-colors ${
-                          isAssigned
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                        }`}
-                      >
-                        <Avatar className="h-4 w-4">
-                          <AvatarFallback className="text-[8px]">{memberInitials.get(m.id) ?? '?'}</AvatarFallback>
-                        </Avatar>
-                        {m.name?.split(' ')[0] ?? '?'}
-                        {isAssigned &&
-                          (units > 1 ? <span className="font-semibold">×{units}</span> : <Check className="h-3 w-3" />)}
-                      </button>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+                    </div>
+                  ) : (
+                    <div className="mb-2 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{item.name}</span>
+                        {item.quantity > 1 && <span className="text-xs text-muted-foreground">x{item.quantity}</span>}
+                        {changedItems.has(item.id) && (
+                          <span
+                            className="rounded bg-amber-100 px-1 text-[10px] text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
+                            title={t('changedHint')}
+                          >
+                            {t('changedBadge')}
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => startEditing(item)}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (confirm(t('removeConfirm', { name: item.name }))) {
+                              deleteItem.mutate({ itemId: item.id });
+                            }
+                          }}
+                          className="text-muted-foreground hover:text-destructive"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                        {item.quantity > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSplittingItem(item.id);
+                              setSplitQuantity('1');
+                            }}
+                            className="text-muted-foreground hover:text-foreground"
+                            title={t('split')}
+                            aria-label={t('splitAriaLabel', { name: item.name })}
+                            data-testid={`split-btn-${item.id}`}
+                          >
+                            <Scissors className="h-3 w-3" />
+                          </button>
+                        )}
+                      </div>
+                      <span className="font-semibold">
+                        {formatReceiptCents(item.totalPrice, safeExtracted.currency, locale)}
+                      </span>
+                    </div>
+                  )}
+                  {!isEditing &&
+                    splittingItem === item.id &&
+                    (() => {
+                      const parsed = Number(splitQuantity);
+                      const validQty = Number.isSafeInteger(parsed) && parsed >= 1 && parsed < item.quantity;
+                      return (
+                        <div className="mb-2 flex items-center gap-2" data-testid="split-form">
+                          <span className="text-xs text-muted-foreground">{t('splitOff')}</span>
+                          <Input
+                            type="number"
+                            min={1}
+                            max={item.quantity - 1}
+                            value={splitQuantity}
+                            onChange={(e) => setSplitQuantity(e.target.value)}
+                            className="w-16 h-7 text-xs"
+                            data-testid="split-qty-input"
+                          />
+                          <span className="text-xs text-muted-foreground">
+                            {t('splitOfTotal', { total: item.quantity })}
+                          </span>
+                          <Button
+                            type="button"
+                            size="sm"
+                            className="h-7 text-xs"
+                            disabled={splitItem.isPending || !validQty}
+                            data-testid="split-submit"
+                            onClick={() => {
+                              if (!validQty) return;
+                              splitItem.mutate({ itemId: item.id, splitQuantity: parsed });
+                              setSplittingItem(null);
+                            }}
+                          >
+                            {t('split')}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 text-xs"
+                            onClick={() => setSplittingItem(null)}
+                          >
+                            {t('cancel')}
+                          </Button>
+                        </div>
+                      );
+                    })()}
+                  <div className="flex flex-wrap gap-1.5">
+                    {members.map((m) => {
+                      const isAssigned = assigned.has(m.id);
+                      const units = isAssigned ? countOf(item.id, m.id) : 0;
+                      return (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => toggleAssignment(item.id, m.id)}
+                          title={item.quantity > 1 ? t('tapToCount') : undefined}
+                          data-testid={`member-toggle-${m.id}`}
+                          className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs transition-colors ${
+                            isAssigned
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                          }`}
+                        >
+                          <Avatar className="h-4 w-4">
+                            <AvatarFallback className="text-[8px]">{memberInitials.get(m.id) ?? '?'}</AvatarFallback>
+                          </Avatar>
+                          {m.name?.split(' ')[0] ?? '?'}
+                          {isAssigned &&
+                            (units > 1 ? (
+                              <span className="font-semibold">×{units}</span>
+                            ) : (
+                              <Check className="h-3 w-3" />
+                            ))}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
 
-      {/* Per-person summary */}
-      {perPersonTotals.size > 0 && (
-        <Card data-testid="per-person-totals">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">{t('perPersonTotals')}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-1">
-            {members.map((m) => {
-              const total = perPersonTotals.get(m.id);
-              if (!total) return null;
-              return (
-                <div key={m.id} className="flex justify-between text-sm">
-                  <span>{m.name ?? t('unnamed')}</span>
-                  <span className="font-medium">{formatReceiptCents(total, safeExtracted.currency, locale)}</span>
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
-      )}
+        {/* Per-person summary */}
+        {perPersonTotals.size > 0 && (
+          <Card data-testid="per-person-totals">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">{t('perPersonTotals')}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1">
+              {members.map((m) => {
+                const total = perPersonTotals.get(m.id);
+                if (!total) return null;
+                return (
+                  <div key={m.id} className="flex justify-between text-sm">
+                    <span>{m.name ?? t('unnamed')}</span>
+                    <span className="font-medium">{formatReceiptCents(total, safeExtracted.currency, locale)}</span>
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+        )}
 
-      {createExpense.error && (
-        <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{createExpense.error.message}</div>
-      )}
+        {createExpense.error && (
+          <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{createExpense.error.message}</div>
+        )}
 
-      <Button
-        type="submit"
-        className="w-full"
-        disabled={createExpense.isPending || !allAssigned || !paidById || !previewReady || !groupQuote}
-        data-testid="create-expense-btn"
-      >
-        {createExpense.isPending
-          ? expenseId
-            ? t('updatingExpense')
-            : t('creatingExpense')
-          : !allAssigned
-            ? t('assignAllItems', { remaining: items.length - assignedItemCount })
-            : expenseId
-              ? t('saveChanges')
-              : t('createExpense')}
-      </Button>
-
-      {onSaveForLater && !expenseId && (
         <Button
-          type="button"
-          variant="outline"
+          type="submit"
           className="w-full"
-          onClick={handleSaveForLater}
-          disabled={saveForLater.isPending}
-          data-testid="save-for-later-btn"
+          disabled={createExpense.isPending || !allAssigned || !paidById || !previewReady || !groupQuote}
+          data-testid="create-expense-btn"
         >
-          <Bookmark className="mr-2 h-4 w-4" />
-          {saveForLater.isPending ? t('saving') : t('saveForLater')}
+          {createExpense.isPending
+            ? expenseId
+              ? t('updatingExpense')
+              : t('creatingExpense')
+            : !allAssigned
+              ? t('assignAllItems', { remaining: items.length - assignedItemCount })
+              : expenseId
+                ? t('saveChanges')
+                : t('createExpense')}
         </Button>
-      )}
+
+        {onSaveForLater && !expenseId && (
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={handleSaveForLater}
+            disabled={saveForLater.isPending}
+            data-testid="save-for-later-btn"
+          >
+            <Bookmark className="mr-2 h-4 w-4" />
+            {saveForLater.isPending ? t('saving') : t('saveForLater')}
+          </Button>
+        )}
+
+        <ReceiptHistory
+          entries={history.data ?? []}
+          members={members}
+          currency={safeExtracted.currency}
+          existingItemIds={new Set(items.map((i) => i.id))}
+          onShowItem={(itemId) => {
+            scrollToItem(itemId);
+            setFlashItem(itemId);
+          }}
+        />
+      </div>
     </form>
   );
 }

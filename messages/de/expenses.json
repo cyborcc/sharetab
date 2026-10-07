@@ -56,7 +56,9 @@
     "privateLabel": "Privat",
     "privateHint": "Nur du siehst Titel und Betrag. Gilt nur, wenn die Ausgabe mit niemandem geteilt wird.",
     "notes": "Notiz (optional)",
-    "notesPlaceholder": "z. B. WLAN-Passwort, Türcode, Check-in-Zeit"
+    "notesPlaceholder": "z. B. WLAN-Passwort, Türcode, Check-in-Zeit",
+    "recentPlaces": "Zuletzt:",
+    "recentPlaceVisits": "{count}-mal"
   },
   "edit": {
     "title": "Ausgabe bearbeiten",
@@ -132,7 +134,10 @@
     "loadingGroup": "Gruppe wird geladen...",
     "groupLoadError": "Gruppendaten konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
     "uploadFailed": "Upload fehlgeschlagen",
-    "createSessionFailed": "Sitzung konnte nicht erstellt werden."
+    "createSessionFailed": "Sitzung konnte nicht erstellt werden.",
+    "model": "KI-Modell",
+    "modelDefault": "Standard",
+    "modelHint": "Scheitert das gewählte Modell, übernimmt die Standard-Kette."
   },
   "receipt": {
     "hideImage": "Belegbild ausblenden",
@@ -181,7 +186,37 @@
     "validationNameRequired": "Artikelname ist erforderlich.",
     "validationPricePositive": "Der Preis muss größer als null sein.",
     "validationQtyPositive": "Die Menge muss eine positive ganze Zahl sein.",
-    "receiptImageAlt": "Beleg"
+    "receiptImageAlt": "Beleg",
+    "compareReceipt": "Mit Beleg vergleichen",
+    "zoomIn": "Vergrößern",
+    "zoomOut": "Verkleinern",
+    "recognizedBy": "Erkannt mit {provider}",
+    "checkItemsSum": "Summe der {count} Positionen",
+    "checkSubtotal": "Erkannte Zwischensumme",
+    "checkTotal": "Erkannter Gesamtbetrag",
+    "checkOk": "Positionen stimmen mit der Belegsumme überein",
+    "checkGap": "Abweichung {amount}: Positionen mit dem Beleg vergleichen",
+    "changedBadge": "geändert",
+    "changedHint": "Nach dem Scan von Hand geändert, siehe Verlauf",
+    "historyTitle": "Verlauf",
+    "historyCreated": "hat die Ausgabe erstellt",
+    "historySaved": "hat die Ausgabe gespeichert",
+    "historyUpdated": "hat geändert:",
+    "historyAdded": "hat hinzugefügt:",
+    "historyDeleted": "hat entfernt:",
+    "historySplit": "hat {quantity} von {of} abgetrennt:",
+    "historyAssigned": "hat die Zuordnung geändert:",
+    "historyNobody": "niemand",
+    "historyName": "Name",
+    "historyQty": "Menge",
+    "historyPrice": "Preis",
+    "historyField": {
+      "title": "Titel",
+      "paidById": "Bezahlt von",
+      "amount": "Betrag",
+      "category": "Kategorie",
+      "placeName": "Ort"
+    }
   },
   "splits": {
     "selectAll": "Alle auswählen",

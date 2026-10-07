@@ -440,7 +440,7 @@ function EditExpenseForm({
 
             <div className="space-y-2">
               <Label htmlFor="location">{t('new.location')}</Label>
-              <LocationField value={place} onChange={setPlace} category={category} />
+              <LocationField value={place} onChange={setPlace} category={category} groupId={groupId} />
             </div>
 
             <div className="space-y-2">

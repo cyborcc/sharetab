@@ -7,7 +7,7 @@ import { RECEIPT_EXTRACTION_PROMPT } from '../prompts/receipt-extraction';
 export class OpenAIProvider implements AIProvider {
   readonly name = 'openai';
   private client: OpenAI;
-  private model: string;
+  readonly model: string;
 
   constructor(apiKey: string, model?: string) {
     this.client = new OpenAI({ apiKey });

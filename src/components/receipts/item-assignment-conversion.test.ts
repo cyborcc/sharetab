@@ -10,19 +10,25 @@ const mocks = vi.hoisted(() => ({
   invalidatePreview: vi.fn(),
   correction: vi.fn(),
 }));
-vi.mock('next-intl', () => ({ useLocale: () => 'de', useTranslations: () => (key: string) => key }));
+vi.mock('next-intl', () => ({
+  useLocale: () => 'de',
+  useTranslations: () => Object.assign((key: string) => key, { raw: () => ['Essen'] }),
+}));
 vi.mock('@/components/expenses/location-field', () => ({ LocationField: () => null }));
+vi.mock('@/components/expenses/category-select', () => ({ CategorySelect: () => null }));
 vi.mock('@/lib/trpc', () => ({
   trpc: {
     useUtils: () => ({
       receipts: {
         getReceiptItems: { invalidate: mocks.invalidateItems },
         getConversionPreview: { invalidate: mocks.invalidatePreview },
+        history: { invalidate: vi.fn() },
       },
     }),
     receipts: {
       getReceiptItems: { useQuery: mocks.receiptQuery },
       getConversionPreview: { useQuery: mocks.previewQuery },
+      history: { useQuery: () => ({ data: [] }) },
       correctCurrency: { useMutation: mocks.correction },
       ...Object.fromEntries(
         ['assignItemsAndCreateExpense', 'updateItem', 'deleteItem', 'addItem', 'splitItem', 'saveForLater'].map(
