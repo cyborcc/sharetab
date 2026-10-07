@@ -21,7 +21,7 @@ test.describe('Mobile Responsive', () => {
     await login(page, users.alice.email, users.alice.password);
 
     // Click hamburger button in header
-    const menuButton = page.locator('header').getByRole('button');
+    const menuButton = page.locator('header').getByRole('button', { name: 'Open menu' });
     await menuButton.click();
 
     // Sheet/dialog should open with navigation
@@ -37,7 +37,7 @@ test.describe('Mobile Responsive', () => {
     await login(page, users.alice.email, users.alice.password);
 
     // Open menu and click Groups
-    const menuButton = page.locator('header').getByRole('button');
+    const menuButton = page.locator('header').getByRole('button', { name: 'Open menu' });
     await menuButton.click();
 
     const dialog = page.getByRole('dialog');

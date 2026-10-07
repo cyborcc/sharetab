@@ -329,6 +329,7 @@ enum ActivityType {
   PLACEHOLDER_MERGED
   GROUP_ARCHIVED
   GROUP_UNARCHIVED
+  RECEIPT_ITEMS_CHANGED // a receipt line was edited, added, removed, split or reassigned (metadata.receiptId)
 }
 
 // ─── ADMIN ─────────────────────────────────────────────────

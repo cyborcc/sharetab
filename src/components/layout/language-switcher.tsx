@@ -22,15 +22,16 @@ function setLocaleCookie(locale: string) {
   document.cookie = `NEXT_LOCALE=${encodeURIComponent(locale)};path=/;max-age=31536000;samesite=lax${secure}`;
 }
 
-export function LanguageSwitcher() {
+/** testId differs per placement: the mobile header's copy is hidden on desktop, where the sidebar's shows. */
+export function LanguageSwitcher({ testId = 'language-switcher' }: { testId?: string }) {
   return (
     <Suspense>
-      <LanguageSwitcherInner />
+      <LanguageSwitcherInner testId={testId} />
     </Suspense>
   );
 }
 
-function LanguageSwitcherInner() {
+function LanguageSwitcherInner({ testId }: { testId: string }) {
   const locale = useLocale() as Locale;
   const router = useRouter();
   const pathname = usePathname();
@@ -56,10 +57,20 @@ function LanguageSwitcherInner() {
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button variant="ghost" size="icon-sm" aria-label={t('nav.changeLanguage')} data-testid="language-switcher" />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 gap-1 px-2 text-xs font-medium"
+            aria-label={t('nav.changeLanguage')}
+            title={t('nav.changeLanguage')}
+            data-testid={testId}
+          />
         }
       >
-        <Globe className="h-4 w-4" />
+        {/* Flag and code instead of a bare globe, so it is clear that this switches the language */}
+        <Globe className="h-3.5 w-3.5 opacity-60" />
+        <span>{languageConfig[locale]?.flag}</span>
+        <span className="uppercase">{locale.split('-')[0]}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {locales.map((l) => (

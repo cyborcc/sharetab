@@ -134,6 +134,55 @@ export const expensesRouter = createTRPCRouter({
     return { paid, share, total, count: expenses.length, categories };
   }),
 
+  // Zuletzt besuchte Orte der Gruppe (neueste zuerst), um z. B. ein Restaurant wieder auszuwaehlen.
+  // Mit Kategorie: nur Ausgaben dieser Kategorie oder ohne Kategorie (Belege hatten frueher keine).
+  recentPlaces: groupMemberProcedure
+    .input(z.object({ groupId: z.string(), category: z.string().max(50).optional() }))
+    .query(async ({ ctx, input }) => {
+      const category = input.category?.trim();
+      const rows = await ctx.db.expense.findMany({
+        where: {
+          groupId: input.groupId,
+          placeName: { not: null },
+          AND: [
+            { OR: [{ isPrivate: false }, { paidById: ctx.user.id }] },
+            ...(category
+              ? [{ OR: [{ category: { equals: category, mode: 'insensitive' as const } }, { category: null }] }]
+              : []),
+          ],
+        },
+        orderBy: { expenseDate: 'desc' },
+        take: 200,
+        select: { placeName: true, latitude: true, longitude: true, expenseDate: true },
+      });
+      const places = new Map<
+        string,
+        { placeName: string; latitude: number | null; longitude: number | null; lastVisit: Date; visits: number }
+      >();
+      for (const row of rows) {
+        const name = row.placeName?.trim();
+        if (!name) continue;
+        const key = name.toLowerCase();
+        const known = places.get(key);
+        if (known) {
+          known.visits += 1;
+          if (known.latitude === null && row.latitude !== null) {
+            known.latitude = row.latitude;
+            known.longitude = row.longitude;
+          }
+        } else {
+          places.set(key, {
+            placeName: name,
+            latitude: row.latitude,
+            longitude: row.longitude,
+            lastVisit: row.expenseDate,
+            visits: 1,
+          });
+        }
+      }
+      return [...places.values()].slice(0, 8);
+    }),
+
   list: groupMemberProcedure
     .input(
       z.object({

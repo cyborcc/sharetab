@@ -12,11 +12,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { ExpenseRow, PersonFilter, dayLabel, involves, type RowMember } from '@/components/expenses/expense-row';
 
 const SELECT_CLASS =
   'flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring';
 
-/** All expenses of a group (up to 100) with search and filters by person, category and period. */
+/** All expenses of a group (up to 100) with search and filters by person (paid or shares in), category and period. */
 export default function AllExpensesPage({ params }: { params: Promise<{ groupId: string }> }) {
   const { groupId } = use(params);
   const locale = useLocale();
@@ -46,7 +47,7 @@ export default function AllExpensesPage({ params }: { params: Promise<{ groupId:
     return all.filter((e) => {
       // Others' private expenses have nothing to match on, so they only show while no filter is active
       if (isHiddenFor(e, myId)) return !(q || category || person || from || to);
-      if (person && e.paidById !== person) return false;
+      if (person && !involves(e, person)) return false;
       if (category && e.category !== category) return false;
       const day = new Date(e.expenseDate).toLocaleDateString('sv-SE');
       if (from && day < from) return false;
@@ -63,6 +64,15 @@ export default function AllExpensesPage({ params }: { params: Promise<{ groupId:
   if (!group.data) return null;
   const g = group.data;
 
+  const members = new Map<string, RowMember>(g.members.map((m) => [m.user.id, m.user]));
+  const days: { key: string; date: Date; items: typeof filtered }[] = [];
+  for (const e of filtered) {
+    const date = new Date(e.expenseDate);
+    const key = date.toLocaleDateString('sv-SE');
+    const last = days[days.length - 1];
+    if (last && last.key === key) last.items.push(e);
+    else days.push({ key, date, items: [e] });
+  }
   const sum = filtered.reduce((a, e) => a + (isHidden(e) ? 0 : (e.baseCurrencyAmount ?? e.amount)), 0);
   const filtering = !!(query || person || category || from || to);
 
@@ -85,14 +95,14 @@ export default function AllExpensesPage({ params }: { params: Promise<{ groupId:
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          <select className={SELECT_CLASS} value={person} onChange={(e) => setPerson(e.target.value)}>
-            <option value="">{t('expList.allPeople')}</option>
-            {g.members.map((m) => (
-              <option key={m.user.id} value={m.user.id}>
-                {m.user.placeholderName ?? m.user.name ?? m.user.email}
-              </option>
-            ))}
-          </select>
+          <div className="col-span-2 sm:col-span-3">
+            <PersonFilter
+              members={g.members.map((m) => ({ ...m.user }))}
+              value={person}
+              onChange={setPerson}
+              myId={myId}
+            />
+          </div>
           <select className={SELECT_CLASS} value={category} onChange={(e) => setCategory(e.target.value)}>
             <option value="">{t('expList.allCategories')}</option>
             {categories.map((c) => (
@@ -137,36 +147,27 @@ export default function AllExpensesPage({ params }: { params: Promise<{ groupId:
           <CardContent className="py-8 text-center text-muted-foreground">{t('expList.none')}</CardContent>
         </Card>
       ) : (
-        <Card className="divide-y divide-border overflow-hidden">
-          {filtered.map((e) => {
-            const hidden = isHidden(e);
-            return (
-              <Link key={e.id} href={`/groups/${groupId}/expenses/${e.id}`} className="block">
-                <div className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-muted/50">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent text-base">
-                      {hidden ? '🔒' : categoryIcon(e.category)}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="truncate font-medium">{hidden ? t('detail.privateExpense') : e.title}</p>
-                      <p className="truncate text-sm text-muted-foreground">
-                        {t('expList.paidBy')} {e.paidBy.name ?? e.paidBy.email ?? t('detail.unknown')}
-                        {' · '}
-                        {new Date(e.expenseDate).toLocaleDateString(locale)}
-                        {e.placeName && ` · 📍 ${e.placeName}`}
-                      </p>
-                    </div>
-                  </div>
-                  {!hidden && (
-                    <p className="ml-4 shrink-0 text-lg font-semibold tabular-nums">
-                      {formatCents(e.amount, e.baseCurrencyAmount != null ? e.currency : g.currency, locale)}
-                    </p>
-                  )}
-                </div>
-              </Link>
-            );
-          })}
-        </Card>
+        <div className="space-y-3">
+          {days.map((day) => (
+            <div key={day.key}>
+              <p className="mb-1 px-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                {dayLabel(day.date, locale, t('detail.today'), t('detail.yesterday'))}
+              </p>
+              <Card className="divide-y divide-border overflow-hidden py-0">
+                {day.items.map((e) => (
+                  <ExpenseRow
+                    key={e.id}
+                    expense={e}
+                    groupId={groupId}
+                    groupCurrency={g.currency}
+                    members={members}
+                    myId={myId}
+                  />
+                ))}
+              </Card>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

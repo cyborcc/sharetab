@@ -163,7 +163,8 @@
     "typeGroupArchived": "グループをアーカイブ",
     "typeGroupUnarchived": "グループのアーカイブを解除",
     "typePlaceholderCreated": "プレースホルダー追加",
-    "typeSettlementCreated": "精算"
+    "typeSettlementCreated": "精算",
+    "typeReceiptItemsChanged": "Receipt lines changed"
   },
   "tools": {
     "title": "管理ツール",

@@ -56,7 +56,9 @@
     "privateLabel": "Private",
     "privateHint": "Only you see title and amount. Only possible when the expense is not shared with anyone.",
     "notes": "Note (optional)",
-    "notesPlaceholder": "e.g. Wi-Fi password, door code, check-in time"
+    "notesPlaceholder": "e.g. Wi-Fi password, door code, check-in time",
+    "recentPlaces": "Recent:",
+    "recentPlaceVisits": "{count} times"
   },
   "edit": {
     "title": "编辑费用",
@@ -132,7 +134,10 @@
     "loadingGroup": "正在加载群组...",
     "groupLoadError": "无法加载群组数据。请重试。",
     "uploadFailed": "上传失败",
-    "createSessionFailed": "创建会话失败。"
+    "createSessionFailed": "创建会话失败。",
+    "model": "AI model",
+    "modelDefault": "default",
+    "modelHint": "If the chosen model fails, the default chain takes over."
   },
   "receipt": {
     "hideImage": "隐藏小票图片",
@@ -181,7 +186,44 @@
     "validationNameRequired": "请输入项目名称。",
     "validationPricePositive": "价格必须大于零。",
     "validationQtyPositive": "数量必须是正整数。",
-    "receiptImageAlt": "收据"
+    "receiptImageAlt": "收据",
+    "compareReceipt": "Compare with receipt",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "recognizedBy": "Read by {provider}",
+    "checkItemsSum": "Sum of {count} lines",
+    "checkSubtotal": "Printed subtotal",
+    "checkTotal": "Printed total",
+    "checkOk": "Lines match the printed total",
+    "checkGap": "Difference of {amount}: compare the lines with the receipt",
+    "changedBadge": "changed",
+    "changedHint": "Changed by hand after the scan, see history",
+    "historyTitle": "History",
+    "historyCreated": "created the expense",
+    "historySaved": "saved the expense",
+    "historyUpdated": "changed",
+    "historyAdded": "added",
+    "historyDeleted": "removed",
+    "historySplit": "split off {quantity} of {of} ×",
+    "historyAssigned": "changed who had what:",
+    "historyNobody": "nobody",
+    "historyName": "name",
+    "historyQty": "quantity",
+    "historyPrice": "price",
+    "historyField": {
+      "title": "title",
+      "paidById": "paid by",
+      "amount": "amount",
+      "category": "category",
+      "placeName": "place",
+      "baseCurrencyAmount": "charged/converted"
+    },
+    "cardChargeToggle": "Paid by card? Enter the amount actually charged",
+    "cardChargeFor": "for {amount} on the receipt",
+    "cardChargeExplain": "The receipt only decides who carries which part. What gets shared is the amount that actually left the account (with the bank’s rate and fees).",
+    "cardChargeRate": "Bank rate: 1 {from} = {rate} {to}",
+    "cardChargeVsReference": "(reference rate {rate}, {diff})",
+    "cardChargeShared": "The charged {amount} is shared in the proportions of the receipt."
   },
   "splits": {
     "selectAll": "全选",

@@ -95,7 +95,7 @@ test.describe('Additional UI Tests', () => {
     await login(page, users.alice.email, users.alice.password);
 
     // Open hamburger menu
-    const menuButton = page.locator('header').getByRole('button');
+    const menuButton = page.locator('header').getByRole('button', { name: 'Open menu' });
     await menuButton.click();
 
     const dialog = page.getByRole('dialog');

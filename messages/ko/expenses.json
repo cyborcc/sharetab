@@ -56,7 +56,9 @@
     "privateLabel": "Private",
     "privateHint": "Only you see title and amount. Only possible when the expense is not shared with anyone.",
     "notes": "Note (optional)",
-    "notesPlaceholder": "e.g. Wi-Fi password, door code, check-in time"
+    "notesPlaceholder": "e.g. Wi-Fi password, door code, check-in time",
+    "recentPlaces": "Recent:",
+    "recentPlaceVisits": "{count} times"
   },
   "edit": {
     "title": "비용 편집",
@@ -132,7 +134,10 @@
     "loadingGroup": "그룹 불러오는 중...",
     "groupLoadError": "그룹 데이터를 불러올 수 없습니다. 다시 시도해 주세요.",
     "uploadFailed": "업로드 실패",
-    "createSessionFailed": "세션 생성에 실패했습니다."
+    "createSessionFailed": "세션 생성에 실패했습니다.",
+    "model": "AI model",
+    "modelDefault": "default",
+    "modelHint": "If the chosen model fails, the default chain takes over."
   },
   "receipt": {
     "hideImage": "영수증 이미지 숨기기",
@@ -181,7 +186,44 @@
     "validationNameRequired": "항목 이름은 필수입니다.",
     "validationPricePositive": "가격은 0보다 커야 합니다.",
     "validationQtyPositive": "수량은 양의 정수여야 합니다.",
-    "receiptImageAlt": "영수증"
+    "receiptImageAlt": "영수증",
+    "compareReceipt": "Compare with receipt",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "recognizedBy": "Read by {provider}",
+    "checkItemsSum": "Sum of {count} lines",
+    "checkSubtotal": "Printed subtotal",
+    "checkTotal": "Printed total",
+    "checkOk": "Lines match the printed total",
+    "checkGap": "Difference of {amount}: compare the lines with the receipt",
+    "changedBadge": "changed",
+    "changedHint": "Changed by hand after the scan, see history",
+    "historyTitle": "History",
+    "historyCreated": "created the expense",
+    "historySaved": "saved the expense",
+    "historyUpdated": "changed",
+    "historyAdded": "added",
+    "historyDeleted": "removed",
+    "historySplit": "split off {quantity} of {of} ×",
+    "historyAssigned": "changed who had what:",
+    "historyNobody": "nobody",
+    "historyName": "name",
+    "historyQty": "quantity",
+    "historyPrice": "price",
+    "historyField": {
+      "title": "title",
+      "paidById": "paid by",
+      "amount": "amount",
+      "category": "category",
+      "placeName": "place",
+      "baseCurrencyAmount": "charged/converted"
+    },
+    "cardChargeToggle": "Paid by card? Enter the amount actually charged",
+    "cardChargeFor": "for {amount} on the receipt",
+    "cardChargeExplain": "The receipt only decides who carries which part. What gets shared is the amount that actually left the account (with the bank’s rate and fees).",
+    "cardChargeRate": "Bank rate: 1 {from} = {rate} {to}",
+    "cardChargeVsReference": "(reference rate {rate}, {diff})",
+    "cardChargeShared": "The charged {amount} is shared in the proportions of the receipt."
   },
   "splits": {
     "selectAll": "전체 선택",
