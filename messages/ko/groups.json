@@ -258,6 +258,18 @@
       "paidById": "Paid by",
       "expenseDate": "Date",
       "shares": "Split changed"
+    },
+    "filterAll": "All",
+    "noneForFilter": "No entries for this filter yet. Older ones load with \"Load more\".",
+    "kind": {
+      "added": "Added",
+      "price": "Price changed",
+      "place": "Place changed",
+      "edited": "Edited",
+      "deleted": "Deleted",
+      "payment": "Payments",
+      "receipt": "Receipt items",
+      "group": "Group"
     }
   }
 }

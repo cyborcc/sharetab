@@ -258,6 +258,18 @@
       "paidById": "Bezahlt von",
       "expenseDate": "Datum",
       "shares": "Aufteilung geändert"
+    },
+    "filterAll": "Alle",
+    "noneForFilter": "Noch keine Einträge für diesen Filter. Ältere lädst du mit \"Mehr laden\".",
+    "kind": {
+      "added": "Hinzugefügt",
+      "price": "Preisänderung",
+      "place": "Ortsänderung",
+      "edited": "Bearbeitet",
+      "deleted": "Gelöscht",
+      "payment": "Zahlungen",
+      "receipt": "Belegposten",
+      "group": "Gruppe"
     }
   }
 }

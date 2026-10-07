@@ -22,6 +22,32 @@ export function osmLink(lat: number, lon: number): string {
   return `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=16/${lat}/${lon}`;
 }
 
+/**
+ * A pasted Google Maps place link ("…/maps/place/Name/@lat,lon,17z/…!3dLAT!4dLON…") or plain
+ * "lat, lon": the place name from the path (if any) and the exact coordinates.
+ */
+export function parseMapsLink(text: string): { name: string; latitude: number; longitude: number } | null {
+  const t = text.trim();
+  const exact = t.match(/!3d(-?\d{1,2}\.\d+)!4d(-?\d{1,3}\.\d+)/);
+  const view = t.match(/@(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/);
+  const plain = t.match(/^(-?\d{1,2}\.\d+)\s*[,;]\s*(-?\d{1,3}\.\d+)$/);
+  const m = exact ?? view ?? plain;
+  if (!m || (!/^https?:\/\//i.test(t) && !plain)) return null;
+  const latitude = Number(m[1]);
+  const longitude = Number(m[2]);
+  if (Math.abs(latitude) > 90 || Math.abs(longitude) > 180) return null;
+  let name = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+  const path = t.match(/\/place\/([^/@?]+)/);
+  if (path?.[1]) {
+    try {
+      name = decodeURIComponent(path[1].replace(/\+/g, ' ')).trim() || name;
+    } catch {
+      // keep the coordinates as the name
+    }
+  }
+  return { name, latitude, longitude };
+}
+
 function shortName(displayName: string): string {
   return displayName.split(', ').slice(0, 3).join(', ');
 }
@@ -254,6 +280,13 @@ export function LocationField({
   useEffect(() => {
     const q = query.trim();
     if (q.length < 3 || (value.latitude !== null && q === value.placeName)) return;
+    const link = parseMapsLink(q);
+    if (link) {
+      setQuery(link.name);
+      setHits([]);
+      onChange({ placeName: link.name, latitude: link.latitude, longitude: link.longitude });
+      return;
+    }
     const controller = new AbortController();
     const timer = setTimeout(async () => {
       try {
@@ -435,6 +468,7 @@ export function LocationField({
           {t('new.locationOnMap')}
         </a>
       )}
+      {value.latitude === null && <p className="text-xs text-muted-foreground">{t('new.locationLinkHint')}</p>}
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );

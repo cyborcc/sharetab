@@ -58,7 +58,8 @@
     "notes": "Note (optional)",
     "notesPlaceholder": "e.g. Wi-Fi password, door code, check-in time",
     "recentPlaces": "Recent:",
-    "recentPlaceVisits": "{count} times"
+    "recentPlaceVisits": "{count} times",
+    "locationLinkHint": "Not found? Paste a Google Maps link or coordinates."
   },
   "edit": {
     "title": "Editar despesa",
