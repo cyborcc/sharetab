@@ -33,7 +33,7 @@ export function MobileHeader({ isAdmin }: { isAdmin?: boolean }) {
       </div>
 
       <div className="flex items-center gap-1">
-        <LanguageSwitcher />
+        <LanguageSwitcher testId="language-switcher-mobile" />
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger render={<Button variant="ghost" size="icon" aria-label={t('actions.openMenu')} />}>
             <Menu className="h-5 w-5" />
