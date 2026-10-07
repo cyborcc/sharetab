@@ -94,7 +94,7 @@ async function createProvider(name: AIProviderName): Promise<AIProvider> {
 export const SWISSCOM_PREFIX = 'swisscom:';
 export const CHATGPT_PREFIX = 'chatgpt:';
 const SWISSCOM_DEFAULT_BASE_URL = 'https://code.myai.swisscom.ch/v1';
-const SWISSCOM_DEFAULT_MODEL = 'qwen3.5-397b-a17b';
+const SWISSCOM_DEFAULT_MODELS = ['qwen3.5-397b-a17b', 'glm-5.2', 'glm-5.3-flash'];
 
 function listFromEnv(value: string | undefined): string[] {
   return (value ?? '')
@@ -119,7 +119,7 @@ export function getSelectableModels(): string[] {
   }
   if (process.env.SWISSCOM_MYAI_API_KEY) {
     const models = listFromEnv(process.env.SWISSCOM_MODELS);
-    out.push(...(models.length > 0 ? models : [SWISSCOM_DEFAULT_MODEL]).map((m) => `${SWISSCOM_PREFIX}${m}`));
+    out.push(...(models.length > 0 ? models : SWISSCOM_DEFAULT_MODELS).map((m) => `${SWISSCOM_PREFIX}${m}`));
   }
   if (isProviderConfigured('openai-codex')) {
     const models = listFromEnv(process.env.CHATGPT_MODELS);
