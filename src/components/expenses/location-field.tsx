@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 
 export type PlaceValue = { placeName: string; latitude: number | null; longitude: number | null };
 
-type Hit = { display_name: string; lat: string; lon: string };
+type Hit = { display_name: string; lat: string; lon: string; detail?: string };
 type Anchor = { lat: number; lon: number };
 
 /** Half-width in degrees of the box around the anchor that the search prefers (about 30 km). */
@@ -218,6 +218,7 @@ export function LocationField({
   const [query, setQuery] = useState(value.placeName || suggestion || '');
   const autoPicked = useRef(false);
   // Silent position hint (only if location access was already granted) so chain names resolve nearby
+  const utils = trpc.useUtils();
   const [bias, setBias] = useState<Anchor | null>(null);
   const [hits, setHits] = useState<Hit[]>([]);
   const [busy, setBusy] = useState(false);
@@ -290,7 +291,32 @@ export function LocationField({
     const controller = new AbortController();
     const timer = setTimeout(async () => {
       try {
-        const found = await searchPlaces(q, locale, controller.signal, anchor);
+        // First the places index (knows many restaurants OpenStreetMap lacks), then OpenStreetMap
+        let found: Hit[] = [];
+        try {
+          const indexed = await utils.client.expenses.searchPlaces.query(
+            { q, ...(anchor ? { lat: anchor.lat, lon: anchor.lon } : {}) },
+            { signal: controller.signal },
+          );
+          found = indexed.map((h) => ({
+            display_name: h.name,
+            lat: String(h.lat),
+            lon: String(h.lon),
+            detail: [
+              h.category?.replace(/_/g, ' '),
+              h.distance === null
+                ? null
+                : h.distance < 1000
+                  ? `${Math.round(h.distance / 10) * 10} m`
+                  : `${(h.distance / 1000).toFixed(1)} km`,
+            ]
+              .filter(Boolean)
+              .join(' · '),
+          }));
+        } catch {
+          // index unreachable: fall through to OpenStreetMap
+        }
+        if (found.length === 0) found = await searchPlaces(q, locale, controller.signal, anchor);
         setHits(found);
         const best = found[0];
         if (autoPick && !autoPicked.current && best && value.latitude === null) {
@@ -452,6 +478,7 @@ export function LocationField({
             <li key={i}>
               <button type="button" className="w-full px-3 py-2 text-left hover:bg-muted" onClick={() => pick(h)}>
                 {h.display_name}
+                {h.detail && <span className="ml-2 text-xs text-muted-foreground">{h.detail}</span>}
               </button>
             </li>
           ))}

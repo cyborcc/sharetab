@@ -34,7 +34,7 @@ This fork (`cyborcc/sharetab`) is built for trips with a small group and adds th
 
 - Currency EGP, amounts shown in the group currency as well, exchange rate of a receipt stored with source and date
 - Category with icons (default "Essen" for scanned receipts), place per expense with OpenStreetMap search, GPS, "places nearby", recently visited places, mini map and map links on the expense page
-- Place search looks around the group's accommodation (or last place) first and tries shorter versions of the query, so long names such as "White Elephant Thai Restaurant el gouna" are found
+- Place search asks the public TREK Places index (Overture, no key; `PLACES_API_URL` / `PLACES_API_ENABLED=false`) first, then OpenStreetMap, and looks around the group's accommodation (or last place) first and tries shorter versions of the query, so long names such as "White Elephant Thai Restaurant el gouna" are found
 - Private expenses (only the payer sees title and amount), notes, receipt photo with comparison of the read and the printed totals
 - Receipt editor for scanned expenses (image, items, assignment), several units of a line per person, per-line history, read-only item list with assignment on the expense page, card charge with the real amount debited
 - AI correction preview that has to be confirmed, scan model chooser per receipt

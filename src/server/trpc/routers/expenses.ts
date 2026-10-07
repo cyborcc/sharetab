@@ -1,10 +1,12 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { createTRPCRouter, groupMemberProcedure } from '../init';
+import { createTRPCRouter, groupMemberProcedure, protectedProcedure } from '../init';
 import { SplitMode, type Prisma } from '@/generated/prisma/client';
 import { getExchangeRate, convertCents } from '../../lib/exchange-rates';
 import { MAX_MONEY_CENTS } from '@/lib/money';
 import { stripUndefined } from '../../lib/strip-undefined';
+import { searchPlacesIndex } from '../../lib/places-search';
+import { checkRateLimit } from '../../lib/rate-limit';
 
 const expenseShareSchema = z.object({
   userId: z.string(),
@@ -133,6 +135,24 @@ export const expensesRouter = createTRPCRouter({
       .sort((a, b) => b.amount - a.amount);
     return { paid, share, total, count: expenses.length, categories };
   }),
+
+  // Ortssuche im Trek-Places-Index (Overture): kennt Lokale, die OpenStreetMap nicht hat. Der Browser
+  // fragt nur den eigenen Server, der Index sieht Suchtext und die ungefaehre Position.
+  searchPlaces: protectedProcedure
+    .input(
+      z.object({
+        q: z.string().trim().min(2).max(120),
+        lat: z.number().min(-90).max(90).optional(),
+        lon: z.number().min(-180).max(180).optional(),
+      }),
+    )
+    .query(async ({ ctx, input, signal }) => {
+      if (!checkRateLimit(`places:${ctx.user.id}`, 60, 60_000).allowed) {
+        throw new TRPCError({ code: 'TOO_MANY_REQUESTS', message: 'Too many searches' });
+      }
+      const near = input.lat !== undefined && input.lon !== undefined ? { lat: input.lat, lon: input.lon } : null;
+      return searchPlacesIndex(input.q, near, signal);
+    }),
 
   // Ausgangspunkt fuer die Ortssuche: die Unterkunft der Gruppe (Kategorie Unterkunft), sonst der zuletzt
   // erfasste Ort mit Koordinaten. So findet die Suche Lokale in der Naehe statt gleichnamiger am anderen Ende der Welt.
