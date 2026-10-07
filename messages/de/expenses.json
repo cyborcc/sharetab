@@ -215,8 +215,15 @@
       "paidById": "Bezahlt von",
       "amount": "Betrag",
       "category": "Kategorie",
-      "placeName": "Ort"
-    }
+      "placeName": "Ort",
+      "baseCurrencyAmount": "abgebucht/umgerechnet"
+    },
+    "cardChargeToggle": "Mit Karte bezahlt? Tatsächlich abgebuchten Betrag eintragen",
+    "cardChargeFor": "für {amount} laut Rechnung",
+    "cardChargeExplain": "Die Rechnung legt nur fest, wer welchen Anteil trägt. Aufgeteilt wird der Betrag, der wirklich vom Konto abging (mit Kurs und Gebühren der Bank).",
+    "cardChargeRate": "Kurs der Bank: 1 {from} = {rate} {to}",
+    "cardChargeVsReference": "(Referenzkurs {rate}, {diff})",
+    "cardChargeShared": "Aufgeteilt werden die abgebuchten {amount} im Verhältnis der Rechnung."
   },
   "splits": {
     "selectAll": "Alle auswählen",

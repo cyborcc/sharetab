@@ -87,6 +87,7 @@ export function ReceiptHistory({
     if (value === null || value === undefined || value === '') return '—';
     if (field === 'paidById') return nameOf(String(value));
     if (field === 'amount' && typeof value === 'number') return money(value);
+    if (field === 'baseCurrencyAmount' && typeof value === 'number') return centsToDecimal(value);
     return String(value);
   }
 

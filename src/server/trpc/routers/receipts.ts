@@ -565,6 +565,8 @@ export const receiptsRouter = createTRPCRouter({
           })
           .optional(),
         tipOverride: z.number().int().min(0).optional(),
+        // What the card was actually charged, in group currency cents (replaces the reference rate)
+        chargedAmount: z.number().int().positive().max(100_000_000).optional(),
         // Set when an expense that was already created from this receipt is edited: the
         // expense, its shares and the item assignments are replaced instead of created.
         expenseId: z.string().optional(),
@@ -649,6 +651,7 @@ export const receiptsRouter = createTRPCRouter({
         amount: number;
         category: string | null;
         placeName: string | null;
+        baseCurrencyAmount: number | null;
       } | null = null;
       if (input.expenseId) {
         existing = await ctx.db.expense.findFirst({
@@ -662,6 +665,7 @@ export const receiptsRouter = createTRPCRouter({
             amount: true,
             category: true,
             placeName: true,
+            baseCurrencyAmount: true,
           },
         });
         if (!existing || existing.receiptId !== input.receiptId || existing.splitMode !== 'ITEM') {
@@ -756,8 +760,22 @@ export const receiptsRouter = createTRPCRouter({
       let exchangeRate: number | null = null;
       let conversionQuote: RateQuote | null = null;
       let baseCurrencyAmount: number | null = null;
+      // Paid by card: the amount the bank actually charged (group currency) is what gets shared;
+      // the receipt only decides who carries which part of it. Balances follow baseCurrencyAmount.
+      let cardCharge: { amount: number; currency: string; rate: number } | null = null;
 
-      if (receiptCurrency !== groupCurrency) {
+      if (input.chargedAmount !== undefined) {
+        if (receiptCurrency === groupCurrency) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'The charged amount is only needed when the receipt is in another currency.',
+          });
+        }
+        if (totalAmount <= 0) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Receipt total is zero.' });
+        exchangeRate = input.chargedAmount / totalAmount;
+        baseCurrencyAmount = input.chargedAmount;
+        cardCharge = { amount: input.chargedAmount, currency: groupCurrency, rate: exchangeRate };
+      } else if (receiptCurrency !== groupCurrency) {
         conversionQuote = await getReceiptRate(extractedData, groupCurrency, input.useLatestRate, ctx.db);
         if (!conversionQuote)
           throw new TRPCError({
@@ -806,9 +824,10 @@ export const receiptsRouter = createTRPCRouter({
           amount: totalAmount,
           ...(input.category !== undefined ? { category } : {}),
           placeName: input.placeName || null,
+          baseCurrencyAmount,
         };
         for (const [key, value] of Object.entries(next)) {
-          const old = existing[key as keyof typeof existing];
+          const old = existing[key as keyof typeof existing] ?? null;
           if (old !== value) expenseChanges[key] = [old, value];
         }
       }
@@ -823,6 +842,7 @@ export const receiptsRouter = createTRPCRouter({
             extractedData: {
               ...extractedData,
               expenseConversion: conversionQuote,
+              cardCharge,
               latestRateAccepted: input.useLatestRate,
             } as unknown as Prisma.InputJsonValue,
           },

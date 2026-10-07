@@ -335,6 +335,7 @@ function ScanReceiptContent({ params }: { params: Promise<{ groupId: string }> }
                 receiptId={receiptId}
                 members={members}
                 currentUserId={authSession?.user?.id}
+                groupCurrency={group.data?.currency}
                 onCompareChange={setComparing}
                 onComplete={handleExpenseCreated}
                 onSaveForLater={() => router.push(`/groups/${groupId}`)}
@@ -346,6 +347,9 @@ function ScanReceiptContent({ params }: { params: Promise<{ groupId: string }> }
                         paidById: editExpense.data.paidById,
                         amount: editExpense.data.amount,
                         category: editExpense.data.category,
+                        charged:
+                          (editExpense.data.receipt?.extractedData as { cardCharge?: { amount?: number } } | null)
+                            ?.cardCharge?.amount ?? null,
                         place: {
                           placeName: editExpense.data.placeName ?? '',
                           latitude: editExpense.data.latitude ?? null,

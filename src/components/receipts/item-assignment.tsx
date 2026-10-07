@@ -55,6 +55,7 @@ export function ItemAssignment({
   initial,
   currentUserId,
   onCompareChange,
+  groupCurrency,
 }: {
   groupId: string;
   receiptId: string;
@@ -64,9 +65,19 @@ export function ItemAssignment({
   /** Set when an expense that was already created from this receipt is edited. */
   expenseId?: string;
   /** Values of that expense; the form starts from them instead of the receipt defaults. */
-  initial?: { title: string; paidById: string; amount: number; place: PlaceValue; category?: string | null };
+  initial?: {
+    title: string;
+    paidById: string;
+    amount: number;
+    place: PlaceValue;
+    category?: string | null;
+    /** Amount the card was charged (group currency cents), if it was entered */
+    charged?: number | null;
+  };
   /** The logged-in user: pays by default when nothing was saved yet. */
   currentUserId?: string | undefined;
+  /** Currency the group settles in; a receipt in another currency can take the amount the card was charged. */
+  groupCurrency?: string | undefined;
   /** Told when the receipt is shown next to the recognized values, so the page can widen. */
   onCompareChange?: (on: boolean) => void;
 }) {
@@ -105,6 +116,9 @@ export function ItemAssignment({
   const [tipOverride, setTipOverride] = useState<string>('');
   const [showImage, setShowImage] = useState(false);
   const [flashItem, setFlashItem] = useState<string | null>(null);
+  // Paid by card in a foreign currency: what the bank actually charged replaces the reference rate.
+  const [useCharged, setUseCharged] = useState(!!initial?.charged);
+  const [chargedStr, setChargedStr] = useState(initial?.charged ? centsToDecimal(initial.charged) : '');
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -486,14 +500,24 @@ export function ItemAssignment({
     }),
   );
   const de = locale.startsWith('de');
+  const settleCurrency = (groupQuote?.to ?? groupCurrency ?? '').toUpperCase();
+  const foreignReceipt = !!settleCurrency && settleCurrency !== safeExtracted.currency.toUpperCase();
+  const charged = useCharged && foreignReceipt ? parseToCents(chargedStr) : 0;
+  const chargedOk = charged > 0 && currentTotal > 0;
+  // Rate used to show amounts in the group currency: the card's if entered, else the reference rate
+  const chargedRate = chargedOk ? charged / currentTotal : null;
+  const shownRate = chargedRate ?? (foreignReceipt ? (groupQuote?.rate ?? null) : null);
+  const rateReady = chargedOk || (previewReady && !!groupQuote);
+  const formatRate = (rate: number) => rate.toLocaleString(locale, { maximumSignificantDigits: 4 });
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!paidById || !allAssigned || !previewReady || !groupQuote) return;
+    if (!paidById || !allAssigned || !rateReady) return;
 
     createExpense.mutate({
       useLatestRate,
-      expectedConversion: groupQuote,
+      ...(groupQuote ? { expectedConversion: groupQuote } : {}),
+      ...(chargedOk ? { chargedAmount: charged } : {}),
       groupId,
       receiptId,
       ...(expenseId ? { expenseId } : {}),
@@ -800,7 +824,65 @@ export function ItemAssignment({
                 )}
               </p>
             )}
-            {safeExtracted.date && (
+            {foreignReceipt && (
+              <div className="mt-2 space-y-2 rounded-md border border-dashed p-3" data-testid="card-charge">
+                <label className="flex items-center gap-2 text-sm font-medium">
+                  <input
+                    type="checkbox"
+                    checked={useCharged}
+                    onChange={(e) => setUseCharged(e.target.checked)}
+                    data-testid="card-charge-toggle"
+                  />
+                  💳 {t('cardChargeToggle')}
+                </label>
+                {useCharged && (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        inputMode="decimal"
+                        placeholder="0,00"
+                        value={chargedStr}
+                        onChange={(e) => setChargedStr(e.target.value)}
+                        className="w-32"
+                        data-testid="card-charge-input"
+                      />
+                      <span className="text-sm">{settleCurrency}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {t('cardChargeFor', {
+                          amount: formatReceiptCents(currentTotal, safeExtracted.currency, locale),
+                        })}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{t('cardChargeExplain')}</p>
+                    {chargedRate !== null && (
+                      <p className="text-xs">
+                        {t('cardChargeRate', {
+                          from: safeExtracted.currency.toUpperCase(),
+                          rate: formatRate(chargedRate),
+                          to: settleCurrency,
+                        })}
+                        {groupQuote && groupQuote.rate > 0 && (
+                          <span className="text-muted-foreground">
+                            {' '}
+                            {t('cardChargeVsReference', {
+                              rate: formatRate(groupQuote.rate),
+                              diff: `${chargedRate >= groupQuote.rate ? '+' : ''}${(
+                                (chargedRate / groupQuote.rate - 1) *
+                                100
+                              ).toLocaleString(locale, { maximumFractionDigits: 1 })} %`,
+                            })}
+                          </span>
+                        )}
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+            {safeExtracted.date && !chargedOk && (
               <label className="flex items-start gap-2 pt-2 text-xs">
                 <input
                   type="checkbox"
@@ -815,7 +897,7 @@ export function ItemAssignment({
                 </span>
               </label>
             )}
-            {!conversionPreview.isFetching && (!groupQuote || conversionPreview.isError) && (
+            {!chargedOk && !conversionPreview.isFetching && (!groupQuote || conversionPreview.isError) && (
               <p className="text-xs text-destructive">
                 {de
                   ? 'Speichern erst mit gültiger Kursvorschau möglich.'
@@ -1180,10 +1262,23 @@ export function ItemAssignment({
                 return (
                   <div key={m.id} className="flex justify-between text-sm">
                     <span>{m.name ?? t('unnamed')}</span>
-                    <span className="font-medium">{formatReceiptCents(total, safeExtracted.currency, locale)}</span>
+                    <span className="font-medium">
+                      {formatReceiptCents(total, safeExtracted.currency, locale)}
+                      {shownRate !== null && (
+                        <span className={chargedRate !== null ? 'ml-2' : 'ml-2 font-normal text-muted-foreground'}>
+                          {chargedRate !== null ? '= ' : '≈ '}
+                          {formatReceiptCents(Math.round(total * shownRate), settleCurrency, locale)}
+                        </span>
+                      )}
+                    </span>
                   </div>
                 );
               })}
+              {chargedRate !== null && (
+                <p className="pt-1 text-xs text-muted-foreground">
+                  {t('cardChargeShared', { amount: formatReceiptCents(charged, settleCurrency, locale) })}
+                </p>
+              )}
             </CardContent>
           </Card>
         )}
@@ -1195,7 +1290,7 @@ export function ItemAssignment({
         <Button
           type="submit"
           className="w-full"
-          disabled={createExpense.isPending || !allAssigned || !paidById || !previewReady || !groupQuote}
+          disabled={createExpense.isPending || !allAssigned || !paidById || !rateReady}
           data-testid="create-expense-btn"
         >
           {createExpense.isPending
