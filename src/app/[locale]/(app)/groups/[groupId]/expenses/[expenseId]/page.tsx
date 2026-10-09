@@ -198,9 +198,7 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ groupI
               <div className="space-y-2" data-testid="expense-items">
                 {e.receipt?.imagePath && (
                   <details className="rounded-md border" data-testid="expense-receipt-image">
-                    <summary
-                      className="flex cursor-pointer select-none items-center justify-between px-3 py-2 text-sm font-medium"
-                    >
+                    <summary className="flex cursor-pointer select-none items-center justify-between px-3 py-2 text-sm font-medium">
                       <span>{t('detail.receiptImage')}</span>
                       <ChevronDown className="h-4 w-4 text-muted-foreground" />
                     </summary>
