@@ -33,7 +33,7 @@ function SponsorBanner() {
         </div>
         <p className="text-xs text-muted-foreground mb-2.5 leading-relaxed">{t('sponsor.description')}</p>
         <a
-          href="https://ko-fi.com/cyborcc"
+          href="https://ko-fi.com/aks"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center justify-center gap-1.5 w-full rounded-md bg-pink-500/15 hover:bg-pink-500/25 border border-pink-500/20 px-2.5 py-1.5 text-xs font-medium text-pink-600 dark:text-pink-400 transition-colors"

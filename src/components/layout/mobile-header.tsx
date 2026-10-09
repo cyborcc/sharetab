@@ -107,7 +107,7 @@ export function MobileHeader({ isAdmin }: { isAdmin?: boolean }) {
                 <ThemeToggle />
               </div>
               <a
-                href="https://ko-fi.com/cyborcc"
+                href="https://ko-fi.com/aks"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
