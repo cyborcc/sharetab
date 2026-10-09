@@ -5,7 +5,11 @@
 <h1 align="center">Splitbon</h1>
 
 <p align="center">
-  A self-hosted, open-source alternative to Splitwise with AI-powered receipt scanning.
+  A self-hosted, open-source Splitwise alternative for trips and shared households: scan a receipt with AI, translate it, assign the items, settle up in one currency.
+</p>
+
+<p align="center">
+  <sub>Splitwise alternative &bull; expense splitting &bull; AI receipt scanner &bull; multi-currency &bull; travel groups &bull; Docker &bull; Unraid</sub>
 </p>
 
 <p align="center">
@@ -27,6 +31,29 @@
 > Splitbon is based on [ShareTab](https://github.com/sw-carlos-cristobal/sharetab) by sw-carlos-cristobal and contributors (MIT License). It adds trip currencies, receipt translation, per-item amounts in the group currency and more; see the [LICENSE](LICENSE).
 
 Splitbon is a free, self-hosted alternative to Splitwise for tracking shared expenses with roommates, friends, and travel groups. Snap a photo of a receipt, let AI extract the line items, and assign them to group members. Taxes and tips split proportionally. Deploy on your own server with Docker Compose.
+
+## Why Splitbon
+
+- **Your data stays with you.** Runs on your own server (Docker, Unraid, any Linux box). No account with a third party, no ads, no daily expense cap.
+- **Made for trips.** Pay in any currency, see every line item in the group currency too, and settle in one currency. The currency of the trip is offered first.
+- **AI receipt scanning that reads foreign receipts.** A receipt in Arabic, Japanese or Thai is translated into your language while the shop name stays as printed.
+- **Fair splits.** Assign single items to people, split equally, by exact amount, percentage or shares. Tax and tip are split in proportion.
+- **No lock-in.** MIT licensed, plain PostgreSQL, export your data from the admin dashboard.
+
+## Alternatives
+
+Splitbon is not the only way to split bills. Pick what fits you:
+
+|                                  | Splitbon                                                      | Splitwise                                 | Open-source apps such as Spliit and SplitPro |
+| -------------------------------- | ------------------------------------------------------------- | ----------------------------------------- | -------------------------------------------- |
+| Hosting                          | Self-hosted                                                   | Vendor cloud                              | Self-hosted or hosted                        |
+| License                          | MIT, open source                                              | Proprietary                               | Open source                                  |
+| Price                            | Free (donations welcome)                                      | Free tier with limits, paid Pro plan      | Free                                         |
+| AI receipt scan with translation | Yes, bring your own AI provider (OpenAI, Claude, Ollama, ...) | Receipt scanning is part of the paid plan | Check the project pages                      |
+| Items assigned per person        | Yes                                                           | Yes                                       | Varies                                       |
+| Install effort                   | You run a container                                           | None                                      | None to some                                 |
+
+If you only want to split a bill once with no setup, a hosted app is the faster choice. If you want to own the data, scan receipts with your own AI key, or run it for friends and family on a home server, Splitbon is built for that. Feature sets change quickly, so check each project's own page before you decide; corrections to this table are welcome as a pull request.
 
 ## What Splitbon adds to ShareTab
 
