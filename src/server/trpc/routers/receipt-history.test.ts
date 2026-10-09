@@ -66,6 +66,7 @@ function fixture(assignments: { userId: string; shareOfItem: number }[] = []) {
         amount: 3000,
         category: null,
         placeName: null,
+        shares: [],
       })),
       create: vi.fn(async ({ data }) => ({ id: 'new', ...data })),
       update: vi.fn(async ({ data }) => ({ id: 'expense', ...data })),
