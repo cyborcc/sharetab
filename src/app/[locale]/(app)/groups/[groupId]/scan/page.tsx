@@ -185,6 +185,7 @@ function ScanReceiptContent({ params }: { params: Promise<{ groupId: string }> }
     group.data?.members.map((m) => ({
       id: m.user.id,
       name: m.user.placeholderName ?? m.user.name ?? m.user.email,
+      image: m.user.image,
     })) ?? [];
 
   const configuredProviderChain = providerInfo.data?.configuredProviders?.join(' -> ') ?? 'loading...';

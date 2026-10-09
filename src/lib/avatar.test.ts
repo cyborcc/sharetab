@@ -6,6 +6,7 @@ import {
   parseAvatar,
   encodeEmojiAvatar,
   AVATAR_BACKGROUNDS,
+  memberChipColors,
 } from './avatar';
 
 describe('avatarColor', () => {
@@ -85,5 +86,26 @@ describe('parseAvatar', () => {
     const a = parseAvatar(null, 'user-a');
     expect(a.kind).toBe('emoji');
     expect(parseAvatar(null, 'user-a')).toEqual(a);
+  });
+});
+
+describe('memberChipColors', () => {
+  it('uses the colour of the avatar the user picked', () => {
+    expect(memberChipColors(encodeEmojiAvatar('🦊', 4), 'u1').background).toBe(AVATAR_BACKGROUNDS[4]);
+  });
+
+  it('is the same colour the generated avatar of a user without a picture gets', () => {
+    const generated = parseAvatar(null, 'user-42');
+    expect(generated.kind).toBe('emoji');
+    expect(memberChipColors(null, 'user-42').background).toBe((generated as { background: string }).background);
+  });
+
+  it('falls back to the colour derived from the id for a photo', () => {
+    expect(memberChipColors('https://example.com/me.png', 'user-42')).toEqual(memberChipColors(null, 'user-42'));
+  });
+
+  it('picks dark text on light colours and white text on dark ones', () => {
+    expect(memberChipColors(encodeEmojiAvatar('🦊', 7), 'u').color).toBe('#111827'); // lime
+    expect(memberChipColors(encodeEmojiAvatar('🦊', 2), 'u').color).toBe('#ffffff'); // violet
   });
 });
