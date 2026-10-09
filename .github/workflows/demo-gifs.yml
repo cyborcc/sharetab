@@ -63,12 +63,18 @@ jobs:
           ls -la demo
       - name: Publish to demo-gifs-out branch
         run: |
-          mkdir -p /tmp/out && cp demo/*.gif /tmp/out/
-          git config user.name "github-actions"
-          git config user.email "actions@users.noreply.github.com"
-          git checkout --orphan demo-gifs-out
-          git rm -rf . -q
-          cp /tmp/out/*.gif .
-          git add *.gif
-          git commit -q -m "demo gifs"
-          git push -f origin demo-gifs-out
+          set +e
+          {
+            mkdir -p /tmp/out && cp demo/*.gif /tmp/out/ && ls -la /tmp/out
+            git config user.name "github-actions"
+            git config user.email "actions@users.noreply.github.com"
+            git checkout --orphan demo-gifs-out
+            git rm -rf . -q
+            cp /tmp/out/*.gif .
+            git add ./*.gif
+            git commit -q -m "demo gifs"
+            git push -f origin demo-gifs-out
+          } > /tmp/pub.log 2>&1
+          code=$?
+          grep -v '^\s*$' /tmp/pub.log | tail -15 | while IFS= read -r l; do echo "::error title=publish::$l"; done
+          exit $code
