@@ -1,8 +1,8 @@
 import OpenAI from 'openai';
-import type { AIProvider } from '../provider';
+import type { AIProvider, ExtractReceiptOptions } from '../provider';
 import type { ReceiptExtractionResult } from '../schema';
 import { receiptExtractionSchema } from '../schema';
-import { RECEIPT_EXTRACTION_PROMPT } from '../prompts/receipt-extraction';
+import { buildReceiptPrompt } from '../prompts/receipt-extraction';
 
 export class OpenAIProvider implements AIProvider {
   readonly name: string;
@@ -26,11 +26,10 @@ export class OpenAIProvider implements AIProvider {
     imageBuffer: Buffer,
     mimeType: string,
     correctionHint?: string,
+    options: ExtractReceiptOptions = {},
   ): Promise<ReceiptExtractionResult> {
     const base64 = imageBuffer.toString('base64');
-    const prompt = correctionHint
-      ? `${RECEIPT_EXTRACTION_PROMPT}\n\nThe user has provided a correction. Apply it to improve accuracy:\n<user_correction>${correctionHint.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</user_correction>`
-      : RECEIPT_EXTRACTION_PROMPT;
+    const prompt = buildReceiptPrompt({ correctionHint, language: options.language });
 
     const response = await this.client.chat.completions.create({
       model: this.model,

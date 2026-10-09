@@ -26,7 +26,7 @@ import {
   ZoomOut,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { COMMON_CURRENCIES } from '@/lib/currencies';
+import { useOrderedCurrencies } from '@/lib/use-ordered-currencies';
 import { ReceiptRatePreview } from './receipt-rate-preview';
 import { ReceiptHistory, scrollToItem } from './receipt-history';
 
@@ -83,6 +83,7 @@ export function ItemAssignment({
 }) {
   const locale = useLocale();
   const t = useTranslations('expenses.receipt');
+  const currencyOptions = useOrderedCurrencies(groupId, groupCurrency);
   const receiptData = trpc.receipts.getReceiptItems.useQuery({ receiptId });
   const history = trpc.receipts.history.useQuery({ receiptId });
   const utils = trpc.useUtils();
@@ -736,10 +737,10 @@ export function ItemAssignment({
                   }
                 }}
               >
-                {!COMMON_CURRENCIES.some((c) => c.code === safeExtracted.currency.toUpperCase()) && (
+                {!currencyOptions.some((c) => c.code === safeExtracted.currency.toUpperCase()) && (
                   <option value={safeExtracted.currency.toUpperCase()}>{safeExtracted.currency}</option>
                 )}
-                {COMMON_CURRENCIES.map((c) => (
+                {currencyOptions.map((c) => (
                   <option key={c.code} value={c.code}>
                     {c.code} — {c.name}
                   </option>
@@ -1161,8 +1162,17 @@ export function ItemAssignment({
                           </button>
                         )}
                       </div>
-                      <span className="font-semibold">
+                      <span className="text-right font-semibold">
                         {formatReceiptCents(item.totalPrice, safeExtracted.currency, locale)}
+                        {shownRate !== null && (
+                          <span
+                            className="block text-xs font-normal text-muted-foreground"
+                            data-testid={`item-group-amount-${item.id}`}
+                          >
+                            {chargedRate !== null ? '= ' : '≈ '}
+                            {formatReceiptCents(Math.round(item.totalPrice * shownRate), settleCurrency, locale)}
+                          </span>
+                        )}
                       </span>
                     </div>
                   )}

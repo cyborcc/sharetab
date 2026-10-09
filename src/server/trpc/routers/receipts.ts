@@ -11,6 +11,7 @@ import { convertCents, isValidCurrency, type RateQuote } from '../../lib/exchang
 import { getReceiptRate, relabelReceiptCurrency } from '../../lib/receipt-conversion';
 import { previewReceiptCorrection, resolveReceiptCorrection } from '../../lib/receipt-correction';
 import { stripUndefined } from '../../lib/strip-undefined';
+import { getUserPromptLanguage } from '../../lib/user-language';
 import { money, sendNotifications } from '../../lib/notifications';
 
 /**
@@ -187,6 +188,7 @@ export const receiptsRouter = createTRPCRouter({
         });
       }
 
+      const language = await getUserPromptLanguage(ctx.db, ctx.user.id);
       try {
         return await processReceiptImage({
           db: ctx.db,
@@ -194,6 +196,7 @@ export const receiptsRouter = createTRPCRouter({
           receipt,
           ...(input.correctionHint !== undefined ? { correctionHint: input.correctionHint } : {}),
           ...(input.model ? { model: input.model } : {}),
+          ...(language ? { language } : {}),
           logPrefix: 'receipt',
         });
       } catch (error) {
@@ -521,11 +524,13 @@ export const receiptsRouter = createTRPCRouter({
       });
     }
 
+    const language = await getUserPromptLanguage(ctx.db, ctx.user.id);
     try {
       return await processReceiptImage({
         db: ctx.db,
         receiptId: input.receiptId,
         receipt: { imagePath: receipt.imagePath, mimeType: receipt.mimeType },
+        ...(language ? { language } : {}),
         logPrefix: 'receipt.retry',
       });
     } catch (error) {

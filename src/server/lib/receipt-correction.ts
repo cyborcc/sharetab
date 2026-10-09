@@ -6,6 +6,7 @@ import { receiptExtractionSchema } from '../ai/schema';
 import { extractReceiptImage } from './receipt-processor';
 import { normalizeDate } from './normalize-date';
 import { isValidCurrency } from './exchange-rates';
+import { getUserPromptLanguage } from './user-language';
 
 const candidateSchema = z.object({
   version: z.literal(1),
@@ -63,8 +64,15 @@ export async function previewReceiptCorrection(
   const receipt = await readEditable(db, receiptId, groupId, userId);
   const base = digest(receipt);
   let result: Awaited<ReturnType<typeof extractReceiptImage>>;
+  const language = await getUserPromptLanguage(db, userId);
   try {
-    result = await extractReceiptImage({ receiptId, receipt, correctionHint: hint, logPrefix: 'receipt.preview' });
+    result = await extractReceiptImage({
+      receiptId,
+      receipt,
+      correctionHint: hint,
+      ...(language ? { language } : {}),
+      logPrefix: 'receipt.preview',
+    });
   } catch {
     throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Correction preview failed. Please try again.' });
   }

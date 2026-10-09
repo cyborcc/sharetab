@@ -1,4 +1,4 @@
-import type { AIProvider } from '../provider';
+import type { AIProvider, ExtractReceiptOptions } from '../provider';
 import type { ReceiptExtractionResult } from '../schema';
 
 /**
@@ -12,6 +12,7 @@ export class MockProvider implements AIProvider {
     _imageBuffer: Buffer,
     _mimeType: string,
     correctionHint?: string,
+    _options?: ExtractReceiptOptions,
   ): Promise<ReceiptExtractionResult> {
     // Simulate a small delay like a real API call
     await new Promise((resolve) => setTimeout(resolve, 100));
