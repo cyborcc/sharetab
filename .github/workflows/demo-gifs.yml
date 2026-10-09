@@ -1,0 +1,74 @@
+name: Demo GIFs
+on:
+  pull_request:
+    branches: [main]
+    paths: ['.github/workflows/demo-gifs.yml']
+jobs:
+  gifs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: sharetab
+          POSTGRES_PASSWORD: sharetab
+          POSTGRES_DB: sharetab
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://sharetab:sharetab@localhost:5432/sharetab
+      AUTH_TRUST_HOST: 'true'
+      NEXTAUTH_URL: http://localhost:3000
+      BASE_URL: http://localhost:3000
+      AUTH_RATE_LIMIT_MAX: '10000'
+      AUTH_IP_RATE_LIMIT_MAX: '10000'
+      REGISTER_RATE_LIMIT_MAX: '10000'
+      GUEST_RATE_LIMIT_MAX: '10000'
+      ADMIN_EMAIL: alice@example.com
+      AI_PROVIDER_PRIORITY: mock
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --legacy-peer-deps
+      - run: npx prisma generate
+      - run: npx prisma db push
+      - run: |
+          for sqlfile in prisma/after-push/*.sql; do
+            npx prisma db execute --file "$sqlfile"
+          done
+      - run: npm run db:seed
+      - run: npx playwright install --with-deps chromium
+      - name: Build
+        run: |
+          s=$(openssl rand -base64 32)
+          echo "NEXTAUTH_SECRET=$s" >> "$GITHUB_ENV"
+          echo "AUTH_SECRET=$s" >> "$GITHUB_ENV"
+          NEXTAUTH_SECRET=$s AUTH_SECRET=$s npm run build
+      - name: Record
+        run: |
+          npm run start &
+          npx wait-on http://localhost:3000/api/health --timeout 60000
+          rm -f demo/*.gif
+          npx tsx e2e/demo-gifs.ts 2>&1 | tail -40 || true
+          ls -la demo
+      - name: Publish to demo-gifs-out branch
+        run: |
+          mkdir -p /tmp/out && cp demo/*.gif /tmp/out/
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git checkout --orphan demo-gifs-out
+          git rm -rf . -q
+          cp /tmp/out/*.gif .
+          git add *.gif
+          git commit -q -m "demo gifs"
+          git push -f origin demo-gifs-out
