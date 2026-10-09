@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   invalidateItems: vi.fn(),
   invalidatePreview: vi.fn(),
   correction: vi.fn(),
+  recentCurrencies: vi.fn(),
 }));
 vi.mock('next-intl', () => ({
   useLocale: () => 'de',
@@ -25,6 +26,7 @@ vi.mock('@/lib/trpc', () => ({
         history: { invalidate: vi.fn() },
       },
     }),
+    groups: { recentCurrencies: { useQuery: mocks.recentCurrencies } },
     receipts: {
       getReceiptItems: { useQuery: mocks.receiptQuery },
       getConversionPreview: { useQuery: mocks.previewQuery },
@@ -39,13 +41,14 @@ vi.mock('@/lib/trpc', () => ({
   },
 }));
 import { ItemAssignment } from './item-assignment';
-const render = () =>
+const render = (groupCurrency?: string) =>
   renderToStaticMarkup(
     React.createElement(ItemAssignment, {
       groupId: 'group',
       receiptId: 'receipt',
       members: [{ id: 'user', name: 'User' }],
       onComplete: vi.fn(),
+      groupCurrency,
     }),
   );
 beforeEach(() => {
@@ -84,6 +87,7 @@ beforeEach(() => {
   mocks.receiptQuery.mockReturnValue({ data: mocks.receipt, isLoading: false });
   mocks.previewQuery.mockReturnValue({ data: mocks.preview, isFetching: false, isError: false });
   mocks.correction.mockReturnValue({ mutate: vi.fn(), isPending: false });
+  mocks.recentCurrencies.mockReturnValue({ data: ['EGP'] });
 });
 test('actual scan assignment requests receipt-bound rates and displays Euro using current item sums instead of stale OCR total', () => {
   const html = render();
@@ -121,4 +125,9 @@ test('incompatible cached source currency is never shown as the current Euro pre
   const html = render();
   expect(html).toContain('Nicht verfügbar');
   expect(html).not.toContain('17,00');
+});
+test('currency selector lists the group currency first and the trip currency second', () => {
+  const html = render('EUR');
+  const codes = [...html.matchAll(/<option value="([A-Z]{3})"/g)].map((m) => m[1]);
+  expect(codes.slice(0, 3)).toEqual(['EUR', 'EGP', 'USD']);
 });
