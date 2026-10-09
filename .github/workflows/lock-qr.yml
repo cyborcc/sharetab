@@ -1,0 +1,27 @@
+name: Lock QR
+on:
+  push:
+    branches: [lock-qr]
+jobs:
+  lock:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: npm install qrcode.react@4.2.0 --legacy-peer-deps --package-lock-only
+      - name: Publish
+        run: |
+          git diff --stat
+          mkdir /tmp/o && cp package.json package-lock.json /tmp/o/
+          git config user.name github-actions
+          git config user.email actions@users.noreply.github.com
+          git checkout --orphan lock-out
+          git rm -rf . -q
+          cp /tmp/o/* .
+          git add package.json package-lock.json
+          git commit -q -m lock
+          git push -f origin lock-out
