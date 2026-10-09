@@ -78,8 +78,11 @@
     "pushDisable": "Stop messages on this device",
     "pushOn": "Messages are on for this device.",
     "pushDenied": "Notifications are blocked in the browser settings.",
+    "pushDeniedIos": "通知已被阻止。请打开 iPhone 设置 → 通知 → Splitbon 并允许。",
     "pushFailed": "Could not turn on messages on this device.",
     "pushUnsupported": "This browser cannot show push messages. On iPhone, add Splitbon to the home screen first. The bell works everywhere.",
+    "pushIosInstall": "在 iPhone 和 iPad 上，只有添加到主屏幕的应用才能收到通知。请点按“分享”，选择“添加到主屏幕”，从新图标打开 Splitbon，并在那里开启。",
+    "pushIosUpdate": "iPhone 和 iPad 上的通知需要 iOS 16.4 或更高版本。请更新 iOS。",
     "empty": "Nothing new yet.",
     "back": "Back to dashboard"
   }
