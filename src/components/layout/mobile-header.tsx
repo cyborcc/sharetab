@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { NotificationBell } from '@/components/layout/notification-bell';
 import { LogoMark } from '@/components/brand/logo-mark';
+import { BeerButton } from '@/components/layout/beer-button';
 import { ThemeToggle } from '@/components/layout/theme-toggle';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { useTranslations, useLocale } from 'next-intl';
@@ -46,6 +47,7 @@ export function MobileHeader({ isAdmin }: { isAdmin?: boolean }) {
       </div>
 
       <div className="flex items-center gap-1">
+        <BeerButton />
         <NotificationBell />
         <LanguageSwitcher testId="language-switcher-mobile" />
         <Sheet open={open} onOpenChange={setOpen}>
