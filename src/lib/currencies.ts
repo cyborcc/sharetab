@@ -52,3 +52,21 @@ export function getCurrencyLabel(code: string): string {
   const found = COMMON_CURRENCIES.find((c) => c.code === upper);
   return found ? `${found.code} - ${found.name}` : upper;
 }
+
+/**
+ * The currency list for a group's selectors: the group currency first, then the currencies used in the group's
+ * latest expenses (newest first, so the currency of the trip country comes second), then the rest of the list.
+ * A code that is not in COMMON_CURRENCIES (e.g. read off a receipt) is kept, without a name.
+ */
+export function orderCurrencies(
+  groupCurrency: string | undefined,
+  recentCurrencies: readonly string[] = [],
+): { code: string; name: string }[] {
+  const names = new Map<string, string>(COMMON_CURRENCIES.map((c) => [c.code, c.name]));
+  const order: string[] = [];
+  for (const raw of [groupCurrency ?? '', ...recentCurrencies, ...COMMON_CURRENCIES.map((c) => c.code)]) {
+    const code = raw.trim().toUpperCase();
+    if (/^[A-Z]{3}$/.test(code) && !order.includes(code)) order.push(code);
+  }
+  return order.map((code) => ({ code, name: names.get(code) ?? code }));
+}

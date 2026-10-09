@@ -76,6 +76,27 @@ export const groupsRouter = createTRPCRouter({
     return group;
   }),
 
+  /**
+   * Currencies of the group's latest expenses other than the group currency, newest first.
+   * The currency of the trip country comes first, so the selectors can offer it right after the group currency.
+   */
+  recentCurrencies: groupMemberProcedure.query(async ({ ctx, input }) => {
+    const group = await ctx.db.group.findUnique({ where: { id: input.groupId }, select: { currency: true } });
+    const rows = await ctx.db.expense.findMany({
+      where: { groupId: input.groupId },
+      orderBy: { createdAt: 'desc' },
+      select: { currency: true },
+      take: 100,
+    });
+    const own = (group?.currency ?? '').toUpperCase();
+    const out: string[] = [];
+    for (const { currency } of rows) {
+      const code = currency.toUpperCase();
+      if (code !== own && !out.includes(code)) out.push(code);
+    }
+    return out;
+  }),
+
   create: protectedProcedure
     .input(
       z.object({

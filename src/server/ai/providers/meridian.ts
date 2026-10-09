@@ -1,8 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk';
-import type { AIProvider } from '../provider';
+import type { AIProvider, ExtractReceiptOptions } from '../provider';
 import type { ReceiptExtractionResult } from '../schema';
 import { receiptExtractionSchema } from '../schema';
-import { RECEIPT_EXTRACTION_PROMPT } from '../prompts/receipt-extraction';
+import { buildReceiptPrompt } from '../prompts/receipt-extraction';
 import { logger } from '@/server/lib/logger';
 
 type ImageMediaType = 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
@@ -131,13 +131,12 @@ export class MeridianProvider implements AIProvider {
     imageBuffer: Buffer,
     mimeType: string,
     correctionHint?: string,
+    options: ExtractReceiptOptions = {},
   ): Promise<ReceiptExtractionResult> {
     const client = await this.getClient();
     const base64 = imageBuffer.toString('base64');
     const start = Date.now();
-    const prompt = correctionHint
-      ? `${RECEIPT_EXTRACTION_PROMPT}\n\nThe user has provided a correction. Apply it to improve accuracy:\n<user_correction>${correctionHint.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</user_correction>`
-      : RECEIPT_EXTRACTION_PROMPT;
+    const prompt = buildReceiptPrompt({ correctionHint, language: options.language });
 
     const stream = client.messages.stream(
       {

@@ -1,7 +1,7 @@
-import type { AIProvider } from '../provider';
+import type { AIProvider, ExtractReceiptOptions } from '../provider';
 import type { ReceiptExtractionResult } from '../schema';
 import { receiptExtractionSchema } from '../schema';
-import { RECEIPT_EXTRACTION_PROMPT } from '../prompts/receipt-extraction';
+import { buildReceiptPrompt } from '../prompts/receipt-extraction';
 import { checkOpenAICodexHealth, getAccessTokenForApi, retryAfterUnauthorized } from '@/server/lib/openai-codex-login';
 
 const DEFAULT_MODEL = 'gpt-5.5';
@@ -268,11 +268,10 @@ export class OpenAICodexProvider implements AIProvider {
     imageBuffer: Buffer,
     mimeType: string,
     correctionHint?: string,
+    options: ExtractReceiptOptions = {},
   ): Promise<ReceiptExtractionResult> {
     const base64 = imageBuffer.toString('base64');
-    const prompt = correctionHint
-      ? `${RECEIPT_EXTRACTION_PROMPT}\n\nThe user has provided a correction. Apply it to improve accuracy:\n<user_correction>${correctionHint.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</user_correction>\n\nReturn only valid JSON.`
-      : `${RECEIPT_EXTRACTION_PROMPT}\n\nReturn only valid JSON.`;
+    const prompt = `${buildReceiptPrompt({ correctionHint, language: options.language })}\n\nReturn only valid JSON.`;
 
     const payload = {
       model: this.model,

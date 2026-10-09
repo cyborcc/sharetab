@@ -9,10 +9,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Trash2, Pencil } from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { ArrowLeft, Trash2, Pencil, Check, ChevronDown } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { ReceiptHistory } from '@/components/receipts/receipt-history';
 import { ExpenseMap } from '@/components/groups/expense-map';
+import { getInitials } from '@/lib/avatar';
 
 export default function ExpenseDetailPage({ params }: { params: Promise<{ groupId: string; expenseId: string }> }) {
   const { groupId, expenseId } = use(params);
@@ -61,10 +63,10 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ groupI
   // Group currency (e.g. EUR) next to the amounts of a foreign-currency expense
   const groupFactor = isCurrencyConverted && e.amount > 0 ? e.baseCurrencyAmount! / e.amount : 1;
   const inGroupCurrency = (cents: number) => formatCents(Math.round(cents * groupFactor), groupCurrency, locale);
-  const nameOf = (userId: string) => {
-    const m = group.data?.members.find((x) => x.user.id === userId)?.user;
-    return m?.placeholderName ?? m?.name ?? m?.email ?? t('detail.unknown');
-  };
+  const members = (group.data?.members ?? []).map((m) => {
+    const name = m.user.placeholderName ?? m.user.name ?? m.user.email ?? t('detail.unknown');
+    return { id: m.user.id, name, initials: getInitials(name) };
+  });
   const items = receiptItems.data?.items ?? [];
 
   return (
@@ -179,23 +181,6 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ groupI
             </div>
           </div>
 
-          {e.receipt?.imagePath && (
-            <>
-              <Separator />
-              <div>
-                <p className="mb-2 text-xs text-muted-foreground">{t('detail.receiptImage')}</p>
-                <a href={`/api/uploads/${e.receipt.imagePath}`} target="_blank" rel="noopener noreferrer">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`/api/uploads/${e.receipt.imagePath}`}
-                    alt={t('detail.receiptImage')}
-                    className="max-h-64 w-auto rounded-md border object-contain"
-                  />
-                </a>
-              </div>
-            </>
-          )}
-
           {e.description && (
             <>
               <Separator />
@@ -206,44 +191,89 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ groupI
             </>
           )}
 
-          {items.length > 0 && (
+          {(items.length > 0 || e.receipt?.imagePath) && (
             <>
               <Separator />
-              <details className="group/items" data-testid="expense-items">
-                <summary className="cursor-pointer select-none text-sm font-medium text-muted-foreground">
-                  {t('detail.items', { count: items.length })}
-                </summary>
-                <ul className="mt-2 divide-y text-sm">
-                  {items.map((item) => (
-                    <li key={item.id} className="flex items-start justify-between gap-3 py-1.5">
-                      <div className="min-w-0">
-                        <p className="break-words">
-                          {item.quantity > 1 && <span className="text-muted-foreground">{item.quantity}× </span>}
-                          {item.name}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {item.assignments.length === 0
-                            ? t('detail.itemUnassigned')
-                            : item.assignments
-                                .map((a) =>
-                                  a.shareOfItem > 1 ? `${nameOf(a.userId)} ×${a.shareOfItem}` : nameOf(a.userId),
-                                )
-                                .join(', ')}
-                        </p>
+              {/* The items are the focus and always visible, laid out as in the editor; only the photo is folded away. */}
+              <div className="space-y-2" data-testid="expense-items">
+                {e.receipt?.imagePath && (
+                  <details className="rounded-md border" data-testid="expense-receipt-image">
+                    <summary className="flex cursor-pointer select-none items-center justify-between px-3 py-2 text-sm font-medium">
+                      <span>{t('detail.receiptImage')}</span>
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    </summary>
+                    <div className="px-3 pb-3">
+                      <a href={`/api/uploads/${e.receipt.imagePath}`} target="_blank" rel="noopener noreferrer">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={`/api/uploads/${e.receipt.imagePath}`}
+                          alt={t('detail.receiptImage')}
+                          loading="lazy"
+                          className="max-h-96 w-auto rounded-md border object-contain"
+                        />
+                      </a>
+                    </div>
+                  </details>
+                )}
+                {items.length > 0 && (
+                  <p className="text-sm font-medium">{t('detail.items', { count: items.length })}</p>
+                )}
+                {items.map((item) => {
+                  const assigned = new Map(item.assignments.map((a) => [a.userId, a.shareOfItem]));
+                  return (
+                    <div
+                      key={item.id}
+                      className={`rounded-lg border px-3 py-3 ${assigned.size === 0 ? 'border-amber-300' : ''}`}
+                      data-testid={`item-card-${item.id}`}
+                    >
+                      <div className="mb-2 flex items-start justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <span className="break-words font-medium">{item.name}</span>
+                          {item.quantity > 1 && (
+                            <span className="shrink-0 text-xs text-muted-foreground">x{item.quantity}</span>
+                          )}
+                        </div>
+                        <span className="shrink-0 text-right font-semibold tabular-nums">
+                          {formatCents(item.totalPrice, e.currency, locale)}
+                          {isCurrencyConverted && (
+                            <span className="block text-xs font-normal text-muted-foreground">
+                              ≈ {inGroupCurrency(item.totalPrice)}
+                            </span>
+                          )}
+                        </span>
                       </div>
-                      <span className="shrink-0 text-right tabular-nums">
-                        {formatCents(item.totalPrice, e.currency, locale)}
-                        {isCurrencyConverted && (
-                          <span className="block text-xs text-muted-foreground">
-                            ≈ {inGroupCurrency(item.totalPrice)}
-                          </span>
-                        )}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <p className="mt-1 text-xs text-muted-foreground">{t('detail.itemsHint')}</p>
-              </details>
+                      <div className="flex flex-wrap gap-1.5">
+                        {members.map((m) => {
+                          const units = assigned.get(m.id);
+                          const isAssigned = units !== undefined;
+                          return (
+                            <span
+                              key={m.id}
+                              data-testid={`member-chip-${m.id}`}
+                              data-assigned={isAssigned}
+                              className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs ${
+                                isAssigned ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                              }`}
+                            >
+                              <Avatar className="h-4 w-4">
+                                <AvatarFallback className="text-[8px]">{m.initials}</AvatarFallback>
+                              </Avatar>
+                              {m.name.split(' ')[0]}
+                              {isAssigned &&
+                                (units > 1 ? (
+                                  <span className="font-semibold">×{units}</span>
+                                ) : (
+                                  <Check className="h-3 w-3" />
+                                ))}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+                {items.length > 0 && <p className="text-xs text-muted-foreground">{t('detail.itemsHint')}</p>}
+              </div>
             </>
           )}
 

@@ -1,7 +1,7 @@
-import type { AIProvider } from '../provider';
+import type { AIProvider, ExtractReceiptOptions } from '../provider';
 import type { ReceiptExtractionResult } from '../schema';
 import { receiptExtractionSchema } from '../schema';
-import { RECEIPT_EXTRACTION_PROMPT } from '../prompts/receipt-extraction';
+import { buildReceiptPrompt } from '../prompts/receipt-extraction';
 
 export class OllamaProvider implements AIProvider {
   readonly name = 'ollama';
@@ -17,11 +17,10 @@ export class OllamaProvider implements AIProvider {
     imageBuffer: Buffer,
     _mimeType: string,
     correctionHint?: string,
+    options: ExtractReceiptOptions = {},
   ): Promise<ReceiptExtractionResult> {
     const base64 = imageBuffer.toString('base64');
-    const prompt = correctionHint
-      ? `${RECEIPT_EXTRACTION_PROMPT}\n\nThe user has provided a correction. Apply it to improve accuracy:\n<user_correction>${correctionHint.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</user_correction>`
-      : RECEIPT_EXTRACTION_PROMPT;
+    const prompt = buildReceiptPrompt({ correctionHint, language: options.language });
 
     const response = await fetch(`${this.baseUrl}/api/chat`, {
       method: 'POST',

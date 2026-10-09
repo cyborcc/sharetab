@@ -7,7 +7,7 @@ import type { inferRouterOutputs } from '@trpc/server';
 import type { AppRouter } from '@/server/trpc/router';
 import { trpc } from '@/lib/trpc';
 import { parseToCents, centsToDecimal, formatCents } from '@/lib/money';
-import { COMMON_CURRENCIES } from '@/lib/currencies';
+import { useOrderedCurrencies } from '@/lib/use-ordered-currencies';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -258,6 +258,7 @@ function EditExpenseForm({
 
   const amountCents = parseToCents(amountStr);
   const groupCurrency = group.currency;
+  const currencyOptions = useOrderedCurrencies(groupId, groupCurrency);
   const effectiveCurrency = currency || groupCurrency;
   const isDifferentCurrency = effectiveCurrency.toUpperCase() !== groupCurrency.toUpperCase();
   const parsedManualRate = parseFloat(manualRate);
@@ -367,7 +368,7 @@ function EditExpenseForm({
                   }}
                   className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 >
-                  {COMMON_CURRENCIES.map((c) => (
+                  {currencyOptions.map((c) => (
                     <option key={c.code} value={c.code}>
                       {c.code}
                     </option>

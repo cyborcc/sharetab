@@ -13,6 +13,8 @@ interface ProcessReceiptImageOptions {
   logPrefix?: string;
   /** Model of the OpenAI-compatible endpoint picked for this scan; the configured chain is the fallback. */
   model?: string;
+  /** English name of the language item names are translated into (the user's app language). */
+  language?: string;
 }
 
 /** Provider name plus model where there is one, e.g. "openai (Qwen38.S)", to see which model read a receipt. */
@@ -32,6 +34,7 @@ export async function extractReceiptImage({
   correctionHint,
   logPrefix = 'receipt',
   model,
+  language,
 }: Omit<ProcessReceiptImageOptions, 'db'>) {
   const { readFile } = await import('fs/promises');
   const { resolveUploadPath } = await import('./upload-dir');
@@ -42,6 +45,7 @@ export async function extractReceiptImage({
     receiptId,
     imageSize: imageBuffer.length,
     hasCorrectionHint: !!correctionHint,
+    language: language ?? null,
   });
 
   const start = Date.now();
@@ -57,7 +61,7 @@ export async function extractReceiptImage({
 
     for (const candidate of providers) {
       try {
-        result = await candidate.extractReceipt(imageBuffer, receipt.mimeType, correctionHint);
+        result = await candidate.extractReceipt(imageBuffer, receipt.mimeType, correctionHint, { language });
         provider = candidate;
         break;
       } catch (err) {

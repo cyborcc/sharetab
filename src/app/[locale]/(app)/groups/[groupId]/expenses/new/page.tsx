@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/i18n/navigation';
 import { trpc } from '@/lib/trpc';
 import { parseToCents, formatCents } from '@/lib/money';
-import { COMMON_CURRENCIES } from '@/lib/currencies';
+import { useOrderedCurrencies } from '@/lib/use-ordered-currencies';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -63,6 +63,7 @@ export default function NewExpensePage({ params }: { params: Promise<{ groupId: 
 
   // Initialize currency from group when data loads
   const groupCurrency = group.data?.currency ?? 'USD';
+  const currencyOptions = useOrderedCurrencies(groupId, groupCurrency);
   const effectiveCurrency = currency || groupCurrency;
   const isDifferentCurrency = effectiveCurrency.toUpperCase() !== groupCurrency.toUpperCase();
 
@@ -187,7 +188,7 @@ export default function NewExpensePage({ params }: { params: Promise<{ groupId: 
                   onChange={(e) => setCurrency(e.target.value)}
                   className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 >
-                  {COMMON_CURRENCIES.map((c) => (
+                  {currencyOptions.map((c) => (
                     <option key={c.code} value={c.code}>
                       {c.code}
                     </option>
