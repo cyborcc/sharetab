@@ -140,10 +140,7 @@ function readableTextOn(hex: string): string {
  * Colours of a person's chip (e.g. on a receipt item): the colour of their avatar, so a chip matches the avatar
  * shown everywhere else. Someone with a photo gets the colour derived from their id.
  */
-export function memberChipColors(
-  image: string | null | undefined,
-  id: string,
-): { background: string; color: string } {
+export function memberChipColors(image: string | null | undefined, id: string): { background: string; color: string } {
   const picked = parseAvatar(image, id);
   const avatar = picked.kind === 'emoji' ? picked : parseAvatar(null, id);
   const background = avatar.kind === 'emoji' ? avatar.background : '#3b82f6';

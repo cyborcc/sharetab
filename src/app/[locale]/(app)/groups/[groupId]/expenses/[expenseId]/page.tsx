@@ -252,12 +252,11 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ groupI
                               data-testid={`member-chip-${m.id}`}
                               data-assigned={isAssigned}
                               className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs ${
-                                isAssigned ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                                isAssigned ? '' : 'bg-muted text-muted-foreground'
                               }`}
+                              {...(isAssigned ? { style: memberChipColors(m.image, m.id) } : {})}
                             >
-                              <Avatar className="h-4 w-4">
-                                <AvatarFallback className="text-[8px]">{m.initials}</AvatarFallback>
-                              </Avatar>
+                              <UserAvatar image={m.image} id={m.id} name={m.name} className="h-4 w-4" />
                               {m.name.split(' ')[0]}
                               {isAssigned &&
                                 (units > 1 ? (

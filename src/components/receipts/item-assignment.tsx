@@ -447,7 +447,6 @@ export function ItemAssignment({
   const assignedItemCount = Object.values(assignments).filter((s) => s.size > 0).length;
   const allAssigned = items.length > 0 && assignedItemCount === items.length;
 
-
   if (receiptData.isLoading) {
     return <p className="text-muted-foreground">{t('loadingItems')}</p>;
   }
