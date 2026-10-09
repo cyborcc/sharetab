@@ -1,0 +1,48 @@
+name: Diag (temporary)
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  step:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: audit
+            cmd: npm audit --omit=dev --audit-level=high
+          - name: format
+            cmd: npm run format:check
+          - name: lint
+            cmd: npm run lint
+          - name: i18n
+            cmd: npm run lint:i18n
+          - name: tsc
+            cmd: npx prisma generate && npx tsc --noEmit
+          - name: unit
+            cmd: npx prisma generate && npm test
+    name: diag-${{ matrix.name }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --legacy-peer-deps
+      - name: Run
+        env:
+          CMD: ${{ matrix.cmd }}
+        run: |
+          set +e
+          bash -c "$CMD" > out.txt 2>&1
+          code=$?
+          if [ $code -ne 0 ]; then
+            # first lines that look like errors, as one annotation (newlines encoded)
+            body=$(grep -v '^\s*$' out.txt | grep -i -E "error|warn|\[warn\]|✗|FAIL|×|\.tsx?|\.json" | head -40 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+            echo "::error title=diag-failed::${body:0:3500}"
+          fi
+          exit $code
