@@ -1,5 +1,5 @@
 import { Link } from '@/i18n/navigation';
-import { Receipt } from 'lucide-react';
+import { LogoMark } from '@/components/brand/logo-mark';
 import { auth } from '@/server/auth';
 
 export default async function SplitLayout({ children }: { children: React.ReactNode }) {
@@ -11,7 +11,7 @@ export default async function SplitLayout({ children }: { children: React.ReactN
       <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="mx-auto flex h-14 max-w-lg items-center justify-between px-4">
           <Link href="/split" className="flex items-center gap-2 font-bold text-lg">
-            <Receipt className="h-5 w-5 text-primary" />
+            <LogoMark className="h-6 w-5" />
             <span>Splitbon</span>
           </Link>
           {session?.user ? (
