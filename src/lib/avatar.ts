@@ -124,3 +124,25 @@ export function parseAvatar(image: string | null | undefined, id: string): Parse
     background: AVATAR_BACKGROUNDS[Math.floor(hash / AVATAR_EMOJIS.length) % AVATAR_BACKGROUNDS.length] ?? '#3b82f6',
   };
 }
+
+/** Black or white, whichever reads better on the given #rrggbb background. */
+function readableTextOn(hex: string): string {
+  const n = parseInt(hex.slice(1), 16);
+  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  }) as [number, number, number];
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return luminance > 0.4 ? '#111827' : '#ffffff';
+}
+
+/**
+ * Colours of a person's chip (e.g. on a receipt item): the colour of their avatar, so a chip matches the avatar
+ * shown everywhere else. Someone with a photo gets the colour derived from their id.
+ */
+export function memberChipColors(image: string | null | undefined, id: string): { background: string; color: string } {
+  const picked = parseAvatar(image, id);
+  const avatar = picked.kind === 'emoji' ? picked : parseAvatar(null, id);
+  const background = avatar.kind === 'emoji' ? avatar.background : '#3b82f6';
+  return { background, color: readableTextOn(background) };
+}

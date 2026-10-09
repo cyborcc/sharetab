@@ -9,12 +9,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { ArrowLeft, Trash2, Pencil, Check, ChevronDown } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { ReceiptHistory } from '@/components/receipts/receipt-history';
 import { ExpenseMap } from '@/components/groups/expense-map';
-import { getInitials } from '@/lib/avatar';
+import { memberChipColors } from '@/lib/avatar';
 
 export default function ExpenseDetailPage({ params }: { params: Promise<{ groupId: string; expenseId: string }> }) {
   const { groupId, expenseId } = use(params);
@@ -65,7 +65,7 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ groupI
   const inGroupCurrency = (cents: number) => formatCents(Math.round(cents * groupFactor), groupCurrency, locale);
   const members = (group.data?.members ?? []).map((m) => {
     const name = m.user.placeholderName ?? m.user.name ?? m.user.email ?? t('detail.unknown');
-    return { id: m.user.id, name, initials: getInitials(name) };
+    return { id: m.user.id, name, image: m.user.image };
   });
   const items = receiptItems.data?.items ?? [];
 
@@ -252,12 +252,11 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ groupI
                               data-testid={`member-chip-${m.id}`}
                               data-assigned={isAssigned}
                               className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs ${
-                                isAssigned ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                                isAssigned ? '' : 'bg-muted text-muted-foreground'
                               }`}
+                              {...(isAssigned ? { style: memberChipColors(m.image, m.id) } : {})}
                             >
-                              <Avatar className="h-4 w-4">
-                                <AvatarFallback className="text-[8px]">{m.initials}</AvatarFallback>
-                              </Avatar>
+                              <UserAvatar image={m.image} id={m.id} name={m.name} className="h-4 w-4" />
                               {m.name.split(' ')[0]}
                               {isAssigned &&
                                 (units > 1 ? (

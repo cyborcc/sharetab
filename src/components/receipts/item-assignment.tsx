@@ -12,7 +12,8 @@ import { Label } from '@/components/ui/label';
 import { LocationField, type PlaceValue } from '@/components/expenses/location-field';
 import { CategorySelect } from '@/components/expenses/category-select';
 import { Separator } from '@/components/ui/separator';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/ui/user-avatar';
+import { memberChipColors } from '@/lib/avatar';
 import {
   Check,
   Users,
@@ -30,7 +31,7 @@ import { useOrderedCurrencies } from '@/lib/use-ordered-currencies';
 import { ReceiptRatePreview } from './receipt-rate-preview';
 import { ReceiptHistory, scrollToItem } from './receipt-history';
 
-type Member = { id: string; name: string | null };
+type Member = { id: string; name: string | null; image?: string | null | undefined };
 
 type Assignments = Record<string, Set<string>>; // receiptItemId -> Set<userId>
 type Counts = Record<string, Record<string, number>>; // receiptItemId -> userId -> units (absent = 1)
@@ -445,25 +446,6 @@ export function ItemAssignment({
   }, [items, assignments, counts, members, extracted, tip]);
   const assignedItemCount = Object.values(assignments).filter((s) => s.size > 0).length;
   const allAssigned = items.length > 0 && assignedItemCount === items.length;
-
-  // Precompute member initials to avoid recalculation every render (Finding #37)
-  const memberInitials = useMemo(
-    () =>
-      new Map(
-        members.map((m) => [
-          m.id,
-          m.name
-            ? m.name
-                .split(' ')
-                .map((n) => n[0])
-                .join('')
-                .toUpperCase()
-                .slice(0, 2)
-            : '?',
-        ]),
-      ),
-    [members],
-  );
 
   if (receiptData.isLoading) {
     return <p className="text-muted-foreground">{t('loadingItems')}</p>;
@@ -1234,14 +1216,11 @@ export function ItemAssignment({
                           title={item.quantity > 1 ? t('tapToCount') : undefined}
                           data-testid={`member-toggle-${m.id}`}
                           className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs transition-colors ${
-                            isAssigned
-                              ? 'bg-primary text-primary-foreground'
-                              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                            isAssigned ? '' : 'bg-muted text-muted-foreground hover:bg-muted/80'
                           }`}
+                          {...(isAssigned ? { style: memberChipColors(m.image, m.id) } : {})}
                         >
-                          <Avatar className="h-4 w-4">
-                            <AvatarFallback className="text-[8px]">{memberInitials.get(m.id) ?? '?'}</AvatarFallback>
-                          </Avatar>
+                          <UserAvatar image={m.image} id={m.id} name={m.name} className="h-4 w-4" />
                           {m.name?.split(' ')[0] ?? '?'}
                           {isAssigned &&
                             (units > 1 ? (
