@@ -106,6 +106,15 @@ export function MobileHeader({ isAdmin }: { isAdmin?: boolean }) {
                 </button>
                 <ThemeToggle />
               </div>
+              <a
+                href="https://ko-fi.com/cyborcc"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                data-testid="beer-link"
+              >
+                {t('sponsor.beer')}
+              </a>
             </nav>
           </SheetContent>
         </Sheet>

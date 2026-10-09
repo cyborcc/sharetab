@@ -32,7 +32,8 @@
   "sponsor": {
     "title": "Splitbonを応援する",
     "description": "Splitbonは無料のオープンソースです。お役に立てましたら、開発のスポンサーをご検討ください。",
-    "cta": "Ko-fiで応援する"
+    "cta": "Ko-fiで応援する",
+    "beer": "🍻をおごる"
   },
   "errors": {
     "generic": "問題が発生しました。もう一度お試しください。",

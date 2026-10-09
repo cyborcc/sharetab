@@ -32,7 +32,8 @@
   "sponsor": {
     "title": "Stöd Splitbon",
     "description": "Splitbon är gratis och öppen källkod. Om det sparar tid, överväg att sponsra utvecklingen.",
-    "cta": "Stöd på Ko-fi"
+    "cta": "Stöd på Ko-fi",
+    "beer": "Bjud mig på en 🍻"
   },
   "errors": {
     "generic": "Något gick fel. Försök igen.",
