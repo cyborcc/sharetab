@@ -1,0 +1,28 @@
+name: Diag
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cmd: ['npm run format:check', 'npm run lint', 'npm run lint:i18n', 'npx tsc --noEmit', 'npm test']
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --legacy-peer-deps
+      - run: npx prisma generate
+      - name: run
+        run: |
+          set +e
+          out=$(${{ matrix.cmd }} 2>&1); code=$?
+          echo "exit=$code"
+          if [ $code -ne 0 ]; then
+            printf '%s\n' "$out" | grep -v '^\s*$' | tail -30 | while IFS= read -r l; do echo "::error title=${{ matrix.cmd }}::$l"; done
+            exit 1
+          fi
