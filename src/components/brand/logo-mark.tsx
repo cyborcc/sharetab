@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 
-/** The Splitbon mark: one receipt torn in two. Follows the theme (dark/light) and the orange accent. */
+/** The Splitbon mark: one receipt torn in two. Follows the theme (dark/light) and the accent colour. */
 export function LogoMark({ className }: { className?: string }) {
   return (
     <svg viewBox="12 8 72 90" className={cn('shrink-0', className)} aria-hidden="true">
