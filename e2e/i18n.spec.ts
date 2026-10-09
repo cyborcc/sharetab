@@ -14,7 +14,7 @@ test.describe('i18n Language Switching', () => {
 
     // Verify Spanish translations
     await expect(page.getByText('Bienvenido de nuevo')).toBeVisible();
-    await expect(page.getByText('Inicia sesión en tu cuenta de ShareTab')).toBeVisible();
+    await expect(page.getByText('Inicia sesión en tu cuenta de Splitbon')).toBeVisible();
     await expect(page.getByLabel('Correo electrónico')).toBeVisible();
     await expect(page.getByLabel('Contraseña')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Iniciar sesión', exact: true })).toBeVisible();

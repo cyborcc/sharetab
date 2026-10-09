@@ -126,7 +126,7 @@ chown nextjs:nodejs "$OPENAI_CODEX_DIR"
 
 echo ""
 echo "============================================"
-echo "  ShareTab Configuration"
+echo "  Splitbon Configuration"
 echo "============================================"
 echo "  Version:        $(node -e "console.log(require('./package.json').version)" 2>/dev/null || echo 'unknown')"
 echo "  Commit:         $(cat .commit-sha 2>/dev/null || echo 'unknown')"
@@ -229,7 +229,7 @@ echo ""
 
 # ── Start App ───────────────────────────────────────────────
 
-echo "Starting ShareTab..."
+echo "Starting Splitbon..."
 export HOME=/home/nextjs
 
 # Run Node in the background so this script (PID 1) can forward signals.

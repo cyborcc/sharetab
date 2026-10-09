@@ -111,7 +111,7 @@
     "orJoinAs": "または次の人として参加：",
     "continueOnAnotherDevice": "別のデバイスで続ける",
     "personalLinkHint": "個人用リンクを使うと、別のデバイスであなたとして続けられます。自分のデバイスでだけ開いてください。リンクを持っている人は誰でも、この割り勘であなたとして操作できます。",
-    "personalLinkShareTitle": "自分専用の ShareTab リンク（共有しないでください）",
+    "personalLinkShareTitle": "自分専用の Splitbon リンク（共有しないでください）",
     "personalLinkCopied": "個人用リンクをコピーしました。別のデバイスで開くと、あなたとして続けられます。このリンクを持つ人は誰でも、この割り勘であなたとして操作できます。",
     "personalLinkInvalid": "この個人用リンクは使えなくなりました。その人は割り勘から削除された可能性があります。",
     "personalLinkShared": "このリンクは自分だけに送ってください。持っている人は誰でも、この割り勘であなたとして操作できます。",

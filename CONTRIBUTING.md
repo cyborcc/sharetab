@@ -1,4 +1,4 @@
-# Contributing to ShareTab
+# Contributing to Splitbon
 
 Thanks for your interest in contributing! Here's everything you need to get started.
 
@@ -13,13 +13,13 @@ Thanks for your interest in contributing! Here's everything you need to get star
 ### Install dependencies
 
 ```bash
-git clone https://github.com/sw-carlos-cristobal/sharetab.git
+git clone https://github.com/cyborcc/splitbon.git
 cd sharetab
 npm install
 npx prisma generate
 ```
 
-The committed `.npmrc` sets `legacy-peer-deps=true` (CI and the Dockerfile pass `--legacy-peer-deps` explicitly): next-auth's optional `nodemailer` peer range is older than the `nodemailer` version ShareTab pins. Keep `.npmrc` when copying the project, or `npm install` stops with an `ERESOLVE` error.
+The committed `.npmrc` sets `legacy-peer-deps=true` (CI and the Dockerfile pass `--legacy-peer-deps` explicitly): next-auth's optional `nodemailer` peer range is older than the `nodemailer` version Splitbon pins. Keep `.npmrc` when copying the project, or `npm install` stops with an `ERESOLVE` error.
 
 ### Start the dev server
 
@@ -153,4 +153,4 @@ See [CLAUDE.md](CLAUDE.md) for a full architecture reference.
 
 ## Questions?
 
-Open a [GitHub Discussion](https://github.com/sw-carlos-cristobal/sharetab/discussions) or file an issue.
+Open a [GitHub Discussion](https://github.com/cyborcc/splitbon/discussions) or file an issue.

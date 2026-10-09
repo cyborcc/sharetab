@@ -26,13 +26,13 @@
     "copyFailed": "Não foi possível copiar o link para a área de transferência"
   },
   "brand": {
-    "name": "ShareTab",
+    "name": "Splitbon",
     "tagline": "Divisão de despesas auto-hospedada com leitura de recibos por IA"
   },
   "sponsor": {
-    "title": "Apoie o ShareTab",
-    "description": "O ShareTab é gratuito e de código aberto. Se ele economiza seu tempo, considere patrocinar o desenvolvimento.",
-    "cta": "Patrocinar no GitHub"
+    "title": "Apoie o Splitbon",
+    "description": "O Splitbon é gratuito e de código aberto. Se ele economiza seu tempo, considere patrocinar o desenvolvimento.",
+    "cta": "Apoiar no Ko-fi"
   },
   "errors": {
     "generic": "Algo deu errado. Tente novamente.",
@@ -78,7 +78,7 @@
     "pushOn": "Messages are on for this device.",
     "pushDenied": "Notifications are blocked in the browser settings.",
     "pushFailed": "Could not turn on messages on this device.",
-    "pushUnsupported": "This browser cannot show push messages. On iPhone, add ShareTab to the home screen first. The bell works everywhere.",
+    "pushUnsupported": "This browser cannot show push messages. On iPhone, add Splitbon to the home screen first. The bell works everywhere.",
     "empty": "Nothing new yet.",
     "back": "Back to dashboard"
   }

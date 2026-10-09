@@ -1,11 +1,11 @@
 {
-  "name": "ShareTab",
-  "short_name": "ShareTab",
+  "name": "Splitbon",
+  "short_name": "Splitbon",
   "description": "Self-hosted expense splitting with AI receipt scanning",
   "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#18181b",
+  "theme_color": "#14201D",
   "orientation": "portrait-primary",
   "icons": [
     {

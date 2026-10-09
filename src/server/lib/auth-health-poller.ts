@@ -250,7 +250,7 @@ export async function sendAuthExpiryEmail(
     },
   });
 
-  const from = process.env.EMAIL_FROM ?? 'ShareTab <noreply@sharetab.local>';
+  const from = process.env.EMAIL_FROM ?? 'Splitbon <noreply@sharetab.local>';
   const dashboardUrl = `${process.env.NEXTAUTH_URL ?? 'http://localhost:3000'}/admin`;
   const providerLabel = provider === 'openai-codex' ? 'ChatGPT OAuth (OpenAI Codex)' : 'Claude AI';
 
@@ -259,9 +259,9 @@ export async function sendAuthExpiryEmail(
   await transport.sendMail({
     from,
     to: adminEmail,
-    subject: `[ShareTab] ${providerLabel} authentication expired`,
+    subject: `[Splitbon] ${providerLabel} authentication expired`,
     text: [
-      `ShareTab detected that ${providerLabel} authentication has expired.`,
+      `Splitbon detected that ${providerLabel} authentication has expired.`,
       '',
       `Error: ${error}`,
       '',
@@ -276,7 +276,7 @@ export async function sendAuthExpiryEmail(
     html: `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
         <h2 style="color: #ef4444;">${providerLabel} Authentication Expired</h2>
-        <p>ShareTab detected that ${providerLabel} authentication has expired.</p>
+        <p>Splitbon detected that ${providerLabel} authentication has expired.</p>
         <p><strong>Error:</strong> ${error}</p>
         ${loginSection}
         <p>

@@ -111,7 +111,7 @@
     "orJoinAs": "或以此身份加入：",
     "continueOnAnotherDevice": "在其他设备上继续",
     "personalLinkHint": "你的个人链接可让另一台设备以你的身份继续。只在你自己的设备上打开：任何拿到它的人都能在此分账中以你的身份操作。",
-    "personalLinkShareTitle": "我的私人 ShareTab 链接（请勿分享）",
+    "personalLinkShareTitle": "我的私人 Splitbon 链接（请勿分享）",
     "personalLinkCopied": "已复制个人链接。在你的其他设备上打开即可以你的身份继续。任何拿到此链接的人都能在此分账中以你的身份操作。",
     "personalLinkInvalid": "此个人链接已失效。此人可能已从分账中移除。",
     "personalLinkShared": "只把这个链接发给你自己：任何拿到它的人都能在此分账中以你的身份操作。",

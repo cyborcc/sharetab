@@ -4,10 +4,10 @@
   "description": "Self-hosted, open-source Splitwise alternative with AI-powered receipt scanning",
   "author": "Carlos Cristobal",
   "license": "MIT",
-  "homepage": "https://github.com/sw-carlos-cristobal/sharetab",
+  "homepage": "https://github.com/cyborcc/splitbon",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sw-carlos-cristobal/sharetab.git"
+    "url": "https://github.com/cyborcc/splitbon.git"
   },
   "keywords": [
     "self-hosted",

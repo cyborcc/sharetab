@@ -26,13 +26,13 @@
     "copyFailed": "リンクをクリップボードにコピーできませんでした"
   },
   "brand": {
-    "name": "ShareTab",
+    "name": "Splitbon",
     "tagline": "AIレシート読み取り機能付きのセルフホスト型割り勘アプリ"
   },
   "sponsor": {
-    "title": "ShareTabを応援する",
-    "description": "ShareTabは無料のオープンソースです。お役に立てましたら、開発のスポンサーをご検討ください。",
-    "cta": "GitHubでスポンサーになる"
+    "title": "Splitbonを応援する",
+    "description": "Splitbonは無料のオープンソースです。お役に立てましたら、開発のスポンサーをご検討ください。",
+    "cta": "Ko-fiで応援する"
   },
   "errors": {
     "generic": "問題が発生しました。もう一度お試しください。",
@@ -78,7 +78,7 @@
     "pushOn": "Messages are on for this device.",
     "pushDenied": "Notifications are blocked in the browser settings.",
     "pushFailed": "Could not turn on messages on this device.",
-    "pushUnsupported": "This browser cannot show push messages. On iPhone, add ShareTab to the home screen first. The bell works everywhere.",
+    "pushUnsupported": "This browser cannot show push messages. On iPhone, add Splitbon to the home screen first. The bell works everywhere.",
     "empty": "Nothing new yet.",
     "back": "Back to dashboard"
   }

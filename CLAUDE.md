@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-ShareTab — open-source, self-hosted Splitwise alternative with AI receipt scanning. Targets Unraid (Docker).
+Splitbon — open-source, self-hosted Splitwise alternative with AI receipt scanning. Targets Unraid (Docker).
 
 ## Tech Stack
 
@@ -88,7 +88,7 @@ npx prisma db push   # Push schema without migration (dev only)
 - `src/i18n/navigation.ts` — Locale-aware `Link`, `redirect`, `usePathname`, `useRouter`
 - `messages/{locale}/` — Translation files with namespaces: admin, auth, common, dashboard, expenses, groups, settings, split, splits
 - `docker/` — Dockerfile (multi-stage), docker-compose.yml (builds from the checkout), entrypoint.sh (starts bundled PostgreSQL, runs the SQL phases, starts Node; also writes `/etc/machine-id` when missing, since Meridian won't start without one, so a container with a read-only `/etc` needs it mounted)
-- `unraid/sharetab.xml` — Unraid template (runs `ghcr.io/sw-carlos-cristobal/sharetab:stable`); keep its variables in sync with `.env.example` and `docker/docker-compose.yml`
+- `unraid/splitbon.xml` — Unraid template (runs `ghcr.io/cyborcc/splitbon:stable`); keep its variables in sync with `.env.example` and `docker/docker-compose.yml`
 
 ## Key Conventions
 
@@ -159,13 +159,13 @@ npx prisma db push   # Push schema without migration (dev only)
 - `test.yml` — the required `test` check on PRs: `npm audit --omit=dev --audit-level=high`, `format:check`, `lint`, `lint:i18n`, `tsc --noEmit`, unit tests, `prisma db push` + `prisma/after-push/*.sql` + seed, `build`, then the Playwright suite against `npm run start`
 - `docker-fresh-install.yml` — on pull requests, builds the production image and runs `scripts/docker-smoke.sh` against it (fresh install on an empty volume, upgrade restarts, the entrypoint's SQL phases, Meridian startup)
 - `audit.yml` — scheduled npm audit; `auto-assign.yml` — assigns new issues to the owner; Dependabot (`.github/dependabot.yml`) groups npm minor/patch updates (majors come individually) and Actions updates, and also updates the Docker base image
-- No semver releases (retired after v0.8.0): don't bump `package.json` `version` or edit `CHANGELOG.md` for new changes. Each push to `main` runs `auto-release.yml` (tag `build/YYYY.MM.DD.N` + GitHub release listing commits since the previous build) and `docker.yml` (builds the image, smoke-tests it with `scripts/docker-smoke.sh`, then pushes `ghcr.io/sw-carlos-cristobal/sharetab:latest` and `:<short-sha>`). The manual `promote-stable.yml` workflow moves the `stable` git tag and image tag to a chosen build
+- No semver releases (retired after v0.8.0): don't bump `package.json` `version` or edit `CHANGELOG.md` for new changes. Each push to `main` runs `auto-release.yml` (tag `build/YYYY.MM.DD.N` + GitHub release listing commits since the previous build) and `docker.yml` (builds the image, smoke-tests it with `scripts/docker-smoke.sh`, then pushes `ghcr.io/cyborcc/splitbon:latest` and `:<short-sha>`). The manual `promote-stable.yml` workflow moves the `stable` git tag and image tag to a chosen build
 
 ## Docker
 
 All-in-one container: PostgreSQL is bundled inside — no external database required. Requires `NEXTAUTH_SECRET` and `AUTH_SECRET` env vars. `docker/docker-compose.yml` builds the image from the checkout, so upgrading it means `git pull` + `--build`.
 
-Run `npm run test:docker` before pushing a change to `docker/`, the entrypoint, `prisma/` SQL, or dependencies. It builds the image and runs `scripts/docker-smoke.sh`: fresh install on an empty volume, upgrade restarts, and the Meridian provider starting and running through the app (it signs in as an admin and calls the admin "Test Receipt Extraction" endpoint). The container gets a unique name and publishes no ports, so it's safe on a host already running ShareTab; point `DOCKER_HOST=ssh://user@host` at a remote daemon when there's no local Docker (Docker access is root-equivalent on that host). CI runs the same script on pull requests (Docker Fresh Install), and `docker.yml` pushes the image it tested only after the script passes. `--meridian-auth <dir>` adds a live receipt extraction through Meridian using a scratch copy of a Claude login directory on the Docker host (local runs only; needs a token valid for 30+ minutes, and fails if the login was refreshed during the run).
+Run `npm run test:docker` before pushing a change to `docker/`, the entrypoint, `prisma/` SQL, or dependencies. It builds the image and runs `scripts/docker-smoke.sh`: fresh install on an empty volume, upgrade restarts, and the Meridian provider starting and running through the app (it signs in as an admin and calls the admin "Test Receipt Extraction" endpoint). The container gets a unique name and publishes no ports, so it's safe on a host already running Splitbon; point `DOCKER_HOST=ssh://user@host` at a remote daemon when there's no local Docker (Docker access is root-equivalent on that host). CI runs the same script on pull requests (Docker Fresh Install), and `docker.yml` pushes the image it tested only after the script passes. `--meridian-auth <dir>` adds a live receipt extraction through Meridian using a scratch copy of a Claude login directory on the Docker host (local runs only; needs a token valid for 30+ minutes, and fails if the login was refreshed during the run).
 
 ```bash
 cd docker && docker compose up -d --build    # Build and start app (PostgreSQL included)

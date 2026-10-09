@@ -4,10 +4,10 @@ self.addEventListener('push', (event) => {
   try {
     data = event.data ? event.data.json() : {};
   } catch {
-    data = { title: 'ShareTab', body: event.data ? event.data.text() : '' };
+    data = { title: 'Splitbon', body: event.data ? event.data.text() : '' };
   }
   event.waitUntil(
-    self.registration.showNotification(data.title || 'ShareTab', {
+    self.registration.showNotification(data.title || 'Splitbon', {
       body: data.body || '',
       icon: '/icons/icon.svg',
       data: { url: data.url || '/' },

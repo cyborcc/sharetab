@@ -154,7 +154,7 @@ async function setupProvider(
 }
 
 async function main() {
-  console.log('\nShareTab AI Provider Setup');
+  console.log('\nSplitbon AI Provider Setup');
   console.log('==========================\n');
 
   console.log(`Connecting to ${BASE}...`);

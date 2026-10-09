@@ -21,13 +21,13 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'ShareTab',
+  title: 'Splitbon',
   description: 'Self-hosted expense splitting with AI receipt scanning',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'ShareTab',
+    title: 'Splitbon',
   },
 };
 

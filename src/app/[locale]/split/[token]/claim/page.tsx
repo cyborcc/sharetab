@@ -1042,7 +1042,7 @@ export default function ClaimPage({ params }: { params: Promise<{ token: string 
                         href={buildVenmoPayUrl(
                           venmoHandle,
                           person.total,
-                          `ShareTab: ${data.receiptData.merchantName ?? 'Bill split'}`,
+                          `Splitbon: ${data.receiptData.merchantName ?? 'Bill split'}`,
                         )!}
                         target="_blank"
                         rel="noopener noreferrer"

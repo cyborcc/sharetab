@@ -1008,7 +1008,7 @@ describe('claim-session transactions when the database is busy (#203)', () => {
       }),
     ).rejects.toMatchObject({
       code: 'SERVICE_UNAVAILABLE',
-      message: 'ShareTab is busy right now. Please try again in a moment.',
+      message: 'Splitbon is busy right now. Please try again in a moment.',
     });
     expect(mockDb.$transaction).toHaveBeenCalledTimes(1);
   });

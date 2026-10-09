@@ -41,7 +41,7 @@ export async function guestTransaction<T>(
       logger.warn('guest.transaction.unavailable', { code: 'P2028', message: error.message });
       throw new TRPCError({
         code: 'SERVICE_UNAVAILABLE',
-        message: 'ShareTab is busy right now. Please try again in a moment.',
+        message: 'Splitbon is busy right now. Please try again in a moment.',
         cause: error,
       });
     }

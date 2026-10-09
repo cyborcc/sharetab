@@ -1,18 +1,18 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>sharetab</Name>
-  <Repository>ghcr.io/sw-carlos-cristobal/sharetab:stable</Repository>
-  <Registry>https://github.com/sw-carlos-cristobal/sharetab/pkgs/container/sharetab</Registry>
+  <Repository>ghcr.io/cyborcc/splitbon:stable</Repository>
+  <Registry>https://github.com/cyborcc/splitbon/pkgs/container/splitbon</Registry>
   <Branch>
     <Tag>stable</Tag>
     <TagDescription>Promoted stable build</TagDescription>
   </Branch>
   <Network>bridge</Network>
   <Privileged>false</Privileged>
-  <Support>https://github.com/sw-carlos-cristobal/sharetab/issues</Support>
-  <Project>https://github.com/sw-carlos-cristobal/sharetab</Project>
+  <Support>https://github.com/cyborcc/splitbon/issues</Support>
+  <Project>https://github.com/cyborcc/splitbon</Project>
   <Overview>
-    ShareTab is an open-source, self-hosted Splitwise alternative with AI-powered receipt scanning.
+    Splitbon is an open-source, self-hosted Splitwise alternative with AI-powered receipt scanning.
 
     All-in-one container: PostgreSQL is bundled inside — no external database required.
 
@@ -33,8 +33,8 @@
   </Overview>
   <Category>Productivity: Tools:</Category>
   <WebUI>http://[IP]:[PORT:3000]</WebUI>
-  <TemplateURL>https://raw.githubusercontent.com/sw-carlos-cristobal/sharetab/main/unraid/sharetab.xml</TemplateURL>
-  <Icon>https://raw.githubusercontent.com/sw-carlos-cristobal/sharetab/main/public/icons/icon-512.png</Icon>
+  <TemplateURL>https://raw.githubusercontent.com/cyborcc/splitbon/main/unraid/splitbon.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/cyborcc/splitbon/main/public/icons/icon-512.png</Icon>
   <ExtraParams>--restart=unless-stopped</ExtraParams>
   <Description>
     Self-hosted Splitwise alternative with AI receipt scanning. All-in-one container with bundled PostgreSQL — no external database needed. Split expenses with friends using multiple modes (equal, percentage, shares, exact, item-level from receipts). Supports OpenAI, OpenAI-Codex (ChatGPT OAuth), Claude, Meridian (Claude Max), Ollama for receipt extraction.
@@ -46,7 +46,7 @@
     Target="3000"
     Default="3000"
     Mode="tcp"
-    Description="Host port to expose ShareTab on"
+    Description="Host port to expose Splitbon on"
     Type="Port"
     Display="always"
     Required="true"
@@ -95,7 +95,7 @@
     Name="NextAuth URL"
     Target="NEXTAUTH_URL"
     Default="http://192.168.1.x:3000"
-    Description="The URL where ShareTab is accessible (e.g., http://your-server-ip:3000). Split and personal links are copied from the browser address bar, not built from this, so open ShareTab at this URL before sharing one."
+    Description="The URL where Splitbon is accessible (e.g., http://your-server-ip:3000). Split and personal links are copied from the browser address bar, not built from this, so open Splitbon at this URL before sharing one."
     Type="Variable"
     Display="always"
     Required="true"
@@ -162,7 +162,7 @@
     Name="AI Provider Priority"
     Target="AI_PROVIDER_PRIORITY"
     Default="openai"
-    Description="Comma-separated provider priority chain, for example: openai-codex,meridian,openai. ShareTab uses the first available provider and falls back to the next provider if extraction fails."
+    Description="Comma-separated provider priority chain, for example: openai-codex,meridian,openai. Splitbon uses the first available provider and falls back to the next provider if extraction fails."
     Type="Variable"
     Display="always"
     Required="false"
@@ -357,7 +357,7 @@
     Name="OIDC Auto Register"
     Target="OIDC_AUTO_REGISTER"
     Default="true"
-    Description="Create a ShareTab account the first time a new IdP user signs in (true/false)"
+    Description="Create a Splitbon account the first time a new IdP user signs in (true/false)"
     Type="Variable"
     Display="advanced"
     Required="false"
@@ -366,7 +366,7 @@
     Name="OIDC Allow Email Linking"
     Target="OIDC_ALLOW_EMAIL_LINKING"
     Default="false"
-    Description="Link a first-time IdP login to an existing ShareTab user with the same email (true/false). Only enable if your IdP doesn't let users set arbitrary, unverified emails. Refused while anyone can sign up with a password (Registration Mode: Open)."
+    Description="Link a first-time IdP login to an existing Splitbon user with the same email (true/false). Only enable if your IdP doesn't let users set arbitrary, unverified emails. Refused while anyone can sign up with a password (Registration Mode: Open)."
     Type="Variable"
     Display="advanced"
     Required="false"
