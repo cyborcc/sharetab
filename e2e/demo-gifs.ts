@@ -184,10 +184,17 @@ async function recordReceiptScan(browser: Browser): Promise<string> {
   await page.waitForTimeout(300);
 
   // View the receipt image
-  await page.getByRole('button', { name: /View Receipt/i }).click();
-  await page.waitForTimeout(PAUSE_MEDIUM);
-  await page.getByRole('button', { name: /Hide Receipt/i }).click();
-  await page.waitForTimeout(500);
+  // The receipt image sits in a collapsed section; skip the step if this build has no such toggle
+  const viewReceipt = page.getByRole('button', { name: /View Receipt/i });
+  if (await viewReceipt.isVisible().catch(() => false)) {
+    await viewReceipt.click();
+    await page.waitForTimeout(PAUSE_MEDIUM);
+    await page
+      .getByRole('button', { name: /Hide Receipt/i })
+      .click({ timeout: 5000 })
+      .catch(() => undefined);
+    await page.waitForTimeout(500);
+  }
 
   // Scroll through items
   await page.evaluate(() => window.scrollTo({ top: 400, behavior: 'smooth' }));
@@ -261,7 +268,7 @@ async function recordDarkMode(browser: Browser): Promise<string> {
   await page.waitForTimeout(PAUSE_SHORT);
 
   // Open mobile hamburger menu
-  await page.locator('header.lg\\:hidden button, header button').first().click();
+  await page.locator('header.lg\\:hidden button').last().click();
   await page.waitForTimeout(800);
 
   // Wait for sheet and toggle theme
