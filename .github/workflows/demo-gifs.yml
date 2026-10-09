@@ -59,8 +59,11 @@ jobs:
           npm run start &
           npx wait-on http://localhost:3000/api/health --timeout 60000
           rm -f demo/*.gif
-          npx tsx e2e/demo-gifs.ts 2>&1 | tail -40 || true
-          ls -la demo
+          set +e
+          npx tsx e2e/demo-gifs.ts dashboard > /tmp/rec.log 2>&1
+          echo "exit=$?" >> /tmp/rec.log
+          ls -la demo >> /tmp/rec.log 2>&1
+          grep -v '^\s*$' /tmp/rec.log | tail -30 | while IFS= read -r l; do echo "::error title=record::$l"; done
       - name: Publish to demo-gifs-out branch
         run: |
           set +e
