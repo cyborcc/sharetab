@@ -78,8 +78,11 @@
     "pushDisable": "Stop messages on this device",
     "pushOn": "Messages are on for this device.",
     "pushDenied": "Notifications are blocked in the browser settings.",
+    "pushDeniedIos": "알림이 차단되어 있습니다. iPhone 설정 → 알림 → Splitbon에서 허용하세요.",
     "pushFailed": "Could not turn on messages on this device.",
     "pushUnsupported": "This browser cannot show push messages. On iPhone, add Splitbon to the home screen first. The bell works everywhere.",
+    "pushIosInstall": "iPhone과 iPad에서는 홈 화면에 추가한 앱에서만 알림을 받을 수 있습니다. 공유를 누르고 “홈 화면에 추가”를 선택한 뒤 새 아이콘으로 Splitbon을 열어 거기서 켜세요.",
+    "pushIosUpdate": "iPhone과 iPad의 알림에는 iOS 16.4 이상이 필요합니다. iOS를 업데이트하세요.",
     "empty": "Nothing new yet.",
     "back": "Back to dashboard"
   }

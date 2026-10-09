@@ -78,8 +78,11 @@
     "pushDisable": "Meldungen auf diesem Gerät beenden",
     "pushOn": "Meldungen sind für dieses Gerät eingeschaltet.",
     "pushDenied": "Benachrichtigungen sind in den Browser-Einstellungen blockiert.",
+    "pushDeniedIos": "Mitteilungen sind blockiert. Öffne die iPhone-Einstellungen → Mitteilungen → Splitbon und erlaube sie.",
     "pushFailed": "Meldungen konnten auf diesem Gerät nicht eingeschaltet werden.",
     "pushUnsupported": "Dieser Browser kann keine Push-Meldungen zeigen. Auf dem iPhone Splitbon erst zum Home-Bildschirm hinzufügen. Die Glocke geht überall.",
+    "pushIosInstall": "Auf iPhone und iPad funktionieren Mitteilungen nur für die App auf dem Home-Bildschirm. Tippe auf Teilen, dann „Zum Home-Bildschirm“, öffne Splitbon über das neue Symbol und schalte es dort ein.",
+    "pushIosUpdate": "Mitteilungen auf iPhone und iPad brauchen iOS 16.4 oder neuer. Bitte iOS aktualisieren.",
     "empty": "Noch nichts Neues.",
     "back": "Zurück zum Dashboard"
   }
