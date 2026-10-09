@@ -69,7 +69,7 @@ if (authConfig.magicLink) {
           ...(process.env.EMAIL_SERVER_PASSWORD !== undefined ? { pass: process.env.EMAIL_SERVER_PASSWORD } : {}),
         },
       },
-      from: process.env.EMAIL_FROM ?? 'ShareTab <noreply@sharetab.local>',
+      from: process.env.EMAIL_FROM ?? 'Splitbon <noreply@sharetab.local>',
     }),
   );
 }

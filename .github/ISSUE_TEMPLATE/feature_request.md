@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea for ShareTab
+about: Suggest an idea for Splitbon
 labels: enhancement
 ---
 

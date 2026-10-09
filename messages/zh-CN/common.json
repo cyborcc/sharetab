@@ -26,13 +26,13 @@
     "copyFailed": "无法将链接复制到剪贴板"
   },
   "brand": {
-    "name": "ShareTab",
+    "name": "Splitbon",
     "tagline": "自托管的费用分摊工具，支持 AI 小票扫描"
   },
   "sponsor": {
-    "title": "支持 ShareTab",
-    "description": "ShareTab 是免费开源项目。如果它帮你节省了时间，请考虑赞助开发。",
-    "cta": "在 GitHub 上赞助"
+    "title": "支持 Splitbon",
+    "description": "Splitbon 是免费开源项目。如果它帮你节省了时间，请考虑赞助开发。",
+    "cta": "在 Ko-fi 上支持"
   },
   "errors": {
     "generic": "出了点问题，请重试。",
@@ -78,7 +78,7 @@
     "pushOn": "Messages are on for this device.",
     "pushDenied": "Notifications are blocked in the browser settings.",
     "pushFailed": "Could not turn on messages on this device.",
-    "pushUnsupported": "This browser cannot show push messages. On iPhone, add ShareTab to the home screen first. The bell works everywhere.",
+    "pushUnsupported": "This browser cannot show push messages. On iPhone, add Splitbon to the home screen first. The bell works everywhere.",
     "empty": "Nothing new yet.",
     "back": "Back to dashboard"
   }

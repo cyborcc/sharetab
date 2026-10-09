@@ -26,13 +26,13 @@
     "copyFailed": "링크를 클립보드에 복사할 수 없습니다"
   },
   "brand": {
-    "name": "ShareTab",
+    "name": "Splitbon",
     "tagline": "AI 영수증 스캔 기능을 갖춘 셀프 호스팅 비용 분할 서비스"
   },
   "sponsor": {
-    "title": "ShareTab 후원하기",
-    "description": "ShareTab은 무료 오픈 소스입니다. 유용하셨다면 개발 후원을 고려해 주세요.",
-    "cta": "GitHub에서 후원하기"
+    "title": "Splitbon 후원하기",
+    "description": "Splitbon은 무료 오픈 소스입니다. 유용하셨다면 개발 후원을 고려해 주세요.",
+    "cta": "Ko-fi에서 후원하기"
   },
   "errors": {
     "generic": "문제가 발생했습니다. 다시 시도해 주세요.",
@@ -78,7 +78,7 @@
     "pushOn": "Messages are on for this device.",
     "pushDenied": "Notifications are blocked in the browser settings.",
     "pushFailed": "Could not turn on messages on this device.",
-    "pushUnsupported": "This browser cannot show push messages. On iPhone, add ShareTab to the home screen first. The bell works everywhere.",
+    "pushUnsupported": "This browser cannot show push messages. On iPhone, add Splitbon to the home screen first. The bell works everywhere.",
     "empty": "Nothing new yet.",
     "back": "Back to dashboard"
   }

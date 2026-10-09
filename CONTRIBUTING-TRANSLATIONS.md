@@ -1,10 +1,10 @@
 # Contributing Translations
 
-Thank you for helping translate ShareTab! This guide explains how to add a new language or update existing translations.
+Thank you for helping translate Splitbon! This guide explains how to add a new language or update existing translations.
 
 ## How i18n Works
 
-ShareTab uses [next-intl](https://next-intl.dev) for internationalization. Translation files are JSON, organized by namespace:
+Splitbon uses [next-intl](https://next-intl.dev) for internationalization. Translation files are JSON, organized by namespace:
 
 ```
 messages/
@@ -56,9 +56,9 @@ Edit the specific namespace file (e.g., `messages/es/groups.json`). Reference `m
 ## Rules
 
 - **Keep ICU placeholders intact.** For example: `{name}`, `{count, plural, one {# member} other {# members}}`. These are variables — translate the surrounding text only.
-- **Don't translate brand names.** "ShareTab" and "GitHub" stay as-is.
+- **Don't translate brand names.** "Splitbon" and "GitHub" stay as-is.
 - **Use native script** for the language name in the switcher (e.g., "Français" not "French").
-- **Match the tone** of the English source — ShareTab uses concise, friendly UI text.
+- **Match the tone** of the English source — Splitbon uses concise, friendly UI text.
 
 ## Testing Locally
 

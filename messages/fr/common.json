@@ -26,13 +26,13 @@
     "copyFailed": "Impossible de copier le lien dans le presse-papiers"
   },
   "brand": {
-    "name": "ShareTab",
+    "name": "Splitbon",
     "tagline": "Partage de dépenses auto-hébergé avec scan de reçus par IA"
   },
   "sponsor": {
-    "title": "Soutenir ShareTab",
-    "description": "ShareTab est gratuit et open source. S'il vous fait gagner du temps, pensez à soutenir son développement.",
-    "cta": "Sponsoriser sur GitHub"
+    "title": "Soutenir Splitbon",
+    "description": "Splitbon est gratuit et open source. S'il vous fait gagner du temps, pensez à soutenir son développement.",
+    "cta": "Soutenir sur Ko-fi"
   },
   "errors": {
     "generic": "Une erreur est survenue. Veuillez réessayer.",
@@ -78,7 +78,7 @@
     "pushOn": "Messages are on for this device.",
     "pushDenied": "Notifications are blocked in the browser settings.",
     "pushFailed": "Could not turn on messages on this device.",
-    "pushUnsupported": "This browser cannot show push messages. On iPhone, add ShareTab to the home screen first. The bell works everywhere.",
+    "pushUnsupported": "This browser cannot show push messages. On iPhone, add Splitbon to the home screen first. The bell works everywhere.",
     "empty": "Nothing new yet.",
     "back": "Back to dashboard"
   }

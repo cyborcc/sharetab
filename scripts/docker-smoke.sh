@@ -16,7 +16,7 @@
 #
 # Access to a Docker daemon is root-equivalent on its host; point DOCKER_HOST
 # only at a host where that is acceptable. The container gets a unique name
-# and publishes no ports, so it can run on a host that already runs ShareTab.
+# and publishes no ports, so it can run on a host that already runs Splitbon.
 # Everything it creates is labeled sharetab-smoke and removed on exit; if a
 # run is killed (SIGKILL skips the cleanup), remove the leftovers with:
 #   docker rm -f -v $(docker ps -aq --filter label=sharetab-smoke)

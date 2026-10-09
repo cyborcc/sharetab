@@ -26,13 +26,13 @@
     "copyFailed": "Link konnte nicht in die Zwischenablage kopiert werden"
   },
   "brand": {
-    "name": "ShareTab",
+    "name": "Splitbon",
     "tagline": "Selbst gehostete Ausgabenteilung mit KI-Belegerfassung"
   },
   "sponsor": {
-    "title": "ShareTab unterstützen",
-    "description": "ShareTab ist kostenlos und quelloffen. Wenn es Ihnen Zeit spart, unterstützen Sie die Entwicklung.",
-    "cta": "Auf GitHub sponsern"
+    "title": "Splitbon unterstützen",
+    "description": "Splitbon ist kostenlos und quelloffen. Wenn es Ihnen Zeit spart, unterstützen Sie die Entwicklung.",
+    "cta": "Auf Ko-fi unterstützen"
   },
   "errors": {
     "generic": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
@@ -78,7 +78,7 @@
     "pushOn": "Meldungen sind für dieses Gerät eingeschaltet.",
     "pushDenied": "Benachrichtigungen sind in den Browser-Einstellungen blockiert.",
     "pushFailed": "Meldungen konnten auf diesem Gerät nicht eingeschaltet werden.",
-    "pushUnsupported": "Dieser Browser kann keine Push-Meldungen zeigen. Auf dem iPhone ShareTab erst zum Home-Bildschirm hinzufügen. Die Glocke geht überall.",
+    "pushUnsupported": "Dieser Browser kann keine Push-Meldungen zeigen. Auf dem iPhone Splitbon erst zum Home-Bildschirm hinzufügen. Die Glocke geht überall.",
     "empty": "Noch nichts Neues.",
     "back": "Zurück zum Dashboard"
   }

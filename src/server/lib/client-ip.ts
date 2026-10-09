@@ -22,7 +22,7 @@ export const FALLBACK_IP = 'global';
  * by every per-IP limiter (login, guest uploads, guest AI quotas).
  *
  * SECURITY: these headers are client-supplied unless a trusted reverse proxy
- * strips/overwrites them. When ShareTab is exposed directly (no proxy), an
+ * strips/overwrites them. When Splitbon is exposed directly (no proxy), an
  * attacker can rotate header values to get fresh per-IP rate-limit buckets.
  * The precedence above is likewise only meaningful behind a proxy that
  * manages ALL of these headers: because `x-real-ip` is preferred, a proxy

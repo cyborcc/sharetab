@@ -32,7 +32,7 @@ function SponsorBanner() {
         </div>
         <p className="text-xs text-muted-foreground mb-2.5 leading-relaxed">{t('sponsor.description')}</p>
         <a
-          href="https://github.com/sponsors/sw-carlos-cristobal"
+          href="https://ko-fi.com/cyborcc"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center justify-center gap-1.5 w-full rounded-md bg-pink-500/15 hover:bg-pink-500/25 border border-pink-500/20 px-2.5 py-1.5 text-xs font-medium text-pink-600 dark:text-pink-400 transition-colors"
@@ -70,7 +70,7 @@ export function AppSidebar({ user, isAdmin }: { user: SidebarUser; isAdmin?: boo
       {/* Brand area */}
       <div className="flex h-14 items-center gap-2.5 px-5 border-b border-transparent bg-gradient-to-r from-primary/[0.06] via-transparent to-transparent [border-image:linear-gradient(to_right,var(--color-primary)/0.15,transparent)_1]">
         <Receipt className="h-6 w-6 text-primary drop-shadow-sm" />
-        <span className="text-lg font-bold tracking-wide text-foreground">ShareTab</span>
+        <span className="text-lg font-bold tracking-wide text-foreground">Splitbon</span>
         <span className="ml-auto">
           <NotificationBell />
         </span>

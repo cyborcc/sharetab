@@ -179,7 +179,7 @@ export async function gatherOidcFacts(db: PrismaClient, input: OidcFactsInput): 
     }),
     input.email ? describeEmailMatch(db, input.email) : null,
     // Auth.js ignores a session whose user row is gone, so we do too. Deleted
-    // users that ShareTab keeps as placeholder rows still count as signed in,
+    // users that Splitbon keeps as placeholder rows still count as signed in,
     // which also stops Auth.js linking a new identity to that row.
     input.sessionUserId ? db.user.findUnique({ where: { id: input.sessionUserId }, select: { id: true } }) : null,
     // Only matters when linking could happen.

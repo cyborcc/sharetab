@@ -26,13 +26,13 @@
     "copyFailed": "Det gick inte att kopiera länken till urklipp"
   },
   "brand": {
-    "name": "ShareTab",
+    "name": "Splitbon",
     "tagline": "Egen hostad kostnadsdelning med AI-kvittoskanning"
   },
   "sponsor": {
-    "title": "Stöd ShareTab",
-    "description": "ShareTab är gratis och öppen källkod. Om det sparar tid, överväg att sponsra utvecklingen.",
-    "cta": "Sponsor på GitHub"
+    "title": "Stöd Splitbon",
+    "description": "Splitbon är gratis och öppen källkod. Om det sparar tid, överväg att sponsra utvecklingen.",
+    "cta": "Stöd på Ko-fi"
   },
   "errors": {
     "generic": "Något gick fel. Försök igen.",
@@ -78,7 +78,7 @@
     "pushOn": "Messages are on for this device.",
     "pushDenied": "Notifications are blocked in the browser settings.",
     "pushFailed": "Could not turn on messages on this device.",
-    "pushUnsupported": "This browser cannot show push messages. On iPhone, add ShareTab to the home screen first. The bell works everywhere.",
+    "pushUnsupported": "This browser cannot show push messages. On iPhone, add Splitbon to the home screen first. The bell works everywhere.",
     "empty": "Nothing new yet.",
     "back": "Back to dashboard"
   }
