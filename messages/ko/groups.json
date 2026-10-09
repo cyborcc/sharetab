@@ -28,6 +28,11 @@
     "payViaVenmo": "Venmo로 결제",
     "venmoPaymentConfirm": "{name}에게 {amount}의 Venmo 결제를 완료하셨나요?",
     "settledViaVenmo": "Venmo로 결제 완료",
+    "payViaPaypal": "PayPal로 결제",
+    "paypalPaymentConfirm": "{name}에게 {amount}의 PayPal 결제를 완료하셨나요?",
+    "settledViaPaypal": "PayPal로 결제 완료",
+    "payViaBank": "계좌 이체",
+    "settledViaBank": "계좌 이체로 결제 완료",
     "notFound": "그룹을 찾을 수 없습니다",
     "notFoundDescription": "이 그룹이 존재하지 않거나 접근 권한이 없습니다.",
     "backToGroups": "그룹 목록으로 돌아가기",
@@ -271,5 +276,16 @@
       "receipt": "Receipt items",
       "group": "Group"
     }
+  },
+  "payment": {
+    "bankTitle": "계좌 이체",
+    "bankScanHint": "은행 앱으로 코드를 스캔하세요. 수취인, IBAN, 금액, 메모가 자동 입력됩니다.",
+    "bankManualHint": "정보를 은행 앱에 복사하세요.",
+    "holder": "예금주",
+    "amount": "금액",
+    "reference": "메모",
+    "copy": "복사",
+    "copyFailed": "복사할 수 없습니다",
+    "markPaid": "송금했어요"
   }
 }

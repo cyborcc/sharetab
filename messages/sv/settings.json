@@ -29,5 +29,13 @@
     "failed": "Could not save the avatar",
     "color": "Colour",
     "emojiHint": "Or pick an emoji and a colour:"
+  },
+  "payments": {
+    "title": "Betalningsuppgifter",
+    "hint": "Visas för gruppmedlemmarna så att de kan betala dig. Allt är valfritt.",
+    "paypalEmail": "PayPal-e-postadress",
+    "paypalMe": "PayPal.me-namn",
+    "paypalMeHint": "Valfritt. Används först om det anges: beloppet fylls i direkt.",
+    "ibanHolder": "Kontoinnehavare"
   }
 }

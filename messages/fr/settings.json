@@ -29,5 +29,13 @@
     "failed": "Could not save the avatar",
     "color": "Colour",
     "emojiHint": "Or pick an emoji and a colour:"
+  },
+  "payments": {
+    "title": "Coordonnées de paiement",
+    "hint": "Affichées aux membres du groupe pour qu’ils puissent vous payer. Tout est facultatif.",
+    "paypalEmail": "Adresse e-mail PayPal",
+    "paypalMe": "Nom PayPal.me",
+    "paypalMeHint": "Facultatif. Utilisé en premier s’il est renseigné : le montant est rempli directement.",
+    "ibanHolder": "Titulaire du compte"
   }
 }

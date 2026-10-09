@@ -29,5 +29,13 @@
     "failed": "Could not save the avatar",
     "color": "Colour",
     "emojiHint": "Or pick an emoji and a colour:"
+  },
+  "payments": {
+    "title": "支払い情報",
+    "hint": "グループのメンバーがあなたに支払えるように表示されます。すべて任意です。",
+    "paypalEmail": "PayPalのメールアドレス",
+    "paypalMe": "PayPal.meの名前",
+    "paypalMeHint": "任意。入力すると優先して使われ、金額が自動で入力されます。",
+    "ibanHolder": "口座名義"
   }
 }

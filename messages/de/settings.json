@@ -29,5 +29,13 @@
     "failed": "Avatar konnte nicht gespeichert werden",
     "color": "Farbe",
     "emojiHint": "Oder ein Emoji und eine Farbe wählen:"
+  },
+  "payments": {
+    "title": "Zahlungsdaten",
+    "hint": "Werden Ihren Gruppenmitgliedern angezeigt, damit sie Sie bezahlen können. Alles ist optional.",
+    "paypalEmail": "PayPal-E-Mail-Adresse",
+    "paypalMe": "PayPal.me-Name",
+    "paypalMeHint": "Optional. Wird zuerst verwendet, wenn angegeben: Der Betrag wird direkt eingetragen.",
+    "ibanHolder": "Kontoinhaber"
   }
 }

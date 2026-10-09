@@ -9,6 +9,13 @@ import { stripUndefined } from '../../lib/strip-undefined';
 import { parseAuthConfig } from '../../lib/auth-config';
 import { findUsersByEmail } from '../../lib/user-email';
 import { Prisma } from '@/generated/prisma/client';
+import {
+  isValidIban,
+  isValidPaypalEmail,
+  isValidPaypalMeName,
+  normalizeIban,
+  normalizePaypalMeName,
+} from '@/lib/payments';
 
 const REGISTRATION_CLOSED = 'Registration is currently closed.';
 const EMAIL_TAKEN = 'Unable to create account. Please try a different email or sign in.';
@@ -193,6 +200,10 @@ export const authRouter = createTRPCRouter({
         email: true,
         image: true,
         venmoUsername: true,
+        paypalEmail: true,
+        paypalMeName: true,
+        iban: true,
+        ibanHolder: true,
         locale: true,
         defaultCurrency: true,
         passwordHash: true,
@@ -212,6 +223,10 @@ export const authRouter = createTRPCRouter({
         defaultCurrency: z.string().length(3).optional(),
         locale: z.enum(locales).optional(),
         venmoUsername: z.string().max(50).nullable().optional(),
+        paypalEmail: z.string().max(254).nullable().optional(),
+        paypalMeName: z.string().max(100).nullable().optional(),
+        iban: z.string().max(60).nullable().optional(),
+        ibanHolder: z.string().max(70).nullable().optional(),
         // "emoji:<emoji>:<colour index>" or null (back to the default); photos go through /api/avatar
         image: z
           .string()
@@ -221,9 +236,25 @@ export const authRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const paypalEmail = input.paypalEmail?.trim() || null;
+      if (paypalEmail && !isValidPaypalEmail(paypalEmail)) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Invalid PayPal e-mail address' });
+      }
+      const paypalMeName = input.paypalMeName ? normalizePaypalMeName(input.paypalMeName) : null;
+      if (paypalMeName && !isValidPaypalMeName(paypalMeName)) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Invalid PayPal.me name' });
+      }
+      const iban = input.iban ? normalizeIban(input.iban) : null;
+      if (iban && !isValidIban(iban)) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Invalid IBAN' });
+      }
       const data = {
         ...stripUndefined(input),
         ...(input.venmoUsername !== undefined ? { venmoUsername: input.venmoUsername?.trim() || null } : {}),
+        ...(input.paypalEmail !== undefined ? { paypalEmail } : {}),
+        ...(input.paypalMeName !== undefined ? { paypalMeName } : {}),
+        ...(input.iban !== undefined ? { iban } : {}),
+        ...(input.ibanHolder !== undefined ? { ibanHolder: input.ibanHolder?.trim() || null } : {}),
       };
       const user = await ctx.db.user.update({
         where: { id: ctx.user.id },
@@ -235,6 +266,10 @@ export const authRouter = createTRPCRouter({
         email: user.email,
         locale: user.locale,
         venmoUsername: user.venmoUsername,
+        paypalEmail: user.paypalEmail,
+        paypalMeName: user.paypalMeName,
+        iban: user.iban,
+        ibanHolder: user.ibanHolder,
       };
     }),
 });
