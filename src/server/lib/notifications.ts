@@ -3,8 +3,11 @@ import type { PrismaClient } from '@/generated/prisma/client';
 import { formatCents } from '@/lib/money';
 import { logger } from './logger';
 
-/** What happened. Only these reach a person: an expense they are in, a changed price, a payment to them. */
-export type NotifyKind = 'EXPENSE_ADDED' | 'PRICE_CHANGED' | 'SETTLEMENT';
+/**
+ * What happened. Only these reach a person: an expense they are in, a changed price, a changed split
+ * (their own share), a payment to them.
+ */
+export type NotifyKind = 'EXPENSE_ADDED' | 'PRICE_CHANGED' | 'SHARE_CHANGED' | 'SETTLEMENT';
 
 export type NotifyItem = {
   userId: string;
@@ -25,6 +28,10 @@ const TEXTS: Record<'de' | 'en', Record<NotifyKind, (v: NotifyItem['vars']) => {
       title: `${v.actor} hat den Preis von „${v.title}“ geändert`,
       body: `${v.from} → ${v.to}. Bitte prüfen.`,
     }),
+    SHARE_CHANGED: (v) => ({
+      title: `${v.actor} hat die Aufteilung von „${v.title}“ geändert`,
+      body: `Dein Anteil: ${v.from} → ${v.to}`,
+    }),
     SETTLEMENT: (v) => ({ title: `${v.actor} hat dir ${v.amount} bezahlt`, body: '' }),
   },
   en: {
@@ -36,6 +43,10 @@ const TEXTS: Record<'de' | 'en', Record<NotifyKind, (v: NotifyItem['vars']) => {
       title: `${v.actor} changed the price of “${v.title}”`,
       body: `${v.from} → ${v.to}. Please check.`,
     }),
+    SHARE_CHANGED: (v) => ({
+      title: `${v.actor} changed how “${v.title}” is split`,
+      body: `Your share: ${v.from} → ${v.to}`,
+    }),
     SETTLEMENT: (v) => ({ title: `${v.actor} paid you ${v.amount}`, body: '' }),
   },
 };
@@ -46,6 +57,49 @@ export function money(cents: number, currency: string): string {
   } catch {
     return `${(cents / 100).toFixed(2)} ${currency}`;
   }
+}
+
+/**
+ * Notifications for people whose own share of an expense changed (a line was handed to someone else, a
+ * split was edited), including people who dropped out of it. The person who made the change is left out.
+ */
+export function shareChangeItems(args: {
+  before: { userId: string; amount: number }[];
+  after: { userId: string; amount: number }[];
+  actorId: string;
+  actorName: string;
+  groupId: string;
+  entityId: string;
+  title: string;
+  currency: string;
+}): NotifyItem[] {
+  const sum = (rows: { userId: string; amount: number }[]) => {
+    const totals = new Map<string, number>();
+    for (const r of rows) totals.set(r.userId, (totals.get(r.userId) ?? 0) + r.amount);
+    return totals;
+  };
+  const before = sum(args.before);
+  const after = sum(args.after);
+  const items: NotifyItem[] = [];
+  for (const userId of new Set([...before.keys(), ...after.keys()])) {
+    if (userId === args.actorId) continue;
+    const from = before.get(userId) ?? 0;
+    const to = after.get(userId) ?? 0;
+    if (from === to) continue;
+    items.push({
+      userId,
+      kind: 'SHARE_CHANGED',
+      groupId: args.groupId,
+      entityId: args.entityId,
+      vars: {
+        actor: args.actorName,
+        title: args.title,
+        from: money(from, args.currency),
+        to: money(to, args.currency),
+      },
+    });
+  }
+  return items;
 }
 
 type VapidKeys = { publicKey: string; privateKey: string };

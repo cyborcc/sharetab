@@ -345,7 +345,7 @@ enum ActivityType {
 model Notification {
   id        String    @id @default(cuid())
   userId    String
-  type      String // EXPENSE_ADDED | PRICE_CHANGED | SETTLEMENT
+  type      String // EXPENSE_ADDED | PRICE_CHANGED | SHARE_CHANGED | SETTLEMENT
   groupId   String?
   entityId  String?
   title     String
