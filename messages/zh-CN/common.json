@@ -32,7 +32,8 @@
   "sponsor": {
     "title": "支持 Splitbon",
     "description": "Splitbon 是免费开源项目。如果它帮你节省了时间，请考虑赞助开发。",
-    "cta": "在 Ko-fi 上支持"
+    "cta": "在 Ko-fi 上支持",
+    "beer": "请我喝杯 🍻"
   },
   "errors": {
     "generic": "出了点问题，请重试。",

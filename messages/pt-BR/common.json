@@ -32,7 +32,8 @@
   "sponsor": {
     "title": "Apoie o Splitbon",
     "description": "O Splitbon é gratuito e de código aberto. Se ele economiza seu tempo, considere patrocinar o desenvolvimento.",
-    "cta": "Apoiar no Ko-fi"
+    "cta": "Apoiar no Ko-fi",
+    "beer": "Me pague uma 🍻"
   },
   "errors": {
     "generic": "Algo deu errado. Tente novamente.",
