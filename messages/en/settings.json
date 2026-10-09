@@ -34,7 +34,7 @@
     "title": "Payment details",
     "hint": "Shown to your group members so they can pay you. Everything is optional.",
     "paypalEmail": "PayPal e-mail address",
-    "paypalMe": "PayPal.me name",
+    "paypalMe": "PayPal.me link",
     "paypalMeHint": "Optional. Used first if set: it fills in the amount directly.",
     "ibanHolder": "Account holder"
   }
