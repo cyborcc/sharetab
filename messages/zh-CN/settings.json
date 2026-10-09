@@ -29,5 +29,13 @@
     "failed": "Could not save the avatar",
     "color": "Colour",
     "emojiHint": "Or pick an emoji and a colour:"
+  },
+  "payments": {
+    "title": "收款信息",
+    "hint": "会显示给群组成员，方便他们向您付款。全部为可选项。",
+    "paypalEmail": "PayPal邮箱地址",
+    "paypalMe": "PayPal.me名称",
+    "paypalMeHint": "可选。填写后优先使用，金额会直接带入。",
+    "ibanHolder": "账户持有人"
   }
 }

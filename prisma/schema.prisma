@@ -59,6 +59,10 @@ model User {
   defaultCurrency String    @default("USD")
   locale          String    @default("en")
   venmoUsername   String?
+  paypalEmail     String?
+  paypalMeName    String?
+  iban            String?
+  ibanHolder      String?
   suspendedAt     DateTime?
   isPlaceholder   Boolean   @default(false)
   placeholderName String?

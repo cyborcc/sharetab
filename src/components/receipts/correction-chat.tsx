@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { trpc } from '@/lib/trpc';
+import { ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import type { ReceiptExtractionResult } from '@/server/ai/schema';
@@ -70,6 +71,9 @@ export function CorrectionChat({
   const [proposal, setProposal] = useState<Preview | null>(null);
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
+  // Collapsed by default: most receipts are read correctly. A running request or an open proposal keeps it open.
+  const [expanded, setExpanded] = useState(false);
+  const open = expanded || busy || proposal !== null;
   const preview = trpc.receipts.previewCorrection.useMutation();
   const confirm = trpc.receipts.confirmCorrection.useMutation();
   const discard = trpc.receipts.discardCorrection.useMutation();
@@ -113,59 +117,80 @@ export function CorrectionChat({
   return (
     <Card data-testid="receipt-correction-chat">
       <CardContent className="space-y-3 pt-4">
-        <h2 className="font-semibold">{t('title')}</h2>
-        <p className="text-sm text-muted-foreground">{t('description')}</p>
-        {request && (
-          <p className="rounded bg-muted p-2 text-sm" data-testid="correction-request">
-            {request}
-          </p>
-        )}
-        <div aria-live="polite">
-          {busy && <p>{t('working')}</p>}
-          {message && <p role="status">{message}</p>}
-          {proposal && (
-            <div data-testid="correction-preview" className="space-y-3">
-              <p>{t('review')}</p>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <h3 className="font-semibold">{t('original')}</h3>
-                  <Summary
-                    data={(proposal.original.extractedData ?? {}) as Record<string, unknown>}
-                    items={proposal.original.items}
-                  />
+        <button
+          type="button"
+          className="flex w-full items-center justify-between gap-2 text-left"
+          aria-expanded={open}
+          aria-controls="correction-panel"
+          onClick={() => setExpanded((v) => !v)}
+          data-testid="correction-toggle"
+        >
+          <h2 className="text-sm font-medium text-muted-foreground">{t('title')}</h2>
+          <ChevronDown
+            className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`}
+          />
+        </button>
+        {open && (
+          <div id="correction-panel" className="space-y-3">
+            <p className="text-sm text-muted-foreground">{t('description')}</p>
+            {request && (
+              <p className="rounded bg-muted p-2 text-sm" data-testid="correction-request">
+                {request}
+              </p>
+            )}
+            <div aria-live="polite">
+              {busy && <p>{t('working')}</p>}
+              {message && <p role="status">{message}</p>}
+              {proposal && (
+                <div data-testid="correction-preview" className="space-y-3">
+                  <p>{t('review')}</p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <h3 className="font-semibold">{t('original')}</h3>
+                      <Summary
+                        data={(proposal.original.extractedData ?? {}) as Record<string, unknown>}
+                        items={proposal.original.items}
+                      />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">{t('proposed')}</h3>
+                      <Summary data={proposal.extraction} items={proposal.extraction.items} />
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{t('resetWarning')}</p>
+                  <Button data-testid="correction-apply" disabled={busy} onClick={() => resolve(true)}>
+                    {t('apply')}
+                  </Button>{' '}
+                  <Button
+                    data-testid="correction-discard"
+                    variant="outline"
+                    disabled={busy}
+                    onClick={() => resolve(false)}
+                  >
+                    {t('discard')}
+                  </Button>
                 </div>
-                <div>
-                  <h3 className="font-semibold">{t('proposed')}</h3>
-                  <Summary data={proposal.extraction} items={proposal.extraction.items} />
-                </div>
-              </div>
-              <p className="text-sm text-muted-foreground">{t('resetWarning')}</p>
-              <Button data-testid="correction-apply" disabled={busy} onClick={() => resolve(true)}>
-                {t('apply')}
-              </Button>{' '}
-              <Button data-testid="correction-discard" variant="outline" disabled={busy} onClick={() => resolve(false)}>
-                {t('discard')}
-              </Button>
+              )}
             </div>
-          )}
-        </div>
-        {!proposal && (
-          <>
-            <label htmlFor="correction-hint">{t('request')}</label>
-            <textarea
-              id="correction-hint"
-              data-testid="correction-hint"
-              value={hint}
-              maxLength={500}
-              disabled={busy}
-              onChange={(e) => setHint(e.target.value)}
-              className="w-full rounded border p-2"
-              rows={3}
-            />
-            <Button data-testid="correction-send" disabled={busy || !hint.trim()} onClick={send}>
-              {t('preview')}
-            </Button>
-          </>
+            {!proposal && (
+              <>
+                <label htmlFor="correction-hint">{t('request')}</label>
+                <textarea
+                  id="correction-hint"
+                  data-testid="correction-hint"
+                  value={hint}
+                  maxLength={500}
+                  disabled={busy}
+                  onChange={(e) => setHint(e.target.value)}
+                  className="w-full rounded border p-2"
+                  rows={3}
+                />
+                <Button data-testid="correction-send" disabled={busy || !hint.trim()} onClick={send}>
+                  {t('preview')}
+                </Button>
+              </>
+            )}
+          </div>
         )}
       </CardContent>
     </Card>

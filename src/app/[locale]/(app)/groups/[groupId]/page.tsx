@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { trpc } from '@/lib/trpc';
 import { formatCents } from '@/lib/money';
 import { buildVenmoPayUrl, isValidVenmoHandle } from '@/lib/venmo';
+import { buildPaypalEmailUrl, buildPaypalMeUrl, isValidIban, isValidPaypalEmail } from '@/lib/payments';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +30,7 @@ import { Link } from '@/i18n/navigation';
 import { toast } from 'sonner';
 import { InviteDialog } from '@/components/groups/invite-dialog';
 import { SettleDialog } from '@/components/groups/settle-dialog';
+import { BankTransferDialog } from '@/components/groups/bank-transfer-dialog';
 import { MySpendingCard } from '@/components/groups/my-spending-card';
 import { BalanceStandings } from '@/components/groups/balance-standings';
 import {
@@ -45,6 +47,13 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
   const { groupId } = use(params);
   const locale = useLocale();
   const [showInvite, setShowInvite] = useState(false);
+  const [bankTransfer, setBankTransfer] = useState<{
+    fromId: string;
+    toId: string;
+    amount: number;
+    holder: string;
+    iban: string;
+  } | null>(null);
   const [settleState, setSettleState] = useState<{
     open: boolean;
     from?: string;
@@ -122,6 +131,33 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
 
   const g = group.data;
   const memberMap = new Map(g.members.map((m) => [m.user.id, m.user]));
+
+  // Opens an external payment page, then asks whether it went through and records the settlement.
+  function startExternalPayment(
+    url: string,
+    debt: { from: string; to: string; amount: number },
+    toName: string,
+    kind: 'venmo' | 'paypal',
+  ) {
+    if (settleTimerRef.current) return;
+    window.open(url, '_blank', 'noopener,noreferrer');
+    settleTimerRef.current = setTimeout(() => {
+      settleTimerRef.current = null;
+      const values = { amount: formatCents(debt.amount, g.currency, locale), name: toName };
+      const question =
+        kind === 'venmo' ? t('detail.venmoPaymentConfirm', values) : t('detail.paypalPaymentConfirm', values);
+      if (confirm(question)) {
+        settleVenmo.mutate({
+          groupId,
+          fromId: debt.from,
+          toId: debt.to,
+          amount: debt.amount,
+          currency: g.currency,
+          note: kind === 'venmo' ? t('detail.settledViaVenmo') : t('detail.settledViaPaypal'),
+        });
+      }
+    }, 2000);
+  }
   const rowMembers = new Map<string, RowMember>(g.members.map((m) => [m.user.id, m.user]));
 
   return (
@@ -304,8 +340,17 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
                 const venmoUrl = showVenmo
                   ? buildVenmoPayUrl(to.venmoUsername!, debt.amount, `Splitbon: ${g.name}`)
                   : null;
+                const reference = `Splitbon: ${g.name}`;
+                const paypalUrl =
+                  isMyDebt && to
+                    ? ((to.paypalMeName ? buildPaypalMeUrl(to.paypalMeName, debt.amount, g.currency) : null) ??
+                      (to.paypalEmail && isValidPaypalEmail(to.paypalEmail)
+                        ? buildPaypalEmailUrl(to.paypalEmail, debt.amount, g.currency, reference)
+                        : null))
+                    : null;
+                const bankIban = isMyDebt && to?.iban && isValidIban(to.iban) ? to.iban : null;
                 return (
-                  <div key={i} className="flex items-center gap-2">
+                  <div key={i} className="flex flex-wrap items-center gap-2">
                     <button
                       type="button"
                       aria-label={`${memberName(from, t('detail.unknown'))} → ${toName}: ${formatCents(debt.amount, g.currency, locale)}`}
@@ -345,32 +390,46 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
                         disabled={settleVenmo.isPending}
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (settleTimerRef.current) return;
-                          window.open(venmoUrl, '_blank', 'noopener,noreferrer');
-                          settleTimerRef.current = setTimeout(() => {
-                            settleTimerRef.current = null;
-                            if (
-                              confirm(
-                                t('detail.venmoPaymentConfirm', {
-                                  amount: formatCents(debt.amount, g.currency, locale),
-                                  name: toName,
-                                }),
-                              )
-                            ) {
-                              settleVenmo.mutate({
-                                groupId,
-                                fromId: debt.from,
-                                toId: debt.to,
-                                amount: debt.amount,
-                                currency: g.currency,
-                                note: t('detail.settledViaVenmo'),
-                              });
-                            }
-                          }, 2000);
+                          startExternalPayment(venmoUrl, debt, toName, 'venmo');
                         }}
                         data-testid={`venmo-settle-${i}`}
                       >
                         {t('detail.payViaVenmo')}
+                      </Button>
+                    )}
+                    {paypalUrl && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="shrink-0 text-[#0070BA] hover:text-[#005C99]"
+                        disabled={settleVenmo.isPending}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          startExternalPayment(paypalUrl, debt, toName, 'paypal');
+                        }}
+                        data-testid={`paypal-settle-${i}`}
+                      >
+                        {t('detail.payViaPaypal')}
+                      </Button>
+                    )}
+                    {bankIban && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="shrink-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setBankTransfer({
+                            fromId: debt.from,
+                            toId: debt.to,
+                            amount: debt.amount,
+                            holder: to?.ibanHolder?.trim() || toName,
+                            iban: bankIban,
+                          });
+                        }}
+                        data-testid={`bank-settle-${i}`}
+                      >
+                        {t('detail.payViaBank')}
                       </Button>
                     )}
                   </div>
@@ -496,6 +555,31 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
       </div>
 
       <InviteDialog groupId={groupId} open={showInvite} onOpenChange={setShowInvite} />
+
+      {bankTransfer && (
+        <BankTransferDialog
+          open
+          onOpenChange={(open) => {
+            if (!open) setBankTransfer(null);
+          }}
+          holder={bankTransfer.holder}
+          iban={bankTransfer.iban}
+          amountCents={bankTransfer.amount}
+          currency={g.currency}
+          reference={`Splitbon: ${g.name}`}
+          onPaid={() => {
+            settleVenmo.mutate({
+              groupId,
+              fromId: bankTransfer.fromId,
+              toId: bankTransfer.toId,
+              amount: bankTransfer.amount,
+              currency: g.currency,
+              note: t('detail.settledViaBank'),
+            });
+            setBankTransfer(null);
+          }}
+        />
+      )}
 
       <SettleDialog
         groupId={groupId}

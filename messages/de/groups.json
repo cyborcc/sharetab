@@ -28,6 +28,11 @@
     "payViaVenmo": "Mit Venmo bezahlen",
     "venmoPaymentConfirm": "Haben Sie die Venmo-Zahlung von {amount} an {name} abgeschlossen?",
     "settledViaVenmo": "Über Venmo bezahlt",
+    "payViaPaypal": "Mit PayPal bezahlen",
+    "paypalPaymentConfirm": "Haben Sie die PayPal-Zahlung von {amount} an {name} abgeschlossen?",
+    "settledViaPaypal": "Über PayPal bezahlt",
+    "payViaBank": "Überweisung",
+    "settledViaBank": "Per Überweisung bezahlt",
     "notFound": "Gruppe nicht gefunden",
     "notFoundDescription": "Diese Gruppe existiert nicht oder du hast keinen Zugriff.",
     "backToGroups": "Zurück zu Gruppen",
@@ -271,5 +276,16 @@
       "receipt": "Belegposten",
       "group": "Gruppe"
     }
+  },
+  "payment": {
+    "bankTitle": "Überweisung",
+    "bankScanHint": "Code mit der Banking-App scannen. Empfänger, IBAN, Betrag und Verwendungszweck werden übernommen.",
+    "bankManualHint": "Die Angaben in die Banking-App übertragen.",
+    "holder": "Kontoinhaber",
+    "amount": "Betrag",
+    "reference": "Verwendungszweck",
+    "copy": "Kopieren",
+    "copyFailed": "Kopieren nicht möglich",
+    "markPaid": "Ich habe bezahlt"
   }
 }

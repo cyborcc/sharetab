@@ -28,6 +28,11 @@
     "payViaVenmo": "Venmoで支払う",
     "venmoPaymentConfirm": "{name}への{amount}のVenmo支払いを完了しましたか？",
     "settledViaVenmo": "Venmoで支払い済み",
+    "payViaPaypal": "PayPalで支払う",
+    "paypalPaymentConfirm": "{name}への{amount}のPayPal支払いを完了しましたか？",
+    "settledViaPaypal": "PayPalで支払い済み",
+    "payViaBank": "銀行振込",
+    "settledViaBank": "銀行振込で支払い済み",
     "notFound": "グループが見つかりません",
     "notFoundDescription": "このグループは存在しないか、アクセス権がありません。",
     "backToGroups": "グループ一覧に戻る",
@@ -271,5 +276,16 @@
       "receipt": "Receipt items",
       "group": "Group"
     }
+  },
+  "payment": {
+    "bankTitle": "銀行振込",
+    "bankScanHint": "銀行アプリでコードを読み取ってください。受取人、IBAN、金額、摘要が入力されます。",
+    "bankManualHint": "内容を銀行アプリにコピーしてください。",
+    "holder": "口座名義",
+    "amount": "金額",
+    "reference": "摘要",
+    "copy": "コピー",
+    "copyFailed": "コピーできませんでした",
+    "markPaid": "支払いました"
   }
 }

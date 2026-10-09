@@ -12,7 +12,7 @@ vi.mock('bcryptjs', () => ({
 const mockDb = {
   systemSetting: { findUnique: vi.fn() },
   systemInvite: { findUnique: vi.fn() },
-  user: { findUnique: vi.fn(), findMany: vi.fn(), create: vi.fn() },
+  user: { findUnique: vi.fn(), findMany: vi.fn(), create: vi.fn(), update: vi.fn() },
   $transaction: vi.fn(),
   $queryRaw: vi.fn(),
 };
@@ -195,5 +195,68 @@ describe('auth.getProfile', () => {
     });
     const api = await caller({ user: { id: 'user-1' } });
     expect((await api.getProfile()).hasPassword).toBe(false);
+  });
+});
+
+describe('auth.updateProfile payment details', () => {
+  const stored = {
+    id: 'user-1',
+    name: 'Alice',
+    email: 'alice@example.com',
+    locale: 'en',
+    venmoUsername: null,
+    paypalEmail: null,
+    paypalMeName: null,
+    iban: null,
+    ibanHolder: null,
+  };
+
+  test('stores PayPal, PayPal.me and IBAN normalized', async () => {
+    mockDb.user.update.mockResolvedValue(stored);
+    const api = await caller({ user: { id: 'user-1' } });
+    await api.updateProfile({
+      paypalEmail: ' alice@example.com ',
+      paypalMeName: 'https://paypal.me/alice/5EUR',
+      iban: 'de89 3704 0044 0532 0130 00',
+      ibanHolder: '  Alice Example ',
+    });
+    expect(mockDb.user.update).toHaveBeenCalledWith({
+      where: { id: 'user-1' },
+      data: expect.objectContaining({
+        paypalEmail: 'alice@example.com',
+        paypalMeName: 'alice',
+        iban: 'DE89370400440532013000',
+        ibanHolder: 'Alice Example',
+      }),
+    });
+  });
+
+  test('clears a detail when it is sent blank', async () => {
+    mockDb.user.update.mockResolvedValue(stored);
+    const api = await caller({ user: { id: 'user-1' } });
+    await api.updateProfile({ paypalEmail: '', paypalMeName: '', iban: '', ibanHolder: '' });
+    expect(mockDb.user.update).toHaveBeenCalledWith({
+      where: { id: 'user-1' },
+      data: expect.objectContaining({ paypalEmail: null, paypalMeName: null, iban: null, ibanHolder: null }),
+    });
+  });
+
+  test('leaves details alone when they are not sent', async () => {
+    mockDb.user.update.mockResolvedValue(stored);
+    const api = await caller({ user: { id: 'user-1' } });
+    await api.updateProfile({ name: 'Alice B' });
+    const data = mockDb.user.update.mock.calls[0]![0].data;
+    expect(data).not.toHaveProperty('paypalEmail');
+    expect(data).not.toHaveProperty('iban');
+  });
+
+  test.each([
+    [{ paypalEmail: 'not-an-email' }, 'Invalid PayPal e-mail address'],
+    [{ paypalMeName: 'two words' }, 'Invalid PayPal.me name'],
+    [{ iban: 'DE00 1234' }, 'Invalid IBAN'],
+  ])('rejects %j', async (input, message) => {
+    const api = await caller({ user: { id: 'user-1' } });
+    await expect(api.updateProfile(input)).rejects.toMatchObject({ code: 'BAD_REQUEST', message });
+    expect(mockDb.user.update).not.toHaveBeenCalled();
   });
 });

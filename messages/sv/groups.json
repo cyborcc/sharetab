@@ -28,6 +28,11 @@
     "payViaVenmo": "Betala via Venmo",
     "venmoPaymentConfirm": "Slutförde du Venmo-betalningen på {amount} till {name}?",
     "settledViaVenmo": "Betald via Venmo",
+    "payViaPaypal": "Betala via PayPal",
+    "paypalPaymentConfirm": "Slutförde du PayPal-betalningen på {amount} till {name}?",
+    "settledViaPaypal": "Betald via PayPal",
+    "payViaBank": "Banköverföring",
+    "settledViaBank": "Betald via banköverföring",
     "notFound": "Grupp hittades inte",
     "notFoundDescription": "Denna grupp finns inte eller så har du inte åtkomst.",
     "backToGroups": "Tillbaka till grupper",
@@ -271,5 +276,16 @@
       "receipt": "Receipt items",
       "group": "Group"
     }
+  },
+  "payment": {
+    "bankTitle": "Banköverföring",
+    "bankScanHint": "Skanna koden med din bankapp. Mottagare, IBAN, belopp och referens fylls i.",
+    "bankManualHint": "Kopiera uppgifterna till din bankapp.",
+    "holder": "Kontoinnehavare",
+    "amount": "Belopp",
+    "reference": "Referens",
+    "copy": "Kopiera",
+    "copyFailed": "Kunde inte kopiera",
+    "markPaid": "Jag har betalat"
   }
 }

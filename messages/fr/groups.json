@@ -28,6 +28,11 @@
     "payViaVenmo": "Payer via Venmo",
     "venmoPaymentConfirm": "Avez-vous effectué le paiement Venmo de {amount} à {name} ?",
     "settledViaVenmo": "Payé via Venmo",
+    "payViaPaypal": "Payer via PayPal",
+    "paypalPaymentConfirm": "Avez-vous effectué le paiement PayPal de {amount} à {name} ?",
+    "settledViaPaypal": "Payé via PayPal",
+    "payViaBank": "Virement bancaire",
+    "settledViaBank": "Payé par virement",
     "notFound": "Groupe introuvable",
     "notFoundDescription": "Ce groupe n'existe pas ou vous n'y avez pas accès.",
     "backToGroups": "Retour aux groupes",
@@ -271,5 +276,16 @@
       "receipt": "Receipt items",
       "group": "Group"
     }
+  },
+  "payment": {
+    "bankTitle": "Virement bancaire",
+    "bankScanHint": "Scannez le code avec votre application bancaire. Bénéficiaire, IBAN, montant et motif sont préremplis.",
+    "bankManualHint": "Copiez les informations dans votre application bancaire.",
+    "holder": "Titulaire",
+    "amount": "Montant",
+    "reference": "Motif",
+    "copy": "Copier",
+    "copyFailed": "Copie impossible",
+    "markPaid": "J’ai payé"
   }
 }

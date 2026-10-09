@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AvatarEditor } from '@/components/settings/avatar-editor';
+import { formatIban } from '@/lib/payments';
 
 // Rendered only once the profile has loaded, so all fields can be
 // initialized directly from the data (no sync-from-query effects that
@@ -18,16 +19,28 @@ function ProfileForm({
   email,
   initialName,
   initialVenmoUsername,
+  initialPaypalEmail,
+  initialPaypalMeName,
+  initialIban,
+  initialIbanHolder,
 }: {
   email: string;
   initialName: string;
   initialVenmoUsername: string;
+  initialPaypalEmail: string;
+  initialPaypalMeName: string;
+  initialIban: string;
+  initialIbanHolder: string;
 }) {
   const t = useTranslations('settings');
   const { update } = useSession();
   const router = useRouter();
   const [name, setName] = useState(initialName);
   const [venmoUsername, setVenmoUsername] = useState(initialVenmoUsername);
+  const [paypalEmail, setPaypalEmail] = useState(initialPaypalEmail);
+  const [paypalMeName, setPaypalMeName] = useState(initialPaypalMeName);
+  const [iban, setIban] = useState(initialIban ? formatIban(initialIban) : '');
+  const [ibanHolder, setIbanHolder] = useState(initialIbanHolder);
 
   const updateProfile = trpc.auth.updateProfile.useMutation({
     onSuccess: async () => {
@@ -41,6 +54,10 @@ function ProfileForm({
     updateProfile.mutate({
       name,
       venmoUsername: venmoUsername.trim() || null,
+      paypalEmail: paypalEmail.trim() || null,
+      paypalMeName: paypalMeName.trim() || null,
+      iban: iban.trim() || null,
+      ibanHolder: ibanHolder.trim() || null,
     });
   }
 
@@ -63,6 +80,55 @@ function ProfileForm({
           placeholder={t('profile.venmoPlaceholder')}
           data-testid="venmo-username-input"
         />
+      </div>
+      <div className="space-y-3 rounded-lg border p-3">
+        <div>
+          <p className="text-sm font-medium">{t('payments.title')}</p>
+          <p className="text-xs text-muted-foreground">{t('payments.hint')}</p>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="paypal-email">{t('payments.paypalEmail')}</Label>
+          <Input
+            id="paypal-email"
+            type="email"
+            value={paypalEmail}
+            onChange={(e) => setPaypalEmail(e.target.value)}
+            placeholder="name@example.com"
+            data-testid="paypal-email-input"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="paypal-me">{t('payments.paypalMe')}</Label>
+          <Input
+            id="paypal-me"
+            value={paypalMeName}
+            onChange={(e) => setPaypalMeName(e.target.value)}
+            placeholder="paypal.me/name"
+            data-testid="paypal-me-input"
+          />
+          <p className="text-xs text-muted-foreground">{t('payments.paypalMeHint')}</p>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="iban">IBAN</Label>
+          <Input
+            id="iban"
+            value={iban}
+            onChange={(e) => setIban(e.target.value)}
+            placeholder="DE00 0000 0000 0000 0000 00"
+            autoComplete="off"
+            data-testid="iban-input"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="iban-holder">{t('payments.ibanHolder')}</Label>
+          <Input
+            id="iban-holder"
+            value={ibanHolder}
+            onChange={(e) => setIbanHolder(e.target.value)}
+            maxLength={70}
+            data-testid="iban-holder-input"
+          />
+        </div>
       </div>
       <Button type="submit" disabled={updateProfile.isPending} data-testid="save-profile-btn">
         {updateProfile.isPending ? t('profile.saving') : t('profile.save')}
@@ -120,6 +186,10 @@ export default function SettingsPage() {
                 email={profile.data.email ?? session?.user?.email ?? ''}
                 initialName={profile.data.name ?? session?.user?.name ?? ''}
                 initialVenmoUsername={profile.data.venmoUsername ?? ''}
+                initialPaypalEmail={profile.data.paypalEmail ?? ''}
+                initialPaypalMeName={profile.data.paypalMeName ?? ''}
+                initialIban={profile.data.iban ?? ''}
+                initialIbanHolder={profile.data.ibanHolder ?? ''}
               />
             </div>
           ) : (

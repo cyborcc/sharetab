@@ -28,6 +28,11 @@
     "payViaVenmo": "通过Venmo支付",
     "venmoPaymentConfirm": "您是否完成了通过Venmo向{name}支付{amount}？",
     "settledViaVenmo": "已通过Venmo支付",
+    "payViaPaypal": "通过PayPal支付",
+    "paypalPaymentConfirm": "您是否完成了通过PayPal向{name}支付{amount}？",
+    "settledViaPaypal": "已通过PayPal支付",
+    "payViaBank": "银行转账",
+    "settledViaBank": "已通过银行转账支付",
     "notFound": "未找到群组",
     "notFoundDescription": "该群组不存在或您无权访问。",
     "backToGroups": "返回群组列表",
@@ -271,5 +276,16 @@
       "receipt": "Receipt items",
       "group": "Group"
     }
+  },
+  "payment": {
+    "bankTitle": "银行转账",
+    "bankScanHint": "用银行应用扫描二维码，收款人、IBAN、金额和备注会自动填入。",
+    "bankManualHint": "请将信息复制到银行应用中。",
+    "holder": "账户持有人",
+    "amount": "金额",
+    "reference": "备注",
+    "copy": "复制",
+    "copyFailed": "无法复制",
+    "markPaid": "我已付款"
   }
 }

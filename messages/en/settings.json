@@ -29,5 +29,13 @@
     "failed": "Could not save the avatar",
     "color": "Colour",
     "emojiHint": "Or pick an emoji and a colour:"
+  },
+  "payments": {
+    "title": "Payment details",
+    "hint": "Shown to your group members so they can pay you. Everything is optional.",
+    "paypalEmail": "PayPal e-mail address",
+    "paypalMe": "PayPal.me link",
+    "paypalMeHint": "Optional. Used first if set: it fills in the amount directly.",
+    "ibanHolder": "Account holder"
   }
 }

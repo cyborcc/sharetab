@@ -37,6 +37,9 @@ test('group correction chat previews without mutation, discards, then explicitly
     const assignment = page.getByTestId('item-assignment-form');
     await expect(chat).toBeVisible();
     await expect(assignment).toBeVisible();
+    // The correction chat is collapsed until opened
+    await expect(chat.getByTestId('correction-hint')).toHaveCount(0);
+    await chat.getByTestId('correction-toggle').click();
     await chat.getByTestId('correction-hint').fill('Add the missed item');
     await chat.getByTestId('correction-send').click();
     await expect(chat.getByTestId('correction-preview')).toContainText('Corrected Item');
