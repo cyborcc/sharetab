@@ -1,0 +1,22 @@
+{
+  "title": "Comment ça marche",
+  "intro": "Quatre étapes du voyage jusqu'aux comptes soldés.",
+  "create": {
+    "title": "Créer un groupe",
+    "text": "Nommez le voyage, choisissez la devise et créez le groupe. Toutes les dépenses sont au même endroit."
+  },
+  "invite": {
+    "title": "Inviter vos amis",
+    "text": "Partagez le lien ou le code d'invitation. Les amis rejoignent avec ou sans compte."
+  },
+  "scan": {
+    "title": "Scanner un ticket",
+    "text": "Prenez une photo, l'IA lit les articles, puis indiquez qui a pris quoi. Les prix sont convertis dans la devise du groupe."
+  },
+  "settle": {
+    "title": "Régler les comptes",
+    "text": "Splitbon calcule le moins de paiements possible. Payez par lien PayPal, QR code de virement ou en espèces et marquez comme payé."
+  },
+  "more": "Documentation complète sur GitHub",
+  "videoLabel": "Courte vidéo de démonstration"
+}

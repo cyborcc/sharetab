@@ -1,0 +1,22 @@
+{
+  "title": "Como funciona",
+  "intro": "Quatro passos da viagem até todo mundo ficar quite.",
+  "create": {
+    "title": "Crie um grupo",
+    "text": "Dê um nome à viagem, escolha a moeda e crie o grupo. Todas as despesas ficam em um só lugar."
+  },
+  "invite": {
+    "title": "Convide seu pessoal",
+    "text": "Compartilhe o link ou o código de convite. Amigos entram com ou sem conta."
+  },
+  "scan": {
+    "title": "Escaneie um recibo",
+    "text": "Tire uma foto, a IA lê os itens e você toca em quem consumiu o quê. Os preços são convertidos para a moeda do grupo."
+  },
+  "settle": {
+    "title": "Acerte as contas",
+    "text": "O Splitbon calcula o menor número de pagamentos. Pague por link do PayPal, QR code de transferência ou em dinheiro e marque como pago."
+  },
+  "more": "Documentação completa no GitHub",
+  "videoLabel": "Vídeo de demonstração curto"
+}

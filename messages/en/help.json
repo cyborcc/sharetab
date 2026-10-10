@@ -1,0 +1,22 @@
+{
+  "title": "How it works",
+  "intro": "Four steps from the trip to everyone being square.",
+  "create": {
+    "title": "Create a group",
+    "text": "Name the trip, pick the currency and add the group. Everyone's expenses live in one place."
+  },
+  "invite": {
+    "title": "Invite your people",
+    "text": "Share the invite link or code. Friends join with or without an account."
+  },
+  "scan": {
+    "title": "Scan a receipt",
+    "text": "Take a photo, let the AI read the items, then tap who had what. Prices are converted into the group currency."
+  },
+  "settle": {
+    "title": "Settle up",
+    "text": "Splitbon works out the fewest payments. Pay by PayPal link, bank-transfer QR code or cash and mark it as paid."
+  },
+  "more": "Full documentation on GitHub",
+  "videoLabel": "Short demo video"
+}

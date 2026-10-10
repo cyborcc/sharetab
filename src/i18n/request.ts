@@ -18,6 +18,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
   const split = (await import(`../../messages/${locale}/split.json`)).default;
   const splits = (await import(`../../messages/${locale}/splits.json`)).default;
   const feedback = (await import(`../../messages/${locale}/feedback.json`)).default;
+  const help = (await import(`../../messages/${locale}/help.json`)).default;
 
   return {
     locale,
@@ -32,6 +33,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
       split,
       splits,
       feedback,
+      help,
     },
   };
 });

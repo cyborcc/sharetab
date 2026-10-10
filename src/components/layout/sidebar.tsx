@@ -16,6 +16,7 @@ import {
   Heart,
   Scissors,
   MessageSquarePlus,
+  CircleHelp,
 } from 'lucide-react';
 import { LogoMark } from '@/components/brand/logo-mark';
 import { BeerButton } from '@/components/layout/beer-button';
@@ -52,6 +53,7 @@ const navItems = [
   { href: '/groups', key: 'groups', icon: Users },
   { href: '/split', key: 'quickSplit', icon: Receipt },
   { href: '/splits', key: 'mySplits', icon: Scissors },
+  { href: '/help', key: 'help', icon: CircleHelp },
   { href: '/feedback', key: 'feedback', icon: MessageSquarePlus },
 ] as const;
 

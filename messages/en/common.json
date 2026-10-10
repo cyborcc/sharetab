@@ -8,7 +8,8 @@
     "admin": "Admin",
     "signOut": "Sign out",
     "changeLanguage": "Change language",
-    "feedback": "Feedback"
+    "feedback": "Feedback",
+    "help": "How it works"
   },
   "actions": {
     "save": "Save",

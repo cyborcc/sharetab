@@ -1,0 +1,22 @@
+{
+  "title": "So funktioniert's",
+  "intro": "Vier Schritte von der Reise bis alle quitt sind.",
+  "create": {
+    "title": "Gruppe erstellen",
+    "text": "Reise benennen, Währung wählen, Gruppe anlegen. Alle Ausgaben liegen an einem Ort."
+  },
+  "invite": {
+    "title": "Leute einladen",
+    "text": "Einladungslink oder Code teilen. Freunde kommen mit oder ohne Konto dazu."
+  },
+  "scan": {
+    "title": "Beleg scannen",
+    "text": "Foto machen, die KI liest die Positionen, dann antippen, wer was hatte. Preise werden in die Gruppenwährung umgerechnet."
+  },
+  "settle": {
+    "title": "Ausgleichen",
+    "text": "Splitbon berechnet die wenigsten Zahlungen. Per PayPal-Link, Überweisungs-QR-Code oder bar zahlen und als bezahlt markieren."
+  },
+  "more": "Ausführliche Dokumentation auf GitHub",
+  "videoLabel": "Kurzes Demo-Video"
+}

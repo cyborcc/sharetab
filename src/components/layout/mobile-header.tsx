@@ -16,6 +16,7 @@ import {
   Menu,
   Scissors,
   MessageSquarePlus,
+  CircleHelp,
 } from 'lucide-react';
 import { NotificationBell } from '@/components/layout/notification-bell';
 import { LogoMark } from '@/components/brand/logo-mark';
@@ -29,6 +30,7 @@ const navItems = [
   { href: '/groups', key: 'groups', icon: Users },
   { href: '/split', key: 'quickSplit', icon: Receipt },
   { href: '/splits', key: 'mySplits', icon: Scissors },
+  { href: '/help', key: 'help', icon: CircleHelp },
   { href: '/feedback', key: 'feedback', icon: MessageSquarePlus },
   { href: '/settings', key: 'settings', icon: Settings },
 ] as const;

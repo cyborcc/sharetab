@@ -8,7 +8,8 @@
     "admin": "Verwaltung",
     "signOut": "Abmelden",
     "changeLanguage": "Sprache ändern",
-    "feedback": "Feedback"
+    "feedback": "Feedback",
+    "help": "So funktioniert's"
   },
   "actions": {
     "save": "Speichern",

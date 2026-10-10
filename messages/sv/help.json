@@ -1,0 +1,22 @@
+{
+  "title": "Så fungerar det",
+  "intro": "Fyra steg från resan till att alla är kvitt.",
+  "create": {
+    "title": "Skapa en grupp",
+    "text": "Namnge resan, välj valuta och skapa gruppen. Alla utgifter finns på ett ställe."
+  },
+  "invite": {
+    "title": "Bjud in dina vänner",
+    "text": "Dela inbjudningslänken eller koden. Vänner går med med eller utan konto."
+  },
+  "scan": {
+    "title": "Skanna ett kvitto",
+    "text": "Ta ett foto, AI läser raderna och du trycker på vem som hade vad. Priser räknas om till gruppens valuta."
+  },
+  "settle": {
+    "title": "Gör upp",
+    "text": "Splitbon räknar ut så få betalningar som möjligt. Betala via PayPal-länk, QR-kod för banköverföring eller kontant och markera som betalt."
+  },
+  "more": "Fullständig dokumentation på GitHub",
+  "videoLabel": "Kort demovideo"
+}
