@@ -44,14 +44,20 @@ Splitbon is a free, self-hosted alternative to Splitwise for tracking shared exp
 
 Splitbon is not the only way to split bills. Pick what fits you:
 
-|                  | Splitbon                                                            | Splitwise                                         | Tricount                               | Splid                                    | Spliit                                       | SplitPro                                  |
-| ---------------- | ------------------------------------------------------------------- | ------------------------------------------------- | -------------------------------------- | ---------------------------------------- | -------------------------------------------- | ----------------------------------------- |
-| Hosting          | Self-hosted                                                         | Vendor cloud                                      | Vendor cloud                           | Vendor cloud                             | Self-hosted or spliit.app                    | Self-hosted                               |
-| License          | MIT, open source                                                    | Closed source                                     | Closed source                          | Closed source                            | MIT, open source                             | MIT, open source                          |
-| Price            | Free (donations welcome)                                            | Free with a daily expense limit and ads; paid Pro | Free, no ads, no limits (per its site) | Free (per its site)                      | Free                                         | Free                                      |
-| Receipt scanning | AI scan with translation and per-person items, your own AI provider | Pro plan: scan and itemize                        | Not mentioned                          | Not mentioned                            | Optional, needs an OpenAI key and S3 storage | Receipt attachments, no AI scan mentioned |
-| Currencies       | Per-expense currency, converted into the group currency             | Conversion is a Pro feature                       | Multi-currency                         | 150+ currencies, converted automatically | Check the project page                       | Conversion of expenses and balances       |
-| Platform         | Web app (PWA) with push notifications                               | Mobile apps and web                               | iOS and Android, works offline         | iOS and Android, offline, no sign-up     | Web app (PWA)                                | Web app (PWA) with push notifications     |
+✅ yes · ⚠️ partly, paid, or needs setup · ❌ no · ➖ not documented
+
+|                     | Splitbon | Splitwise | Tricount | Splid | Spliit | SplitPro |
+| ------------------- | :------: | :-------: | :------: | :---: | :----: | :------: |
+| Self-hosted         |    ✅    |    ❌     |    ❌    |  ❌   |   ✅   |    ✅    |
+| Open source         |    ✅    |    ❌     |    ❌    |  ❌   |   ✅   |    ✅    |
+| Free without limits |    ✅    |    ⚠️     |    ✅    |  ✅   |   ✅   |    ✅    |
+| AI receipt scan     |    ✅    |    ⚠️     |    ➖    |  ➖   |   ⚠️   |    ➖    |
+| Translates receipts |    ✅    |    ➖     |    ➖    |  ➖   |   ➖   |    ➖    |
+| Several currencies  |    ✅    |    ⚠️     |    ✅    |  ✅   |   ➖   |    ✅    |
+| Push notifications  |    ✅    |    ➖     |    ➖    |  ➖   |   ➖   |    ✅    |
+| Native mobile app   |    ❌    |    ✅     |    ✅    |  ✅   |   ❌   |    ❌    |
+
+What the warning signs mean: Splitwise's free plan has a daily expense limit and ads; receipt scanning and currency conversion are in its paid Pro plan. Spliit scans receipts only if you set up S3 storage and an OpenAI key. Splitbon, Spliit and SplitPro are web apps you can install on your phone (PWA); the others have native apps. Splitbon scans with your own AI provider (OpenAI, Claude, Ollama, ...) and translates the receipt.
 
 If you only want to split a bill once with no setup, a hosted app is the faster choice. If you want to own the data, scan receipts with your own AI key, or run it for friends and family on a home server, Splitbon is built for that. The table reflects each project's own site or README as of October 2026. Feature sets change quickly, so check each project's own page before you decide; corrections to this table are welcome as a pull request.
 
