@@ -23,5 +23,6 @@
   "markDone": "Mark as done",
   "reject": "Reject",
   "remove": "Withdraw",
-  "removeConfirm": "Withdraw this entry?"
+  "removeConfirm": "Withdraw this entry?",
+  "reportOnGithub": "GitHub에 제보"
 }

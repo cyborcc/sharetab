@@ -23,5 +23,6 @@
   "markDone": "Als erledigt markieren",
   "reject": "Ablehnen",
   "remove": "Zurückziehen",
-  "removeConfirm": "Diesen Eintrag zurückziehen?"
+  "removeConfirm": "Diesen Eintrag zurückziehen?",
+  "reportOnGithub": "Auf GitHub melden"
 }
