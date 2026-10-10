@@ -16,7 +16,7 @@ test.describe('Support dialog', () => {
     );
     await expect(page.getByTestId('support-open-kofi')).toHaveAttribute('href', 'https://ko-fi.com/aks');
 
-    await page.keyboard.press('Escape');
+    await dialog.getByRole('button', { name: 'Close' }).click();
     await expect(dialog).toBeHidden();
     await expect(page.getByTestId('support-iframe')).toHaveCount(0);
   });
