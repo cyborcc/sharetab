@@ -47,7 +47,7 @@ export default async function HelpPage() {
         ))}
       </div>
       <a
-        href="https://github.com/cyborcc/sharetab#readme"
+        href="https://github.com/cyborcc/splitbon#readme"
         target="_blank"
         rel="noopener noreferrer"
         className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
