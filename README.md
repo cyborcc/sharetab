@@ -228,7 +228,7 @@ To use it:
 ```bash
 # On your Unraid server
 mkdir -p /boot/config/plugins/dockerMan/templates-user
-cp /path/to/sharetab/unraid/splitbon.xml /boot/config/plugins/dockerMan/templates-user/sharetab.xml
+cp /path/to/splitbon/unraid/splitbon.xml /boot/config/plugins/dockerMan/templates-user/splitbon.xml
 ```
 
 Then in the Unraid web UI:
@@ -248,16 +248,16 @@ The template runs the prebuilt `ghcr.io/cyborcc/splitbon:stable` image (see [Pre
 <a id="backups"></a>**Backups:**
 
 ```bash
-# Unraid (the template names the container "sharetab")
-docker exec sharetab su-exec postgres pg_dump -U sharetab sharetab > backup.sql
+# Unraid (the template names the container "splitbon"; installs from older templates may still use "sharetab")
+docker exec splitbon su-exec postgres pg_dump -U sharetab sharetab > backup.sql
 
 # Docker Compose (run from the docker/ directory)
 docker compose exec sharetab su-exec postgres pg_dump -U sharetab sharetab > backup.sql
 ```
 
-These commands use the default database user and name, `sharetab`; if you changed `DB_USER` or `DB_NAME`, use your values here and in the `psql` commands below. The dump covers the database only. A full backup also needs the receipt images (`/app/uploads`), the AI provider logins if you use `meridian` or `openai-codex` (`/app/claude`, `/app/chatgpt`), and your settings. On Unraid the data folders are under `/mnt/user/appdata/sharetab/` and the template settings are on the flash drive (`/boot/config/plugins/dockerMan/templates-user/`); with Compose the data is in the `docker_uploads`, `docker_claude`, and `docker_chatgpt` named volumes (Compose prefixes volume names with the project name, `docker` by default; `docker volume ls` lists them) and the settings are in `docker/.env` (also keep a copy of `docker/docker-compose.yml` if you edited it, for example to use a prebuilt image).
+These commands use the default database user and name, `sharetab`; if you changed `DB_USER` or `DB_NAME`, use your values here and in the `psql` commands below. The dump covers the database only. A full backup also needs the receipt images (`/app/uploads`), the AI provider logins if you use `meridian` or `openai-codex` (`/app/claude`, `/app/chatgpt`), and your settings. On Unraid the data folders are under `/mnt/user/appdata/splitbon/` (`/mnt/user/appdata/sharetab/` if you installed from an older template) and the template settings are on the flash drive (`/boot/config/plugins/dockerMan/templates-user/`); with Compose the data is in the `docker_uploads`, `docker_claude`, and `docker_chatgpt` named volumes (Compose prefixes volume names with the project name, `docker` by default; `docker volume ls` lists them) and the settings are in `docker/.env` (also keep a copy of `docker/docker-compose.yml` if you edited it, for example to use a prebuilt image).
 
-Files can change between the dump and the copy while people use Splitbon. For a backup where everything matches, stop the container and copy all of its data while it is stopped: on Unraid the whole `/mnt/user/appdata/sharetab/` folder (it includes the database files in `db/`), with Compose the `docker_pgdata`, `docker_uploads`, `docker_claude`, and `docker_chatgpt` volumes. Keep file ownership when you copy (`cp -a` or `rsync -a`), or PostgreSQL can't read its files after a restore.
+Files can change between the dump and the copy while people use Splitbon. For a backup where everything matches, stop the container and copy all of its data while it is stopped: on Unraid the whole `/mnt/user/appdata/splitbon/` folder (it includes the database files in `db/`), with Compose the `docker_pgdata`, `docker_uploads`, `docker_claude`, and `docker_chatgpt` volumes. Keep file ownership when you copy (`cp -a` or `rsync -a`), or PostgreSQL can't read its files after a restore.
 
 ## Upgrading
 
