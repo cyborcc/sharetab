@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { Bug, Check, Lightbulb, Send, Trash2, X } from 'lucide-react';
+import { Bug, Check, ExternalLink, Lightbulb, Send, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { trpc } from '@/lib/trpc';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { UserAvatar } from '@/components/ui/user-avatar';
+import { buildIssueUrl } from '@/lib/github-issue';
 
 type Kind = 'BUG' | 'IDEA';
 type Status = 'OPEN' | 'APPROVED' | 'DONE' | 'REJECTED';
@@ -185,6 +186,24 @@ export default function FeedbackPage() {
                     >
                       <X className="mr-1.5 h-4 w-4" />
                       {t('reject')}
+                    </Button>
+                  )}
+                  {(f.mine || admin) && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      nativeButton={false}
+                      render={
+                        <a
+                          href={buildIssueUrl({ kind: f.kind, title: f.title, body: f.body })}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          data-testid="feedback-github"
+                        />
+                      }
+                    >
+                      <ExternalLink className="mr-1.5 h-4 w-4" />
+                      {t('reportOnGithub')}
                     </Button>
                   )}
                   {f.mine && f.status === 'OPEN' && (
