@@ -18,6 +18,7 @@ import {
   MessageSquarePlus,
 } from 'lucide-react';
 import { LogoMark } from '@/components/brand/logo-mark';
+import { BeerButton } from '@/components/layout/beer-button';
 import { ThemeToggle } from '@/components/layout/theme-toggle';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { useTranslations, useLocale } from 'next-intl';
@@ -33,7 +34,7 @@ function SponsorBanner() {
         </div>
         <p className="text-xs text-muted-foreground mb-2.5 leading-relaxed">{t('sponsor.description')}</p>
         <a
-          href="https://ko-fi.com/cyborcc"
+          href="https://ko-fi.com/aks"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center justify-center gap-1.5 w-full rounded-md bg-pink-500/15 hover:bg-pink-500/25 border border-pink-500/20 px-2.5 py-1.5 text-xs font-medium text-pink-600 dark:text-pink-400 transition-colors"
@@ -72,7 +73,8 @@ export function AppSidebar({ user, isAdmin }: { user: SidebarUser; isAdmin?: boo
       <div className="flex h-14 items-center gap-2.5 px-5 border-b border-transparent bg-gradient-to-r from-primary/[0.06] via-transparent to-transparent [border-image:linear-gradient(to_right,var(--color-primary)/0.15,transparent)_1]">
         <LogoMark className="h-7 w-6" />
         <span className="text-lg font-bold tracking-wide text-foreground">Splitbon</span>
-        <span className="ml-auto">
+        <span className="ml-auto flex items-center gap-1">
+          <BeerButton />
           <NotificationBell />
         </span>
       </div>

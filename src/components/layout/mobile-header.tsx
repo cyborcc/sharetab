@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { NotificationBell } from '@/components/layout/notification-bell';
 import { LogoMark } from '@/components/brand/logo-mark';
+import { BeerButton } from '@/components/layout/beer-button';
 import { ThemeToggle } from '@/components/layout/theme-toggle';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { useTranslations, useLocale } from 'next-intl';
@@ -46,6 +47,7 @@ export function MobileHeader({ isAdmin }: { isAdmin?: boolean }) {
       </div>
 
       <div className="flex items-center gap-1">
+        <BeerButton />
         <NotificationBell />
         <LanguageSwitcher testId="language-switcher-mobile" />
         <Sheet open={open} onOpenChange={setOpen}>
@@ -107,7 +109,7 @@ export function MobileHeader({ isAdmin }: { isAdmin?: boolean }) {
                 <ThemeToggle />
               </div>
               <a
-                href="https://ko-fi.com/cyborcc"
+                href="https://ko-fi.com/aks"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
