@@ -33,7 +33,10 @@
     "title": "Splitbonを応援する",
     "description": "Splitbonは無料のオープンソースです。お役に立てましたら、開発のスポンサーをご検討ください。",
     "cta": "Ko-fiで応援する",
-    "beer": "🍻をおごる"
+    "beer": "🍻をおごる",
+    "dialogTitle": "Splitbonを応援する",
+    "dialogHint": "金額を選び、必要ならメッセージを添えて送信します。Ko-fiのフォームは英語のみです。",
+    "openKofi": "Ko-fiで開く"
   },
   "errors": {
     "generic": "問題が発生しました。もう一度お試しください。",

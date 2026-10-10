@@ -33,7 +33,10 @@
     "title": "Splitbon unterstützen",
     "description": "Splitbon ist kostenlos und quelloffen. Wenn es Ihnen Zeit spart, unterstützen Sie die Entwicklung.",
     "cta": "Auf Ko-fi unterstützen",
-    "beer": "Spendier mir ein 🍻"
+    "beer": "Spendier mir ein 🍻",
+    "dialogTitle": "Splitbon unterstützen",
+    "dialogHint": "Betrag wählen, optional eine Nachricht schreiben, absenden. Das Ko-fi-Formular gibt es nur auf Englisch.",
+    "openKofi": "Auf Ko-fi öffnen"
   },
   "errors": {
     "generic": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
