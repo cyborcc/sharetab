@@ -1,0 +1,9 @@
+<CommunityApplications>
+  <Profile>
+    Splitbon is an open-source, self-hosted Splitwise alternative for trips and shared costs, with AI receipt scanning. This repository contains the Unraid template for the all-in-one container (PostgreSQL bundled). Support: open an issue on GitHub.
+  </Profile>
+  <Icon>https://raw.githubusercontent.com/cyborcc/splitbon/main/public/icons/icon-512.png</Icon>
+  <WebPage>https://github.com/cyborcc/splitbon</WebPage>
+  <DonateLink>https://ko-fi.com/aks</DonateLink>
+  <DonateText>Support Splitbon on Ko-fi</DonateText>
+</CommunityApplications>
