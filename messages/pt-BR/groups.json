@@ -32,6 +32,7 @@
     "paypalPaymentConfirm": "Você concluiu o pagamento de {amount} para {name} pelo PayPal?",
     "settledViaPaypal": "Pago via PayPal",
     "payViaBank": "Transferência bancária",
+    "noPaymentData": "{name} ainda não salvou dados de pagamento.",
     "settledViaBank": "Pago por transferência",
     "notFound": "Grupo não encontrado",
     "notFoundDescription": "Este grupo não existe ou você não tem acesso.",

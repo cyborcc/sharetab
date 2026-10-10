@@ -45,10 +45,10 @@ export function MobileHeader({ isAdmin }: { isAdmin?: boolean }) {
 
   return (
     <header className="sticky top-0 z-50 flex h-14 items-center justify-between border-b border-border/60 bg-background/80 px-4 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 lg:hidden">
-      <div className="flex items-center gap-2.5">
+      <Link href="/dashboard" className="flex items-center gap-2.5" aria-label="Splitbon" data-testid="brand-link">
         <LogoMark className="h-6 w-5" />
         <span className="text-lg font-bold tracking-wide">Splitbon</span>
-      </div>
+      </Link>
 
       <div className="flex items-center gap-1">
         <BeerButton onClick={() => setSupportOpen(true)} />

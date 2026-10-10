@@ -32,6 +32,7 @@
     "paypalPaymentConfirm": "Avez-vous effectué le paiement PayPal de {amount} à {name} ?",
     "settledViaPaypal": "Payé via PayPal",
     "payViaBank": "Virement bancaire",
+    "noPaymentData": "{name} n’a pas encore enregistré de coordonnées de paiement.",
     "settledViaBank": "Payé par virement",
     "notFound": "Groupe introuvable",
     "notFoundDescription": "Ce groupe n'existe pas ou vous n'y avez pas accès.",

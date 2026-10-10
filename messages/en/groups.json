@@ -32,6 +32,7 @@
     "paypalPaymentConfirm": "Did you complete the PayPal payment of {amount} to {name}?",
     "settledViaPaypal": "Paid via PayPal",
     "payViaBank": "Bank transfer",
+    "noPaymentData": "{name} hasn't saved any payment details yet.",
     "settledViaBank": "Paid by bank transfer",
     "notFound": "Group not found",
     "notFoundDescription": "This group doesn't exist or you don't have access to it.",
