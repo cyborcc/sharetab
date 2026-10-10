@@ -78,8 +78,11 @@
     "pushDisable": "Stop messages on this device",
     "pushOn": "Messages are on for this device.",
     "pushDenied": "Notifications are blocked in the browser settings.",
+    "pushDeniedIos": "通知がブロックされています。iPhoneの設定 → 通知 → Splitbon で許可してください。",
     "pushFailed": "Could not turn on messages on this device.",
     "pushUnsupported": "This browser cannot show push messages. On iPhone, add Splitbon to the home screen first. The bell works everywhere.",
+    "pushIosInstall": "iPhoneとiPadでは、ホーム画面に追加したアプリでのみ通知が使えます。共有ボタン →「ホーム画面に追加」をタップし、新しいアイコンからSplitbonを開いて、そこでオンにしてください。",
+    "pushIosUpdate": "iPhoneとiPadの通知にはiOS 16.4以降が必要です。iOSを更新してください。",
     "empty": "Nothing new yet.",
     "back": "Back to dashboard"
   }

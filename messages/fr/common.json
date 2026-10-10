@@ -78,8 +78,11 @@
     "pushDisable": "Stop messages on this device",
     "pushOn": "Messages are on for this device.",
     "pushDenied": "Notifications are blocked in the browser settings.",
+    "pushDeniedIos": "Les notifications sont bloquées. Ouvrez Réglages de l’iPhone → Notifications → Splitbon et autorisez-les.",
     "pushFailed": "Could not turn on messages on this device.",
     "pushUnsupported": "This browser cannot show push messages. On iPhone, add Splitbon to the home screen first. The bell works everywhere.",
+    "pushIosInstall": "Sur iPhone et iPad, les notifications ne fonctionnent que pour l’app ajoutée à l’écran d’accueil. Touchez Partager, puis « Sur l’écran d’accueil », ouvrez Splitbon depuis la nouvelle icône et activez-les là.",
+    "pushIosUpdate": "Les notifications sur iPhone et iPad nécessitent iOS 16.4 ou plus récent. Mettez iOS à jour.",
     "empty": "Nothing new yet.",
     "back": "Back to dashboard"
   }

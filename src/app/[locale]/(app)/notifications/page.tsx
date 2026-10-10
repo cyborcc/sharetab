@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Bell, BellOff, BellRing, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import { detectPushSupport, readPushEnvironment, type PushSupport } from '@/lib/push-support';
 import { trpc } from '@/lib/trpc';
 import { Link, useRouter } from '@/i18n/navigation';
 import { Button } from '@/components/ui/button';
@@ -38,14 +39,15 @@ export default function NotificationsPage() {
   const subscribe = trpc.notifications.subscribe.useMutation({ onSuccess: () => utils.notifications.invalidate() });
   const unsubscribe = trpc.notifications.unsubscribe.useMutation({ onSuccess: () => utils.notifications.invalidate() });
 
-  const [pushSupported, setPushSupported] = useState(false);
+  const [push, setPush] = useState<PushSupport | null>(null);
+  const pushSupported = push?.supported ?? false;
   const [pushOn, setPushOn] = useState(false);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    const ok = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
-    setPushSupported(ok);
-    if (!ok) return;
+    const detected = detectPushSupport(readPushEnvironment());
+    setPush(detected);
+    if (!detected.supported) return;
     navigator.serviceWorker
       .getRegistration('/sw.js')
       .then((reg) => reg?.pushManager.getSubscription())
@@ -59,7 +61,7 @@ export default function NotificationsPage() {
     try {
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') {
-        toast.error(t('pushDenied'));
+        toast.error(push?.ios ? t('pushDeniedIos') : t('pushDenied'));
         return;
       }
       const reg = await navigator.serviceWorker.register('/sw.js');
@@ -146,7 +148,15 @@ export default function NotificationsPage() {
               </Button>
             )
           ) : (
-            <p className="text-xs text-muted-foreground">{t('pushUnsupported')}</p>
+            push && (
+              <p className="text-xs text-muted-foreground" data-testid="push-hint">
+                {push.hint === 'ios-install'
+                  ? t('pushIosInstall')
+                  : push.hint === 'ios-update'
+                    ? t('pushIosUpdate')
+                    : t('pushUnsupported')}
+              </p>
+            )
           )}
         </CardContent>
       </Card>

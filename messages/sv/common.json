@@ -78,8 +78,11 @@
     "pushDisable": "Stop messages on this device",
     "pushOn": "Messages are on for this device.",
     "pushDenied": "Notifications are blocked in the browser settings.",
+    "pushDeniedIos": "Notiser är blockerade. Öppna iPhone-inställningar → Notiser → Splitbon och tillåt dem.",
     "pushFailed": "Could not turn on messages on this device.",
     "pushUnsupported": "This browser cannot show push messages. On iPhone, add Splitbon to the home screen first. The bell works everywhere.",
+    "pushIosInstall": "På iPhone och iPad fungerar notiser bara för appen på hemskärmen. Tryck på Dela, sedan ”Lägg till på hemskärmen”, öppna Splitbon från den nya ikonen och slå på dem där.",
+    "pushIosUpdate": "Notiser på iPhone och iPad kräver iOS 16.4 eller senare. Uppdatera iOS.",
     "empty": "Nothing new yet.",
     "back": "Back to dashboard"
   }
