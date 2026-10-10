@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AvatarEditor } from '@/components/settings/avatar-editor';
-import { formatIban } from '@/lib/payments';
+import { formatIban, normalizePaypalMeName } from '@/lib/payments';
 
 // Rendered only once the profile has loaded, so all fields can be
 // initialized directly from the data (no sync-from-query effects that
@@ -99,13 +99,20 @@ function ProfileForm({
         </div>
         <div className="space-y-2">
           <Label htmlFor="paypal-me">{t('payments.paypalMe')}</Label>
-          <Input
-            id="paypal-me"
-            value={paypalMeName}
-            onChange={(e) => setPaypalMeName(e.target.value)}
-            placeholder="paypal.me/name"
-            data-testid="paypal-me-input"
-          />
+          <div className="flex items-center gap-2">
+            <span className="shrink-0 text-sm text-muted-foreground">paypal.me/</span>
+            <Input
+              id="paypal-me"
+              value={paypalMeName}
+              // Only the name is kept: a pasted link or "@name" is cut down to the name
+              onChange={(e) => setPaypalMeName(normalizePaypalMeName(e.target.value))}
+              placeholder="name"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              data-testid="paypal-me-input"
+            />
+          </div>
           <p className="text-xs text-muted-foreground">{t('payments.paypalMeHint')}</p>
         </div>
         <div className="space-y-2">
