@@ -34,7 +34,10 @@
     "title": "支持 Splitbon",
     "description": "Splitbon 是免费开源项目。如果它帮你节省了时间，请考虑赞助开发。",
     "cta": "在 Ko-fi 上支持",
-    "beer": "请我喝杯 🍻"
+    "beer": "请我喝杯 🍻",
+    "dialogTitle": "支持 Splitbon",
+    "dialogHint": "选择金额，可选填留言，然后提交。Ko-fi 的表单仅提供英文。",
+    "openKofi": "在 Ko-fi 打开"
   },
   "errors": {
     "generic": "出了点问题，请重试。",

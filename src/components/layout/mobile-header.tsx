@@ -21,6 +21,7 @@ import {
 import { NotificationBell } from '@/components/layout/notification-bell';
 import { LogoMark } from '@/components/brand/logo-mark';
 import { BeerButton } from '@/components/layout/beer-button';
+import { SupportDialog } from '@/components/layout/support-dialog';
 import { ThemeToggle } from '@/components/layout/theme-toggle';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { useTranslations, useLocale } from 'next-intl';
@@ -38,6 +39,7 @@ const navItems = [
 export function MobileHeader({ isAdmin }: { isAdmin?: boolean }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
   const t = useTranslations('common');
   const locale = useLocale();
 
@@ -49,7 +51,7 @@ export function MobileHeader({ isAdmin }: { isAdmin?: boolean }) {
       </div>
 
       <div className="flex items-center gap-1">
-        <BeerButton />
+        <BeerButton onClick={() => setSupportOpen(true)} />
         <NotificationBell />
         <LanguageSwitcher testId="language-switcher-mobile" />
         <Sheet open={open} onOpenChange={setOpen}>
@@ -110,19 +112,22 @@ export function MobileHeader({ isAdmin }: { isAdmin?: boolean }) {
                 </button>
                 <ThemeToggle />
               </div>
-              <a
-                href="https://ko-fi.com/aks"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  setSupportOpen(true);
+                }}
+                className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
                 data-testid="beer-link"
               >
                 {t('sponsor.beer')}
-              </a>
+              </button>
             </nav>
           </SheetContent>
         </Sheet>
       </div>
+      <SupportDialog open={supportOpen} onOpenChange={setSupportOpen} />
     </header>
   );
 }

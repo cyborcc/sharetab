@@ -34,7 +34,10 @@
     "title": "Stöd Splitbon",
     "description": "Splitbon är gratis och öppen källkod. Om det sparar tid, överväg att sponsra utvecklingen.",
     "cta": "Stöd på Ko-fi",
-    "beer": "Bjud mig på en 🍻"
+    "beer": "Bjud mig på en 🍻",
+    "dialogTitle": "Stöd Splitbon",
+    "dialogHint": "Välj ett belopp, skriv gärna ett meddelande och skicka. Ko-fis formulär finns bara på engelska.",
+    "openKofi": "Öppna på Ko-fi"
   },
   "errors": {
     "generic": "Något gick fel. Försök igen.",

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Link, usePathname } from '@/i18n/navigation';
 import { signOut } from 'next-auth/react';
 import { cn } from '@/lib/utils';
@@ -20,11 +21,12 @@ import {
 } from 'lucide-react';
 import { LogoMark } from '@/components/brand/logo-mark';
 import { BeerButton } from '@/components/layout/beer-button';
+import { SupportDialog } from '@/components/layout/support-dialog';
 import { ThemeToggle } from '@/components/layout/theme-toggle';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { useTranslations, useLocale } from 'next-intl';
 
-function SponsorBanner() {
+function SponsorBanner({ onSupport }: { onSupport: () => void }) {
   const t = useTranslations('common');
   return (
     <div className="shrink-0 px-3 pb-2">
@@ -34,15 +36,15 @@ function SponsorBanner() {
           <span className="text-xs font-semibold text-foreground">{t('sponsor.title')}</span>
         </div>
         <p className="text-xs text-muted-foreground mb-2.5 leading-relaxed">{t('sponsor.description')}</p>
-        <a
-          href="https://ko-fi.com/aks"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center gap-1.5 w-full rounded-md bg-pink-500/15 hover:bg-pink-500/25 border border-pink-500/20 px-2.5 py-1.5 text-xs font-medium text-pink-600 dark:text-pink-400 transition-colors"
+        <button
+          type="button"
+          onClick={onSupport}
+          data-testid="sponsor-cta"
+          className="flex w-full items-center justify-center gap-1.5 rounded-md bg-pink-500/15 hover:bg-pink-500/25 border border-pink-500/20 px-2.5 py-1.5 text-xs font-medium text-pink-600 dark:text-pink-400 transition-colors"
         >
           <Heart className="h-3 w-3" />
           {t('sponsor.cta')}
-        </a>
+        </button>
       </div>
     </div>
   );
@@ -68,6 +70,7 @@ export function AppSidebar({ user, isAdmin }: { user: SidebarUser; isAdmin?: boo
   const pathname = usePathname();
   const t = useTranslations('common');
   const locale = useLocale();
+  const [supportOpen, setSupportOpen] = useState(false);
 
   return (
     <aside className="hidden w-64 shrink-0 border-r bg-gradient-to-b from-primary/[0.03] to-muted/40 lg:flex lg:flex-col lg:sticky lg:top-0 lg:h-dvh overflow-hidden">
@@ -76,7 +79,7 @@ export function AppSidebar({ user, isAdmin }: { user: SidebarUser; isAdmin?: boo
         <LogoMark className="h-7 w-6" />
         <span className="text-lg font-bold tracking-wide text-foreground">Splitbon</span>
         <span className="ml-auto flex items-center gap-1">
-          <BeerButton />
+          <BeerButton onClick={() => setSupportOpen(true)} />
           <NotificationBell />
         </span>
       </div>
@@ -119,7 +122,8 @@ export function AppSidebar({ user, isAdmin }: { user: SidebarUser; isAdmin?: boo
       </nav>
 
       {/* Sponsor banner */}
-      <SponsorBanner />
+      <SponsorBanner onSupport={() => setSupportOpen(true)} />
+      <SupportDialog open={supportOpen} onOpenChange={setSupportOpen} />
 
       {/* User profile section */}
       <div className="shrink-0 border-t border-transparent [border-image:linear-gradient(to_right,transparent,var(--color-border),transparent)_1] p-3">

@@ -34,7 +34,10 @@
     "title": "Apoie o Splitbon",
     "description": "O Splitbon é gratuito e de código aberto. Se ele economiza seu tempo, considere patrocinar o desenvolvimento.",
     "cta": "Apoiar no Ko-fi",
-    "beer": "Me pague uma 🍻"
+    "beer": "Me pague uma 🍻",
+    "dialogTitle": "Apoiar o Splitbon",
+    "dialogHint": "Escolha um valor, adicione uma mensagem se quiser e envie. O formulário do Ko-fi só existe em inglês.",
+    "openKofi": "Abrir no Ko-fi"
   },
   "errors": {
     "generic": "Algo deu errado. Tente novamente.",
