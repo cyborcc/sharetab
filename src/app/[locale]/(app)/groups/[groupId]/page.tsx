@@ -417,7 +417,6 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
                 const from = memberMap.get(debt.from);
                 const to = memberMap.get(debt.to);
                 const toName = to?.name ?? to?.email ?? t('detail.unknown');
-                const isMyDebt = debt.from === authSession?.user?.id;
                 const { venmoUrl, paypalUrl, bankIban } = paymentOptions(debt);
                 return (
                   <div key={i} className="flex flex-wrap items-center gap-2">
