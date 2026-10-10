@@ -124,7 +124,7 @@ test.describe('Back button navigation', () => {
     await expect(page.getByRole('heading', { name: 'Edit Expense' })).toBeVisible();
 
     // Verify sidebar Dashboard link exists and navigate via it
-    const dashLink = page.locator('aside a[href*="/dashboard"]');
+    const dashLink = page.locator('aside a[href*="/dashboard"]:not([data-testid="brand-link"])');
     await expect(dashLink).toBeVisible();
     // Use evaluate to trigger navigation (Next.js Link click doesn't fire from form pages)
     await dashLink.evaluate((el: HTMLAnchorElement) => {
