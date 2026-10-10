@@ -36,8 +36,8 @@ function fixture(over: { role?: string; existing?: Record<string, unknown> | nul
   };
   const existing =
     over.existing === undefined
-      ? { receiptId: 'receipt', splitMode: 'ITEM', paidById: 'user', addedById: 'user' }
-      : over.existing;
+      ? { receiptId: 'receipt', splitMode: 'ITEM', paidById: 'user', addedById: 'user', shares: [] }
+      : over.existing && { shares: [], ...over.existing };
   const db = {
     user: { findUnique: vi.fn(async () => ({ suspendedAt: null })) },
     group: {

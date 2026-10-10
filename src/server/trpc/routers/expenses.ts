@@ -6,7 +6,7 @@ import { getExchangeRate, convertCents } from '../../lib/exchange-rates';
 import { MAX_MONEY_CENTS } from '@/lib/money';
 import { stripUndefined } from '../../lib/strip-undefined';
 import { searchPlacesIndex } from '../../lib/places-search';
-import { money, sendNotifications } from '../../lib/notifications';
+import { money, sendNotifications, shareChangeItems } from '../../lib/notifications';
 import { checkRateLimit } from '../../lib/rate-limit';
 
 const expenseShareSchema = z.object({
@@ -583,6 +583,11 @@ export const expensesRouter = createTRPCRouter({
         newBaseCurrencyAmount = null;
       }
 
+      // Who carried what before the split is rewritten, to tell the people whose share changes
+      const sharesBefore = shares
+        ? await ctx.db.expenseShare.findMany({ where: { expenseId }, select: { userId: true, amount: true } })
+        : [];
+
       const expense = await ctx.db.$transaction(async (tx) => {
         if (shares) {
           await tx.expenseShare.deleteMany({ where: { expenseId } });
@@ -677,6 +682,21 @@ export const expensesRouter = createTRPCRouter({
               to: money(expense.amount, expense.currency),
             },
           })),
+        );
+      } else if (shares && !expense.isPrivate) {
+        // Same price, different split: tell each person whose own share changed
+        void sendNotifications(
+          ctx.db,
+          shareChangeItems({
+            before: sharesBefore,
+            after: expense.shares.map((s) => ({ userId: s.userId, amount: s.amount })),
+            actorId: ctx.user.id,
+            actorName: ctx.user.name ?? '?',
+            groupId,
+            entityId: expenseId,
+            title: expense.title,
+            currency: expense.currency,
+          }),
         );
       }
 

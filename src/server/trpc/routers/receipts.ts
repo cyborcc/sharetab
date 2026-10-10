@@ -12,7 +12,7 @@ import { getReceiptRate, relabelReceiptCurrency } from '../../lib/receipt-conver
 import { previewReceiptCorrection, resolveReceiptCorrection } from '../../lib/receipt-correction';
 import { stripUndefined } from '../../lib/strip-undefined';
 import { getUserPromptLanguage } from '../../lib/user-language';
-import { money, sendNotifications } from '../../lib/notifications';
+import { money, sendNotifications, shareChangeItems } from '../../lib/notifications';
 
 /**
  * Verify that a receipt exists and the user has access to it (via group membership).
@@ -658,6 +658,7 @@ export const receiptsRouter = createTRPCRouter({
         category: string | null;
         placeName: string | null;
         baseCurrencyAmount: number | null;
+        shares: { userId: string; amount: number }[];
       } | null = null;
       if (input.expenseId) {
         existing = await ctx.db.expense.findFirst({
@@ -672,6 +673,7 @@ export const receiptsRouter = createTRPCRouter({
             category: true,
             placeName: true,
             baseCurrencyAmount: true,
+            shares: { select: { userId: true, amount: true } },
           },
         });
         if (!existing || existing.receiptId !== input.receiptId || existing.splitMode !== 'ITEM') {
@@ -968,6 +970,21 @@ export const receiptsRouter = createTRPCRouter({
               to: money(totalAmount, receiptCurrency),
             },
           })),
+        );
+      } else if (existing) {
+        // Same price, other split: tell each person whose own share changed
+        void sendNotifications(
+          ctx.db,
+          shareChangeItems({
+            before: existing.shares,
+            after: Array.from(userTotals.entries(), ([userId, amount]) => ({ userId, amount })),
+            actorId: ctx.user.id,
+            actorName: ctx.user.name ?? '?',
+            groupId: input.groupId,
+            entityId: expense.id,
+            title: input.title,
+            currency: receiptCurrency,
+          }),
         );
       }
 

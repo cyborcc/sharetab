@@ -11,7 +11,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
-const ICONS: Record<string, string> = { EXPENSE_ADDED: '🧾', PRICE_CHANGED: '💶', SETTLEMENT: '🤝' };
+const ICONS: Record<string, string> = {
+  EXPENSE_ADDED: '🧾',
+  PRICE_CHANGED: '💶',
+  SHARE_CHANGED: '🔀',
+  SETTLEMENT: '🤝',
+};
 
 function keyToBytes(base64: string): Uint8Array<ArrayBuffer> {
   const padded = (base64 + '='.repeat((4 - (base64.length % 4)) % 4)).replace(/-/g, '+').replace(/_/g, '/');
