@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { formatCents, parseToCents, centsToDecimal } from './money';
+import { formatCents, parseToCents, centsToDecimal, parseAmountInput, sanitizeAmountInput } from './money';
 
 describe('formatCents', () => {
   test('formats whole dollar amounts', () => {
@@ -133,5 +133,33 @@ describe('centsToDecimal', () => {
 
   test('handles negative amounts', () => {
     expect(centsToDecimal(-1299)).toBe('-12.99');
+  });
+});
+
+describe('parseAmountInput', () => {
+  test('reads a decimal comma and a decimal point alike', () => {
+    expect(parseAmountInput('12,50')).toBe(1250);
+    expect(parseAmountInput('12.50')).toBe(1250);
+    expect(parseAmountInput('12,5')).toBe(1250);
+    expect(parseAmountInput('12')).toBe(1200);
+    expect(parseAmountInput(',5')).toBe(50);
+  });
+
+  test('reads thousands separators', () => {
+    expect(parseAmountInput('1.234,50')).toBe(123450);
+    expect(parseAmountInput('1,234.50')).toBe(123450);
+    expect(parseAmountInput('1.234')).toBe(123400);
+  });
+
+  test('returns 0 for anything that is not an amount', () => {
+    expect(parseAmountInput('')).toBe(0);
+    expect(parseAmountInput('abc')).toBe(0);
+    expect(parseAmountInput('-5')).toBe(0);
+  });
+});
+
+describe('sanitizeAmountInput', () => {
+  test('keeps digits, comma and point only', () => {
+    expect(sanitizeAmountInput('1a2,5-0€')).toBe('12,50');
   });
 });
