@@ -38,6 +38,27 @@ export function parseToCents(value: string): number {
   return cents * (negative ? -1 : 1);
 }
 
+/**
+ * Reads an amount typed by a person, with a decimal comma or a decimal point ("12,50", "12.5", "1.234,50").
+ * A separator followed by exactly three digits counts as a thousands separator, any other as the decimal mark.
+ * Returns 0 for anything that is not an amount.
+ */
+export function parseAmountInput(value: string): number {
+  const s = value.trim().replace(/\s/g, '');
+  if (!/^\d[\d.,]*$|^[.,]\d+$/.test(s)) return 0;
+  const sep = Math.max(s.lastIndexOf(','), s.lastIndexOf('.'));
+  if (sep === -1) return parseToCents(s);
+  const decimals = s.slice(sep + 1);
+  const intPart = s.slice(0, sep).replace(/[.,]/g, '');
+  if (decimals.length === 3 && intPart !== '') return parseToCents(intPart + decimals);
+  return parseToCents(`${intPart || '0'}.${decimals}`);
+}
+
+/** Keeps only what an amount field can hold, so a stray letter or sign never reaches the state. */
+export function sanitizeAmountInput(value: string): string {
+  return value.replace(/[^\d.,]/g, '');
+}
+
 export function centsToDecimal(cents: number): string {
   return (cents / 100).toFixed(2);
 }

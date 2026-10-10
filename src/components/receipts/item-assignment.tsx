@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { trpc } from '@/lib/trpc';
-import { formatCents, centsToDecimal, parseToCents } from '@/lib/money';
+import { formatCents, centsToDecimal, parseToCents, parseAmountInput, sanitizeAmountInput } from '@/lib/money';
 import { calculateSplitTotals } from '@/lib/split-calculator';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -116,6 +116,8 @@ export function ItemAssignment({
   );
   const [paidById, setPaidById] = useState('');
   const [tipOverride, setTipOverride] = useState<string>('');
+  // What was paid in total (with tip): the tip is whatever the items and tax leave over.
+  const [paidTotalStr, setPaidTotalStr] = useState<string>('');
   const [showImage, setShowImage] = useState(false);
   const [flashItem, setFlashItem] = useState<string | null>(null);
   // Paid by card in a foreign currency: what the bank actually charged replaces the reference rate.
@@ -316,9 +318,18 @@ export function ItemAssignment({
 
   const { receipt, items } = receiptData.data ?? { receipt: null, items: [] };
   const extracted = receipt?.extractedData ?? null;
-  const parsedTip = parseFloat(tipOverride);
-  const tip =
-    extracted && tipOverride !== '' && isFinite(parsedTip) ? Math.round(parsedTip * 100) : (extracted?.tip ?? 0);
+  const hasDigits = (value: string) => /\d/.test(value);
+  const paidTotalCents = hasDigits(paidTotalStr) ? parseAmountInput(paidTotalStr) : null;
+  const baseCents = items.reduce((sum, item) => sum + item.totalPrice, 0) + (extracted?.tax ?? 0);
+  // The paid total wins over a typed tip; a total below items plus tax means no tip
+  const tipInputCents: number | undefined =
+    paidTotalCents !== null
+      ? Math.max(0, paidTotalCents - baseCents)
+      : hasDigits(tipOverride)
+        ? parseAmountInput(tipOverride)
+        : undefined;
+  const paidTotalTooLow = paidTotalCents !== null && paidTotalCents < baseCents;
+  const tip = extracted && tipInputCents !== undefined ? tipInputCents : (extracted?.tip ?? 0);
 
   // Note (Finding #29): toggleAssignment and assignAllToEveryone are intentionally
   // duplicated from split/page.tsx. This component uses Record<string, Set<string>>
@@ -485,7 +496,7 @@ export function ItemAssignment({
   const de = locale.startsWith('de');
   const settleCurrency = (groupQuote?.to ?? groupCurrency ?? '').toUpperCase();
   const foreignReceipt = !!settleCurrency && settleCurrency !== safeExtracted.currency.toUpperCase();
-  const charged = useCharged && foreignReceipt ? parseToCents(chargedStr) : 0;
+  const charged = useCharged && foreignReceipt ? parseAmountInput(chargedStr) : 0;
   const chargedOk = charged > 0 && currentTotal > 0;
   // Rate used to show amounts in the group currency: the card's if entered, else the reference rate
   const chargedRate = chargedOk ? charged / currentTotal : null;
@@ -511,8 +522,7 @@ export function ItemAssignment({
       ...(place.latitude !== null && place.longitude !== null
         ? { latitude: place.latitude, longitude: place.longitude }
         : {}),
-      tipOverride:
-        tipOverride !== '' && isFinite(parseFloat(tipOverride)) ? Math.round(parseFloat(tipOverride) * 100) : undefined,
+      tipOverride: tipInputCents,
       assignments: Object.entries(assignments)
         .filter(([, userIds]) => userIds.size > 0)
         .map(([receiptItemId, userIds]) => ({
@@ -822,13 +832,12 @@ export function ItemAssignment({
                   <>
                     <div className="flex items-center gap-2">
                       <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
+                        type="text"
                         inputMode="decimal"
+                        autoComplete="off"
                         placeholder="0,00"
                         value={chargedStr}
-                        onChange={(e) => setChargedStr(e.target.value)}
+                        onChange={(e) => setChargedStr(sanitizeAmountInput(e.target.value))}
                         className="w-32"
                         data-testid="card-charge-input"
                       />
@@ -959,15 +968,37 @@ export function ItemAssignment({
               <Label htmlFor="tip">{t('tipOverride')}</Label>
               <Input
                 id="tip"
-                type="number"
-                step="0.01"
-                min="0"
+                type="text"
+                inputMode="decimal"
+                autoComplete="off"
                 placeholder={t('tipDetected', {
                   amount: formatReceiptCents(safeExtracted.tip, safeExtracted.currency, locale),
                 })}
-                value={tipOverride}
-                onChange={(e) => setTipOverride(e.target.value)}
+                value={paidTotalCents !== null ? centsToDecimal(tip) : tipOverride}
+                disabled={paidTotalCents !== null}
+                onChange={(e) => setTipOverride(sanitizeAmountInput(e.target.value))}
+                data-testid="tip-input"
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="paid-total">{t('paidTotal')}</Label>
+              <Input
+                id="paid-total"
+                type="text"
+                inputMode="decimal"
+                autoComplete="off"
+                placeholder={formatReceiptCents(baseCents + safeExtracted.tip, safeExtracted.currency, locale)}
+                value={paidTotalStr}
+                onChange={(e) => setPaidTotalStr(sanitizeAmountInput(e.target.value))}
+                data-testid="paid-total-input"
+              />
+              <p className="text-xs text-muted-foreground" data-testid="paid-total-hint">
+                {paidTotalTooLow
+                  ? t('paidTotalTooLow', { amount: formatReceiptCents(baseCents, safeExtracted.currency, locale) })
+                  : paidTotalCents !== null
+                    ? t('tipFromTotal', { amount: formatReceiptCents(tip, safeExtracted.currency, locale) })
+                    : t('paidTotalHint')}
+              </p>
             </div>
           </CardContent>
         </Card>
