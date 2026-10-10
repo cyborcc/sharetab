@@ -32,6 +32,7 @@
     "paypalPaymentConfirm": "Haben Sie die PayPal-Zahlung von {amount} an {name} abgeschlossen?",
     "settledViaPaypal": "Über PayPal bezahlt",
     "payViaBank": "Überweisung",
+    "noPaymentData": "{name} hat noch keine Zahlungsdaten hinterlegt.",
     "settledViaBank": "Per Überweisung bezahlt",
     "notFound": "Gruppe nicht gefunden",
     "notFoundDescription": "Diese Gruppe existiert nicht oder du hast keinen Zugriff.",

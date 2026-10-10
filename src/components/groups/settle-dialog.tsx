@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { trpc } from '@/lib/trpc';
-import { parseToCents, formatCents } from '@/lib/money';
+import { parseAmountInput, sanitizeAmountInput, formatCents } from '@/lib/money';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +20,7 @@ export function SettleDialog({
   currency,
   open,
   onOpenChange,
+  paymentActions,
 }: {
   groupId: string;
   members: Member[];
@@ -29,6 +30,8 @@ export function SettleDialog({
   currency: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Payment buttons (PayPal, bank transfer, ...) shown above the form when the person pays */
+  paymentActions?: ReactNode;
 }) {
   const t = useTranslations('groups');
 
@@ -39,6 +42,8 @@ export function SettleDialog({
           <DialogTitle>{t('settle.title')}</DialogTitle>
           <DialogDescription>{t('settle.description')}</DialogDescription>
         </DialogHeader>
+
+        {open && paymentActions}
 
         {/* Mounted only while open so each open starts from the current
             suggestions (fresh useState initializers — no reset effect). */}
@@ -95,7 +100,7 @@ function SettleForm({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const amount = parseToCents(amountStr);
+    const amount = parseAmountInput(amountStr);
     if (!toId || amount <= 0) return;
     settle.mutate({ groupId, fromId: fromId || undefined, toId, amount, currency, note: note || undefined });
   }
@@ -142,12 +147,12 @@ function SettleForm({
         <Label htmlFor="settle-amount">{t('settle.amount')}</Label>
         <Input
           id="settle-amount"
-          type="number"
-          step="0.01"
-          min="0.01"
-          placeholder="0.00"
+          type="text"
+          inputMode="decimal"
+          autoComplete="off"
+          placeholder="0,00"
           value={amountStr}
-          onChange={(e) => setAmountStr(e.target.value)}
+          onChange={(e) => setAmountStr(sanitizeAmountInput(e.target.value))}
           required
         />
         {suggestedAmount && (

@@ -76,8 +76,10 @@ export function AppSidebar({ user, isAdmin }: { user: SidebarUser; isAdmin?: boo
     <aside className="hidden w-64 shrink-0 border-r bg-gradient-to-b from-primary/[0.03] to-muted/40 lg:flex lg:flex-col lg:sticky lg:top-0 lg:h-dvh overflow-hidden">
       {/* Brand area */}
       <div className="flex h-14 items-center gap-2.5 px-5 border-b border-transparent bg-gradient-to-r from-primary/[0.06] via-transparent to-transparent [border-image:linear-gradient(to_right,var(--color-primary)/0.15,transparent)_1]">
-        <LogoMark className="h-7 w-6" />
-        <span className="text-lg font-bold tracking-wide text-foreground">Splitbon</span>
+        <Link href="/dashboard" className="flex items-center gap-2.5" aria-label="Splitbon" data-testid="brand-link">
+          <LogoMark className="h-7 w-6" />
+          <span className="text-lg font-bold tracking-wide text-foreground">Splitbon</span>
+        </Link>
         <span className="ml-auto flex items-center gap-1">
           <BeerButton onClick={() => setSupportOpen(true)} />
           <NotificationBell />

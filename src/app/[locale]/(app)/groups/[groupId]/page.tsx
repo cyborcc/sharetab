@@ -158,6 +158,93 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
       }
     }, 2000);
   }
+  // Ways the signed-in person can pay a debt of theirs: what the receiver has saved, as ready-made links
+  function paymentOptions(debt: { from: string; to: string; amount: number }) {
+    const to = memberMap.get(debt.to);
+    const isMyDebt = debt.from === authSession?.user?.id;
+    const reference = `Splitbon: ${g.name}`;
+    const showVenmo =
+      venmoSetting.data?.enabled &&
+      g.currency === 'USD' &&
+      isMyDebt &&
+      to?.venmoUsername &&
+      isValidVenmoHandle(to.venmoUsername);
+    const venmoUrl = showVenmo ? buildVenmoPayUrl(to.venmoUsername!, debt.amount, reference) : null;
+    const paypalUrl =
+      isMyDebt && to
+        ? ((to.paypalMeName ? buildPaypalMeUrl(to.paypalMeName, debt.amount, g.currency) : null) ??
+          (to.paypalEmail && isValidPaypalEmail(to.paypalEmail)
+            ? buildPaypalEmailUrl(to.paypalEmail, debt.amount, g.currency, reference)
+            : null))
+        : null;
+    const bankIban = isMyDebt && to?.iban && isValidIban(to.iban) ? to.iban : null;
+    return { isMyDebt, venmoUrl, paypalUrl, bankIban };
+  }
+  // Pay buttons inside the settle dialog, so the way to pay is found where "Zahlung erfassen" is opened
+  function settleActions(from: string, to: string, amount: number) {
+    const debt = { from, to, amount };
+    const { isMyDebt, venmoUrl, paypalUrl, bankIban } = paymentOptions(debt);
+    if (!isMyDebt) return null;
+    const receiver = memberMap.get(to);
+    const toName = receiver?.name ?? receiver?.email ?? t('detail.unknown');
+    if (!venmoUrl && !paypalUrl && !bankIban) {
+      return (
+        <p className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
+          {t('detail.noPaymentData', { name: toName })}
+        </p>
+      );
+    }
+    return (
+      <div className="flex flex-wrap gap-2" data-testid="settle-pay-options">
+        {venmoUrl && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setSettleState((st) => ({ ...st, open: false }));
+              startExternalPayment(venmoUrl, debt, toName, 'venmo');
+            }}
+          >
+            {t('detail.payViaVenmo')}
+          </Button>
+        )}
+        {paypalUrl && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            data-testid="settle-pay-paypal"
+            onClick={() => {
+              setSettleState((st) => ({ ...st, open: false }));
+              startExternalPayment(paypalUrl, debt, toName, 'paypal');
+            }}
+          >
+            {t('detail.payViaPaypal')}
+          </Button>
+        )}
+        {bankIban && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setSettleState((st) => ({ ...st, open: false }));
+              setBankTransfer({
+                fromId: from,
+                toId: to,
+                amount,
+                holder: receiver?.ibanHolder?.trim() || toName,
+                iban: bankIban,
+              });
+            }}
+          >
+            {t('detail.payViaBank')}
+          </Button>
+        )}
+      </div>
+    );
+  }
   const rowMembers = new Map<string, RowMember>(g.members.map((m) => [m.user.id, m.user]));
 
   return (
@@ -331,24 +418,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
                 const to = memberMap.get(debt.to);
                 const toName = to?.name ?? to?.email ?? t('detail.unknown');
                 const isMyDebt = debt.from === authSession?.user?.id;
-                const showVenmo =
-                  venmoSetting.data?.enabled &&
-                  g.currency === 'USD' &&
-                  isMyDebt &&
-                  to?.venmoUsername &&
-                  isValidVenmoHandle(to.venmoUsername);
-                const venmoUrl = showVenmo
-                  ? buildVenmoPayUrl(to.venmoUsername!, debt.amount, `Splitbon: ${g.name}`)
-                  : null;
-                const reference = `Splitbon: ${g.name}`;
-                const paypalUrl =
-                  isMyDebt && to
-                    ? ((to.paypalMeName ? buildPaypalMeUrl(to.paypalMeName, debt.amount, g.currency) : null) ??
-                      (to.paypalEmail && isValidPaypalEmail(to.paypalEmail)
-                        ? buildPaypalEmailUrl(to.paypalEmail, debt.amount, g.currency, reference)
-                        : null))
-                    : null;
-                const bankIban = isMyDebt && to?.iban && isValidIban(to.iban) ? to.iban : null;
+                const { venmoUrl, paypalUrl, bankIban } = paymentOptions(debt);
                 return (
                   <div key={i} className="flex flex-wrap items-center gap-2">
                     <button
@@ -582,6 +652,9 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
       )}
 
       <SettleDialog
+        {...(settleState.from !== undefined && settleState.to !== undefined && settleState.amount !== undefined
+          ? { paymentActions: settleActions(settleState.from, settleState.to, settleState.amount) }
+          : {})}
         groupId={groupId}
         members={g.members.map((m) => ({ id: m.user.id, name: m.user.name ?? m.user.email }))}
         {...(settleState.from !== undefined ? { suggestedFrom: settleState.from } : {})}

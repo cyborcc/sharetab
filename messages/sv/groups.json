@@ -32,6 +32,7 @@
     "paypalPaymentConfirm": "Slutförde du PayPal-betalningen på {amount} till {name}?",
     "settledViaPaypal": "Betald via PayPal",
     "payViaBank": "Banköverföring",
+    "noPaymentData": "{name} har inte sparat några betalningsuppgifter än.",
     "settledViaBank": "Betald via banköverföring",
     "notFound": "Grupp hittades inte",
     "notFoundDescription": "Denna grupp finns inte eller så har du inte åtkomst.",

@@ -32,6 +32,7 @@
     "paypalPaymentConfirm": "{name}에게 {amount}의 PayPal 결제를 완료하셨나요?",
     "settledViaPaypal": "PayPal로 결제 완료",
     "payViaBank": "계좌 이체",
+    "noPaymentData": "{name}님이 아직 결제 정보를 저장하지 않았습니다.",
     "settledViaBank": "계좌 이체로 결제 완료",
     "notFound": "그룹을 찾을 수 없습니다",
     "notFoundDescription": "이 그룹이 존재하지 않거나 접근 권한이 없습니다.",

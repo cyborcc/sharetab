@@ -32,6 +32,7 @@
     "paypalPaymentConfirm": "您是否完成了通过PayPal向{name}支付{amount}？",
     "settledViaPaypal": "已通过PayPal支付",
     "payViaBank": "银行转账",
+    "noPaymentData": "{name} 尚未保存付款信息。",
     "settledViaBank": "已通过银行转账支付",
     "notFound": "未找到群组",
     "notFoundDescription": "该群组不存在或您无权访问。",

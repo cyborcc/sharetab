@@ -32,6 +32,7 @@
     "paypalPaymentConfirm": "{name}への{amount}のPayPal支払いを完了しましたか？",
     "settledViaPaypal": "PayPalで支払い済み",
     "payViaBank": "銀行振込",
+    "noPaymentData": "{name} さんはまだ支払い情報を登録していません。",
     "settledViaBank": "銀行振込で支払い済み",
     "notFound": "グループが見つかりません",
     "notFoundDescription": "このグループは存在しないか、アクセス権がありません。",
