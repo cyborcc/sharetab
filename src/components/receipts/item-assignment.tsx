@@ -717,17 +717,8 @@ export function ItemAssignment({
                 className="w-full rounded-md border bg-background p-2"
                 value={safeExtracted.currency.toUpperCase()}
                 disabled={correctCurrency.isPending || createExpense.isPending}
-                onChange={(e) => {
-                  if (
-                    window.confirm(
-                      de
-                        ? 'Nur das Währungslabel ändern? Alle Zahlen bleiben unverändert; gedruckte Alternativsummen werden ungültig.'
-                        : 'Relabel currency only? All numbers remain unchanged; printed alternate totals will be invalidated.',
-                    )
-                  ) {
-                    correctCurrency.mutate({ receiptId, currency: e.target.value });
-                  }
-                }}
+                // Only a label changes and it can be changed back, so no confirmation is needed
+                onChange={(e) => correctCurrency.mutate({ receiptId, currency: e.target.value })}
               >
                 {!currencyOptions.some((c) => c.code === safeExtracted.currency.toUpperCase()) && (
                   <option value={safeExtracted.currency.toUpperCase()}>{safeExtracted.currency}</option>
