@@ -1,9 +1,9 @@
 /**
- * Place search through the public TREK Places API (an Overture Places index, no key needed), which
- * knows many restaurants that OpenStreetMap lacks. Called from the server, so the browser never
- * talks to it. PLACES_API_URL points at another instance, PLACES_API_ENABLED=false switches it off.
+ * Optional place search through a TREK Places API instance (an Overture Places index) that knows many
+ * restaurants OpenStreetMap lacks. Off unless PLACES_API_URL names an instance, so no third-party service
+ * is contacted by default (the public one is https://places.liketrek.com; check its terms before using it).
+ * Called from the server, so the browser never talks to it. PLACES_API_ENABLED=false switches it off.
  */
-const DEFAULT_URL = 'https://places.liketrek.com';
 const TIMEOUT_MS = 4000;
 const NEAR_METERS = 50_000;
 
@@ -32,7 +32,7 @@ async function fetchHits(
   near: { lat: number; lon: number } | null,
   signal?: AbortSignal,
 ): Promise<RawHit[]> {
-  const base = (process.env.PLACES_API_URL?.trim() || DEFAULT_URL).replace(/\/+$/, '');
+  const base = (process.env.PLACES_API_URL?.trim() ?? '').replace(/\/+$/, '');
   const url = new URL(`${base}/v1/search`);
   url.searchParams.set('q', q);
   url.searchParams.set('limit', '8');
@@ -42,7 +42,7 @@ async function fetchHits(
   }
   const timeout = AbortSignal.timeout(TIMEOUT_MS);
   const res = await fetch(url, {
-    headers: { Accept: 'application/json', 'X-TREK-Instance': 'sharetab' },
+    headers: { Accept: 'application/json', 'X-TREK-Instance': 'splitbon' },
     signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
   });
   if (!res.ok) return [];
@@ -60,6 +60,7 @@ export async function searchPlacesIndex(
   signal?: AbortSignal,
 ): Promise<PlaceHit[]> {
   if (process.env.PLACES_API_ENABLED?.trim().toLowerCase() === 'false') return [];
+  if (!process.env.PLACES_API_URL?.trim()) return [];
   const first = q.trim().split(/\s+/)[0]?.toLowerCase() ?? '';
   if (first.length < 2) return [];
   // With a position, a hit within NEAR_METERS of it beats a better-named one on the other side of the

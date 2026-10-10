@@ -1,9 +1,14 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { queryVariants, searchPlacesIndex } from './places-search';
+
+beforeEach(() => {
+  process.env.PLACES_API_URL = 'https://places.example.test';
+});
 
 afterEach(() => {
   vi.unstubAllGlobals();
   delete process.env.PLACES_API_ENABLED;
+  delete process.env.PLACES_API_URL;
 });
 
 describe('queryVariants', () => {
@@ -48,5 +53,15 @@ describe('searchPlacesIndex', () => {
   it('returns nothing when the service fails', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('down')));
     expect(await searchPlacesIndex('White Elephant', near)).toEqual([]);
+  });
+});
+
+describe('searchPlacesIndex without a configured instance', () => {
+  it('contacts nobody and returns nothing', async () => {
+    delete process.env.PLACES_API_URL;
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    expect(await searchPlacesIndex('White Elephant', null)).toEqual([]);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
