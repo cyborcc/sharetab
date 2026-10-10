@@ -1,0 +1,22 @@
+{
+  "title": "Cómo funciona",
+  "intro": "Cuatro pasos del viaje a las cuentas saldadas.",
+  "create": {
+    "title": "Crea un grupo",
+    "text": "Pon nombre al viaje, elige la moneda y crea el grupo. Todos los gastos están en un solo lugar."
+  },
+  "invite": {
+    "title": "Invita a tu gente",
+    "text": "Comparte el enlace o el código. Los amigos se unen con o sin cuenta."
+  },
+  "scan": {
+    "title": "Escanea un recibo",
+    "text": "Haz una foto, la IA lee los artículos y tú marcas quién tomó qué. Los precios se convierten a la moneda del grupo."
+  },
+  "settle": {
+    "title": "Salda cuentas",
+    "text": "Splitbon calcula el menor número de pagos. Paga con enlace de PayPal, QR de transferencia o en efectivo y márcalo como pagado."
+  },
+  "more": "Documentación completa en GitHub",
+  "videoLabel": "Vídeo de demostración corto"
+}

@@ -8,7 +8,8 @@
     "admin": "관리자",
     "signOut": "로그아웃",
     "changeLanguage": "언어 변경",
-    "feedback": "Feedback"
+    "feedback": "Feedback",
+    "help": "사용 방법"
   },
   "actions": {
     "save": "저장",

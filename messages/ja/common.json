@@ -8,7 +8,8 @@
     "admin": "管理",
     "signOut": "ログアウト",
     "changeLanguage": "言語を変更",
-    "feedback": "Feedback"
+    "feedback": "Feedback",
+    "help": "使い方"
   },
   "actions": {
     "save": "保存",

@@ -8,7 +8,8 @@
     "admin": "Administration",
     "signOut": "Logga ut",
     "changeLanguage": "Byt språk",
-    "feedback": "Feedback"
+    "feedback": "Feedback",
+    "help": "Så fungerar det"
   },
   "actions": {
     "save": "Spara",
